@@ -16,6 +16,12 @@ pip install -r requirements.txt
 python doc_generator.py --app ./src/main.py --output ./docs/
 ```
 
+## Testing
+Run the test suite with:
+```bash
+pytest -q
+```
+
 ## Usage
 ```python
 from openapi_generator import APIDocumentator

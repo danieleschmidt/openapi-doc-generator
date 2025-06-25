@@ -1,6 +1,10 @@
 # Sprint Board
 
-## Backlog
+Epic: **Feature:** Creates human-readable markdown documentation with examples
+
 | Task | Owner | Priority | Status |
 | --- | --- | --- | --- |
-| Establish a testing framework (`pytest`, etc.) with initial tests. | @agent | P0 | Done |
+| Draft markdown templates for API docs | @agent | P1 | Done |
+| Implement MarkdownGenerator to convert specs into markdown | @agent | P1 | Done |
+| Expose generate_markdown method on DocumentationResult | @agent | P1 | Done |
+| Provide CLI command to output markdown docs | @agent | P1 | Done |

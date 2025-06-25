@@ -1,0 +1,10 @@
+# {{ title }}
+
+{% for route in routes %}
+## {{ route.name }}
+
+*Path:* `{{ route.path }}`
+
+*Methods:* {{ route.methods | join(', ') }}
+
+{% endfor %}

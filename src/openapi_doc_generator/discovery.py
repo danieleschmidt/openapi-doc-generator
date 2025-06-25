@@ -1,0 +1,84 @@
+"""Route discovery utilities for supported frameworks."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+import ast
+from pathlib import Path
+from typing import List
+
+
+@dataclass
+class RouteInfo:
+    """Information about a discovered API route."""
+
+    path: str
+    methods: List[str]
+    name: str
+    docstring: str | None = None
+
+
+class RouteDiscoverer:
+    """Discover routes from application source files."""
+
+    def __init__(self, app_path: str) -> None:
+        self.app_path = Path(app_path)
+        if not self.app_path.exists():
+            raise FileNotFoundError(f"{app_path} does not exist")
+
+    def discover(self) -> List[RouteInfo]:
+        """Discover routes based on detected framework."""
+        source = self.app_path.read_text()
+        lowered = source.lower()
+        if "fastapi" in lowered:
+            return self._discover_fastapi()
+        if "flask" in lowered:
+            return self._discover_flask()
+        if "django" in lowered:
+            return self._discover_django()
+        if "express" in lowered:
+            return self._discover_express()
+        raise ValueError("Unable to determine framework for route discovery")
+
+    # --- Framework specific discovery methods ---------------------------------
+    def _discover_fastapi(self) -> List[RouteInfo]:
+        tree = ast.parse(self.app_path.read_text(), filename=str(self.app_path))
+        routes: List[RouteInfo] = []
+
+        class Visitor(ast.NodeVisitor):
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+                for deco in node.decorator_list:
+                    if isinstance(deco, ast.Call) and isinstance(
+                        deco.func, ast.Attribute
+                    ):
+                        method = deco.func.attr
+                        if method in {"get", "post", "put", "patch", "delete"}:
+                            if (
+                                isinstance(deco.func.value, ast.Name)
+                                and deco.func.value.id == "app"
+                            ):
+                                path = ""
+                                if deco.args and isinstance(deco.args[0], ast.Constant):
+                                    path = str(deco.args[0].value)
+                                doc = ast.get_docstring(node)
+                                routes.append(
+                                    RouteInfo(
+                                        path=path,
+                                        methods=[method.upper()],
+                                        name=node.name,
+                                        docstring=doc,
+                                    )
+                                )
+                self.generic_visit(node)
+
+        Visitor().visit(tree)
+        return routes
+
+    def _discover_flask(self) -> List[RouteInfo]:
+        raise NotImplementedError("Flask route discovery not implemented")
+
+    def _discover_django(self) -> List[RouteInfo]:
+        raise NotImplementedError("Django route discovery not implemented")
+
+    def _discover_express(self) -> List[RouteInfo]:
+        raise NotImplementedError("Express route discovery not implemented")

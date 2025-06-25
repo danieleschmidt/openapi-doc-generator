@@ -1,10 +1,16 @@
 {
-  "establish-a-testing-framework-(`pytest`,-etc.)-with-initial-tests.": {
-    "test_file": "tests/test_foundational.py",
-    "description": "Verifies that Establish a testing framework (`pytest`, etc.) with initial tests.",
-    "cases": {
-      "success": "Asserts the primary success case.",
-      "edge_case_null_input": "Asserts that providing null input is handled gracefully."
-    }
+  "add-pytest-config": {
+    "file_exists": "pytest.ini file exists in project root",
+    "contains_header": "[pytest] section defines testpaths"
+  },
+  "create-sample-tests": {
+    "success_case": "echo(\"hi\") returns \"hi\"",
+    "none_case": "echo(None) returns None"
+  },
+  "declare-pytest-dependency": {
+    "pyproject_contains": "[project.optional-dependencies.dev] section lists pytest"
+  },
+  "document-test-run": {
+    "readme_mentions": "README contains instructions with \"pytest\""
   }
 }

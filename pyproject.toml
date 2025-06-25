@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "openapi_doc_generator"
-version = "0.0.0"
-description = "OpenAPI documentation generator"
-readme = "README.md"
-requires-python = ">=3.10"
+version = "0.0.2"
+requires-python = ">=3.8"
+dependencies = [
+    "jinja2>=3.1"
+]
 
 [project.optional-dependencies]
 dev = [
@@ -16,6 +17,13 @@ dev = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+packages = [
+    "openapi_doc_generator",
+    "openapi_doc_generator.templates",
+]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[project.scripts]
+"openapi-doc-generator" = "openapi_doc_generator.cli:main"
+
+[tool.setuptools.package-data]
+"openapi_doc_generator.templates" = ["*.jinja"]

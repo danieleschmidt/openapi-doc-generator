@@ -1,16 +1,34 @@
 {
-  "add-pytest-config": {
-    "file_exists": "pytest.ini file exists in project root",
-    "contains_header": "[pytest] section defines testpaths"
+  "draft-markdown-templates-for-api-docs": {
+    "test_file": "tests/test_draft-markdown-templates-for-api-docs.py",
+    "description": "Verifies that Draft markdown templates for API docs.",
+    "cases": {
+      "success": "Asserts the primary success case.",
+      "edge_case_invalid_input": "Asserts that invalid input is handled gracefully."
+    }
   },
-  "create-sample-tests": {
-    "success_case": "echo(\"hi\") returns \"hi\"",
-    "none_case": "echo(None) returns None"
+  "implement-markdowngenerator-to-convert-specs-into-markdown": {
+    "test_file": "tests/test_implement-markdowngenerator-to-convert-specs-into-markdown.py",
+    "description": "Verifies that Implement MarkdownGenerator to convert specs into markdown.",
+    "cases": {
+      "success": "Asserts the primary success case.",
+      "edge_case_invalid_input": "Asserts that invalid input is handled gracefully."
+    }
   },
-  "declare-pytest-dependency": {
-    "pyproject_contains": "[project.optional-dependencies.dev] section lists pytest"
+  "expose-generate-markdown-method-on-documentationresult": {
+    "test_file": "tests/test_expose-generate-markdown-method-on-documentationresult.py",
+    "description": "Verifies that Expose generate_markdown method on DocumentationResult.",
+    "cases": {
+      "success": "Asserts the primary success case.",
+      "edge_case_invalid_input": "Asserts that invalid input is handled gracefully."
+    }
   },
-  "document-test-run": {
-    "readme_mentions": "README contains instructions with \"pytest\""
+  "provide-cli-command-to-output-markdown-docs": {
+    "test_file": "tests/test_provide-cli-command-to-output-markdown-docs.py",
+    "description": "Verifies that Provide CLI command to output markdown docs.",
+    "cases": {
+      "success": "Asserts the primary success case.",
+      "edge_case_invalid_input": "Asserts that invalid input is handled gracefully."
+    }
   }
 }

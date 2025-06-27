@@ -7,6 +7,8 @@ from .spec import OpenAPISpecGenerator
 from .documentator import APIDocumentator, DocumentationResult
 from .templates import load_template
 from .markdown import MarkdownGenerator
+from .playground import PlaygroundGenerator
+from .validator import SpecValidator
 from .cli import main as cli_main
 
 __all__ = [
@@ -21,5 +23,7 @@ __all__ = [
     "DocumentationResult",
     "load_template",
     "MarkdownGenerator",
+    "PlaygroundGenerator",
+    "SpecValidator",
     "cli_main",
 ]

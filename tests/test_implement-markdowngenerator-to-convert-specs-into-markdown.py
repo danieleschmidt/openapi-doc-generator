@@ -7,12 +7,8 @@ def test_success():
     spec = {
         "openapi": "3.0.0",
         "info": {"title": "Sample API", "version": "1.0"},
-        "paths": {
-            "/hello": {
-                "get": {"summary": "Say hello"}
-            }
-        },
-        "components": {"schemas": {}}
+        "paths": {"/hello": {"get": {"summary": "Say hello"}}},
+        "components": {"schemas": {}},
     }
     markdown = MarkdownGenerator().generate(spec)
     assert "# Sample API" in markdown

@@ -75,10 +75,81 @@ class RouteDiscoverer:
         return routes
 
     def _discover_flask(self) -> List[RouteInfo]:
-        raise NotImplementedError("Flask route discovery not implemented")
+        tree = ast.parse(self.app_path.read_text(), filename=str(self.app_path))
+        routes: List[RouteInfo] = []
+
+        class Visitor(ast.NodeVisitor):
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+                for deco in node.decorator_list:
+                    if isinstance(deco, ast.Call) and isinstance(
+                        deco.func, ast.Attribute
+                    ):
+                        if (
+                            isinstance(deco.func.value, ast.Name)
+                            and deco.func.value.id == "app"
+                            and deco.func.attr == "route"
+                        ):
+                            path = ""
+                            if deco.args and isinstance(deco.args[0], ast.Constant):
+                                path = str(deco.args[0].value)
+                            methods: List[str] = ["GET"]
+                            for kw in deco.keywords:
+                                if kw.arg == "methods" and isinstance(
+                                    kw.value, (ast.List, ast.Tuple)
+                                ):
+                                    methods = []
+                                    for elt in kw.value.elts:
+                                        if isinstance(elt, ast.Constant):
+                                            methods.append(str(elt.value).upper())
+                            doc = ast.get_docstring(node)
+                            routes.append(
+                                RouteInfo(
+                                    path=path,
+                                    methods=methods,
+                                    name=node.name,
+                                    docstring=doc,
+                                )
+                            )
+                self.generic_visit(node)
+
+        Visitor().visit(tree)
+        return routes
 
     def _discover_django(self) -> List[RouteInfo]:
-        raise NotImplementedError("Django route discovery not implemented")
+        tree = ast.parse(self.app_path.read_text(), filename=str(self.app_path))
+        routes: List[RouteInfo] = []
+
+        class Visitor(ast.NodeVisitor):
+            def visit_Call(self, node: ast.Call) -> None:
+                if isinstance(node.func, ast.Name) and node.func.id in {
+                    "path",
+                    "re_path",
+                }:
+                    if node.args and isinstance(node.args[0], ast.Constant):
+                        path_value = str(node.args[0].value)
+                        name = ""
+                        if len(node.args) > 1:
+                            target = node.args[1]
+                            if isinstance(target, ast.Attribute):
+                                name = target.attr
+                            elif isinstance(target, ast.Name):
+                                name = target.id
+                        routes.append(
+                            RouteInfo(path=path_value, methods=["GET"], name=name)
+                        )
+                self.generic_visit(node)
+
+        Visitor().visit(tree)
+        return routes
 
     def _discover_express(self) -> List[RouteInfo]:
-        raise NotImplementedError("Express route discovery not implemented")
+        import re
+
+        text = self.app_path.read_text()
+        pattern = re.compile(r"app\.(get|post|put|patch|delete)\(['\"]([^'\"]+)['\"]")
+        routes: List[RouteInfo] = []
+        for match in pattern.finditer(text):
+            method, path = match.group(1).upper(), match.group(2)
+            name = path.strip("/").replace("/", "_") or "root"
+            routes.append(RouteInfo(path=path, methods=[method], name=name))
+        return routes

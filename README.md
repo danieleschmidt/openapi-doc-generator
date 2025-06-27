@@ -4,16 +4,16 @@ Agent that parses FastAPI / Express routes and emits OpenAPI 3 spec plus markdow
 
 ## Features
 - Automatic route discovery and analysis for FastAPI, Express, Flask, and Django
-- Intelligent schema inference from code annotations and examples
+- Intelligent schema inference from code annotations and examples for dataclasses and Pydantic models
 - Generates comprehensive OpenAPI 3.0 specifications
 - Creates human-readable markdown documentation with examples
-- Interactive API playground generation
+- Interactive API playground generation with Swagger UI
 - Validates existing OpenAPI specs and suggests improvements
 
 ## Quick Start
 ```bash
-pip install -r requirements.txt
-python doc_generator.py --app ./src/main.py --output ./docs/
+pip install -e .
+openapi-doc-generator --app ./app.py --output API.md
 ```
 
 ## Testing
@@ -33,6 +33,12 @@ docs = generator.analyze_app("./app.py")
 spec = docs.generate_openapi_spec()
 with open("openapi.json", "w") as f:
     json.dump(spec, f, indent=2)
+
+# Validate OpenAPI spec
+from openapi_doc_generator import SpecValidator
+issues = SpecValidator().validate(spec)
+if issues:
+    print("Suggestions:\n" + "\n".join(issues))
 
 # Generate markdown docs
 markdown = docs.generate_markdown()

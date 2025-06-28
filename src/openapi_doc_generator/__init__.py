@@ -1,5 +1,7 @@
 """OpenAPI documentation generation tools."""
 
+from importlib.metadata import PackageNotFoundError, version
+
 from .utils import echo
 from .discovery import RouteDiscoverer, RouteInfo
 from .schema import SchemaInferer, SchemaInfo, FieldInfo
@@ -8,7 +10,16 @@ from .documentator import APIDocumentator, DocumentationResult
 from .templates import load_template
 from .markdown import MarkdownGenerator
 from .playground import PlaygroundGenerator
+from .graphql import GraphQLSchema
+from .testsuite import TestSuiteGenerator
+from .migration import MigrationGuideGenerator
 from .validator import SpecValidator
+
+try:  # pragma: no cover - package may not be installed in dev
+    __version__ = version("openapi_doc_generator")
+except PackageNotFoundError:  # pragma: no cover - fallback for editable installs
+    __version__ = "0.0.0"
+
 from .cli import main as cli_main
 
 __all__ = [
@@ -24,6 +35,10 @@ __all__ = [
     "load_template",
     "MarkdownGenerator",
     "PlaygroundGenerator",
+    "GraphQLSchema",
+    "TestSuiteGenerator",
+    "MigrationGuideGenerator",
     "SpecValidator",
     "cli_main",
+    "__version__",
 ]

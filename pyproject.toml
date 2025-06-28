@@ -4,10 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openapi_doc_generator"
-version = "0.0.9"
+version = "0.0.17"
 requires-python = ">=3.8"
 dependencies = [
-    "jinja2>=3.1"
+    "jinja2>=3.1",
+    "graphql-core>=3.2",
 ]
 
 [project.optional-dependencies]

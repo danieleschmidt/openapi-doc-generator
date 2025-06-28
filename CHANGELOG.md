@@ -1,3 +1,38 @@
+## v0.0.17
+- Document completed roadmap and sort changelog entries
+- Bump package version to 0.0.17
+
+## v0.0.16
+- Allow customizing API title and version via CLI options
+- Bump package version to 0.0.16
+
+## v0.0.15
+- Generate API deprecation and migration guides
+- CLI supports `--old-spec` and `--format guide`
+- Bump package version to 0.0.15
+
+## v0.0.14
+- Automatically publish documentation via GitHub Pages
+- Bump package version to 0.0.14
+
+## v0.0.13
+- Generate pytest suites from discovered routes
+- CLI can write generated tests via --tests option
+- Bump package version to 0.0.13
+
+## v0.0.12
+- Add GraphQL schema introspection support
+- CLI can output GraphQL introspection JSON via --format graphql
+- Bump package version to 0.0.12
+
+## v0.0.11
+- Add --version flag to CLI
+- Bump package version to 0.0.11
+
+## v0.0.10
+- Add CLI option to choose output format (markdown, openapi, html)
+- Bump package version to 0.0.10
+
 ## v0.0.9
 - Add OpenAPI spec validation with improvement suggestions
 - Bump package version to 0.0.9

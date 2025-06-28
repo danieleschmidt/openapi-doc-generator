@@ -13,10 +13,10 @@
 - [x] **Feature:** Validates existing OpenAPI specs and suggests improvements
 
 ## Phase 3: Advanced Features & Roadmap
-- [ ] **Roadmap:** Add GraphQL schema support
-- [ ] **Roadmap:** Implement automated testing suite generation
-- [ ] **Roadmap:** Build CI/CD integration for documentation updates
-- [ ] **Roadmap:** Add API deprecation and migration guides
+- [x] **Roadmap:** Add GraphQL schema support
+- [x] **Roadmap:** Implement automated testing suite generation
+- [x] **Roadmap:** Build CI/CD integration for documentation updates
+- [x] **Roadmap:** Add API deprecation and migration guides
 
 ## Completed Tasks
 - Establish a testing framework (`pytest`) with initial tests

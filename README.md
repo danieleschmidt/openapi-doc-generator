@@ -9,12 +9,27 @@ Agent that parses FastAPI / Express routes and emits OpenAPI 3 spec plus markdow
 - Creates human-readable markdown documentation with examples
 - Interactive API playground generation with Swagger UI
 - Validates existing OpenAPI specs and suggests improvements
+- Supports GraphQL schema introspection
+- Automated test suite generation for discovered routes
+- Continuous documentation deployment via GitHub Pages
+- Generates API deprecation and migration guides
+- Customizable API title and version via CLI options
 
 ## Quick Start
 ```bash
 pip install -e .
-openapi-doc-generator --app ./app.py --output API.md
+openapi-doc-generator --app ./app.py --format markdown --output API.md
+openapi-doc-generator --app ./app.py --format openapi --output openapi.json
+openapi-doc-generator --app ./app.py --format openapi --title "My API" --api-version 2.0 --output openapi.json
+openapi-doc-generator --app ./app.py --format html --output playground.html
+openapi-doc-generator --app ./schema.graphql --format graphql --output schema.json
+openapi-doc-generator --app ./app.py --tests tests/test_app.py
+openapi-doc-generator --app ./app.py --format guide --old-spec old.json --output MIGRATION.md
+openapi-doc-generator --version
 ```
+
+Documentation for the example app in `examples/app.py` is automatically built
+and published to GitHub Pages whenever changes are pushed to `main`.
 
 ## Testing
 Run the test suite with:
@@ -24,7 +39,7 @@ pytest -q
 
 ## Usage
 ```python
-from openapi_generator import APIDocumentator
+from openapi_doc_generator import APIDocumentator
 
 generator = APIDocumentator()
 docs = generator.analyze_app("./app.py")
@@ -81,12 +96,14 @@ output:
 - **Example Generation**: Creates realistic API examples based on schema
 - **Version Comparison**: Tracks API changes across versions
 - **Integration Testing**: Validates generated docs against actual API responses
+- **Automated Test Generation**: Produces pytest suites for discovered routes
 
 ## Roadmap
-1. Add GraphQL schema support
-2. Implement automated testing suite generation
-3. Build CI/CD integration for documentation updates
-4. Add API deprecation and migration guides
+All roadmap items have been completed:
+1. ✅ Add GraphQL schema support
+2. ✅ Implement automated testing suite generation
+3. ✅ Build CI/CD integration for documentation updates
+4. ✅ Add API deprecation and migration guides
 
 ## License
 MIT

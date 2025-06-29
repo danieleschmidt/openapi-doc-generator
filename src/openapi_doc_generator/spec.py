@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 from typing import Dict, List, Any
 
 from .discovery import RouteInfo
@@ -37,6 +38,8 @@ class OpenAPISpecGenerator:
     version: str = "1.0.0"
 
     def generate(self) -> Dict[str, Any]:
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.debug("Generating OpenAPI spec")
         spec: Dict[str, Any] = {
             "openapi": "3.0.0",
             "info": {"title": self.title, "version": self.version},

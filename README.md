@@ -1,5 +1,7 @@
 # OpenAPI-Doc-Generator
 
+![CI](https://github.com/danieleschmidt/openapi-doc-generator/actions/workflows/ci.yml/badge.svg)
+
 Agent that parses FastAPI / Express routes and emits OpenAPI 3 spec plus markdown docs, using prompt-templated reflection.
 
 ## Features
@@ -14,6 +16,7 @@ Agent that parses FastAPI / Express routes and emits OpenAPI 3 spec plus markdow
 - Continuous documentation deployment via GitHub Pages
 - Generates API deprecation and migration guides
 - Customizable API title and version via CLI options
+- Plugin interface for additional frameworks
 
 ## Quick Start
 ```bash
@@ -31,10 +34,15 @@ openapi-doc-generator --version
 Documentation for the example app in `examples/app.py` is automatically built
 and published to GitHub Pages whenever changes are pushed to `main`.
 
+## Logging
+The CLI emits informational logs to stderr. Set the `LOG_LEVEL` environment
+variable to `DEBUG` for verbose output during troubleshooting.
+
 ## Testing
 Run the test suite with:
 ```bash
-pytest -q
+coverage run -m pytest -q
+coverage html  # view HTML report in htmlcov/index.html
 ```
 
 ## Usage
@@ -107,3 +115,9 @@ All roadmap items have been completed:
 
 ## License
 MIT
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and development guidelines.
+
+## Extending
+See [EXTENDING.md](EXTENDING.md) for writing custom discovery plugins.

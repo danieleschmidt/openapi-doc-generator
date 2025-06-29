@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 from typing import List
 
 from .discovery import RouteDiscoverer, RouteInfo
@@ -32,10 +33,15 @@ class DocumentationResult:
 class APIDocumentator:
     """Analyze an application to generate documentation artifacts."""
 
+    def __init__(self) -> None:
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     def analyze_app(self, app_path: str) -> DocumentationResult:
+        self._logger.info("Discovering routes from %s", app_path)
         routes = RouteDiscoverer(app_path).discover()
         try:
             schemas = SchemaInferer(app_path).infer()
         except FileNotFoundError:
+            self._logger.info("No models found in %s", app_path)
             schemas = []
         return DocumentationResult(routes=routes, schemas=schemas)

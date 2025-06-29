@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List
+import logging
+from typing import Any, Dict, Iterable, Tuple
 
 
 @dataclass
@@ -13,34 +14,35 @@ class MigrationGuideGenerator:
     old_spec: Dict[str, Any]
     new_spec: Dict[str, Any]
 
+    def __post_init__(self) -> None:
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+    def _endpoints(self, spec: Dict[str, Any]) -> Iterable[Tuple[str, str]]:
+        for path, ops in spec.get("paths", {}).items():
+            for method in ops:
+                yield method.upper(), path
+
     def generate_markdown(self) -> str:
-        old_paths = self.old_spec.get("paths", {})
-        new_paths = self.new_spec.get("paths", {})
+        """Return a markdown migration guide highlighting endpoint changes."""
+        old_endpoints = set(self._endpoints(self.old_spec))
+        new_endpoints = set(self._endpoints(self.new_spec))
 
-        removed: List[str] = []
-        added: List[str] = []
+        removed = old_endpoints - new_endpoints
+        added = new_endpoints - old_endpoints
 
-        for path, ops in old_paths.items():
-            for method in ops.keys():
-                if path not in new_paths or method not in new_paths[path]:
-                    removed.append(f"{method.upper()} {path}")
-
-        for path, ops in new_paths.items():
-            for method in ops.keys():
-                if path not in old_paths or method not in old_paths[path]:
-                    added.append(f"{method.upper()} {path}")
+        self._logger.debug("%d endpoints removed", len(removed))
+        self._logger.debug("%d endpoints added", len(added))
 
         lines = ["# API Migration Guide", ""]
         if removed:
             lines.append("## Removed Endpoints")
-            for item in removed:
-                lines.append(f"- {item}")
+            lines.extend(f"- {m} {p}" for m, p in sorted(removed))
             lines.append("")
         if added:
             lines.append("## New Endpoints")
-            for item in added:
-                lines.append(f"- {item}")
+            lines.extend(f"- {m} {p}" for m, p in sorted(added))
             lines.append("")
         if not added and not removed:
             lines.append("No changes detected.")
+
         return "\n".join(lines)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openapi_doc_generator"
-version = "0.0.17"
+version = "0.1.0"
 requires-python = ">=3.8"
 dependencies = [
     "jinja2>=3.1",
@@ -16,6 +16,8 @@ dev = [
     "pytest",
     "ruff",
     "bandit",
+    "coverage",
+    "radon",
 ]
 
 [tool.setuptools]
@@ -23,6 +25,7 @@ package-dir = {"" = "src"}
 packages = [
     "openapi_doc_generator",
     "openapi_doc_generator.templates",
+    "openapi_doc_generator.plugins",
 ]
 
 [project.scripts]

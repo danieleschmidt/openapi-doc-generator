@@ -1,40 +1,31 @@
 import logging
 import pytest
+
 from openapi_doc_generator.cli import main
 
 
-def test_cli_invalid_old_spec(tmp_path, caplog, capsys):
+def test_output_path_directory(tmp_path, caplog, capsys):
     app = tmp_path / "app.py"
     app.write_text(
         "from fastapi import FastAPI\napp=FastAPI()\n@app.get('/')\ndef hi():\n    return 'hi'\n"
     )
-    bad = tmp_path / "bad.json"
-    bad.write_text("{bad")
-
+    out_dir = tmp_path / "outdir"
+    out_dir.mkdir()
     with caplog.at_level(logging.ERROR):
         with pytest.raises(SystemExit):
-            main(
-                [
-                    "--app",
-                    str(app),
-                    "--format",
-                    "guide",
-                    "--old-spec",
-                    str(bad),
-                ]
-            )
-    assert "invalid json" in caplog.text.lower()
+            main(["--app", str(app), "--output", str(out_dir)])
     err = capsys.readouterr().err
-    assert "CLI003" in err
+    assert "CLI004" in err
 
 
-def test_cli_missing_old_spec(tmp_path, caplog, capsys):
+def test_tests_parent_missing(tmp_path, caplog, capsys):
     app = tmp_path / "app.py"
     app.write_text(
         "from fastapi import FastAPI\napp=FastAPI()\n@app.get('/')\ndef hi():\n    return 'hi'\n"
     )
+    invalid = tmp_path / "missing" / "test_app.py"
     with caplog.at_level(logging.ERROR):
         with pytest.raises(SystemExit):
-            main(["--app", str(app), "--format", "guide"])
+            main(["--app", str(app), "--tests", str(invalid)])
     err = capsys.readouterr().err
-    assert "CLI002" in err
+    assert "CLI005" in err

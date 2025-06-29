@@ -17,6 +17,16 @@ from .migration import MigrationGuideGenerator
 from . import __version__
 
 
+class ErrorCode:
+    """Enumeration of CLI error codes."""
+
+    APP_NOT_FOUND = "CLI001"
+    OLD_SPEC_REQUIRED = "CLI002"
+    OLD_SPEC_INVALID = "CLI003"
+    OUTPUT_PATH_INVALID = "CLI004"
+    TESTS_PATH_INVALID = "CLI005"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate documentation in various formats"
@@ -64,6 +74,21 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _validate_file_target(
+    path_str: str, flag: str, parser: argparse.ArgumentParser, logger: logging.Logger, code: str
+) -> Path:
+    """Ensure a CLI file argument points to a writable file path."""
+    path = Path(path_str)
+    if path.exists() and path.is_dir():
+        logger.error("%s path '%s' is a directory", flag, path)
+        parser.error(f"[{code}] {flag} path '{path}' is a directory")
+    parent = path.parent
+    if parent and not parent.exists():
+        logger.error("Directory '%s' does not exist", parent)
+        parser.error(f"[{code}] directory '{parent}' does not exist")
+    return path
+
+
 def _generate_output(
     result: DocumentationResult,
     args: argparse.Namespace,
@@ -81,16 +106,16 @@ def _generate_output(
         return PlaygroundGenerator().generate(spec)
     if args.format == "guide":
         if not args.old_spec:
-            parser.error("--old-spec is required for guide format")
+            parser.error(f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required for guide format")
         old_path = Path(args.old_spec)
         if not old_path.exists():
             logger.error("Old spec file '%s' not found", old_path)
-            parser.error(f"Old spec file '{old_path}' not found")
+            parser.error(f"[{ErrorCode.OLD_SPEC_REQUIRED}] Old spec file '{old_path}' not found")
         try:
             old_data = json.loads(old_path.read_text())
         except json.JSONDecodeError as exc:  # pragma: no cover - manual error path
             logger.error("Invalid JSON in old spec: %s", exc)
-            parser.error("--old-spec is not valid JSON")
+            parser.error(f"[{ErrorCode.OLD_SPEC_INVALID}] --old-spec is not valid JSON")
         new_spec = result.generate_openapi_spec(
             title=args.title, version=args.api_version
         )
@@ -110,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     app_path = Path(args.app)
     if not app_path.exists():
         logger.error("App file '%s' not found", app_path)
-        parser.error(f"App file '{app_path}' not found")
+        parser.error(f"[{ErrorCode.APP_NOT_FOUND}] App file '{app_path}' not found")
 
     if args.format == "graphql":
         data = GraphQLSchema(str(app_path)).introspect()
@@ -121,13 +146,18 @@ def main(argv: list[str] | None = None) -> int:
         output = _generate_output(result, args, parser, logger)
 
     if result and args.tests:
-        Path(args.tests).write_text(
-            TestSuiteGenerator(result).generate_pytest(),
-            encoding="utf-8",
+        tests_path = _validate_file_target(
+            args.tests, "--tests", parser, logger, ErrorCode.TESTS_PATH_INVALID
+        )
+        tests_path.write_text(
+            TestSuiteGenerator(result).generate_pytest(), encoding="utf-8"
         )
 
     if args.output:
-        Path(args.output).write_text(output, encoding="utf-8")
+        out_path = _validate_file_target(
+            args.output, "--output", parser, logger, ErrorCode.OUTPUT_PATH_INVALID
+        )
+        out_path.write_text(output, encoding="utf-8")
     else:
         sys.stdout.write(output)
 

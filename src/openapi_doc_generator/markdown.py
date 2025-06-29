@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 from typing import Any, Dict, List
 
 from jinja2 import Template
@@ -15,6 +16,9 @@ class MarkdownGenerator:
     """Convert OpenAPI specifications into markdown documentation."""
 
     template_name: str = "api.md.jinja"
+
+    def __post_init__(self) -> None:
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def generate(self, spec: Dict[str, Any] | None) -> str:
         """Return markdown for the provided OpenAPI specification."""
@@ -41,4 +45,5 @@ class MarkdownGenerator:
             "title": spec.get("info", {}).get("title", "API"),
             "routes": routes,
         }
+        self._logger.debug("Rendering markdown for %d routes", len(routes))
         return template.render(context)

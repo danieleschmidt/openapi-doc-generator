@@ -1,6 +1,18 @@
+## v0.1.0
+ - Introduce plugin interface for custom route discovery
+ - Provide built-in aiohttp plugin
+ - Document extension guide and update README
+ - Bump package version to 0.1.0
+
+## v0.0.18
+ - Add CONTRIBUTING guide and CODEOWNERS
+ - Validate CLI `--old-spec` input and log errors
+ - Introduce basic logging across modules
+ - Bump package version to 0.0.18
+
 ## v0.0.17
-- Document completed roadmap and sort changelog entries
-- Bump package version to 0.0.17
+ - Document completed roadmap and sort changelog entries
+ - Bump package version to 0.0.17
 
 ## v0.0.16
 - Allow customizing API title and version via CLI options

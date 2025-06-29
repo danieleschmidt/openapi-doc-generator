@@ -23,12 +23,26 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install ruff bandit pytest
+          pip install ruff bandit pytest coverage radon
       - name: Run ruff checks
         run: |
           ruff format --check .
           ruff check .
       - name: Run bandit
         run: bandit -r src
-      - name: Run tests
-        run: pytest -q
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest -q
+          coverage xml
+      - name: Upload coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage.xml
+      - name: Check complexity
+        run: |
+          radon cc src -n C -s > radon.txt
+          if [ -s radon.txt ]; then
+            cat radon.txt
+            exit 1
+          fi

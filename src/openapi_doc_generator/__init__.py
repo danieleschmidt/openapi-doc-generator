@@ -21,6 +21,8 @@ except PackageNotFoundError:  # pragma: no cover - fallback for editable install
     __version__ = "0.0.0"
 
 from .cli import main as cli_main
+from .discovery import register_plugin, RoutePlugin
+from . import plugins  # noqa: F401 - register built-in plugins
 
 __all__ = [
     "echo",
@@ -39,6 +41,8 @@ __all__ = [
     "TestSuiteGenerator",
     "MigrationGuideGenerator",
     "SpecValidator",
+    "register_plugin",
+    "RoutePlugin",
     "cli_main",
     "__version__",
 ]

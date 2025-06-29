@@ -5,7 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 import ast
 from pathlib import Path
-from typing import List
+import logging
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    from .plugins import RoutePlugin
 
 
 @dataclass
@@ -18,17 +22,51 @@ class RouteInfo:
     docstring: str | None = None
 
 
+class RoutePlugin:
+    """Base class for route discovery plugins."""
+
+    def detect(self, source: str) -> bool:
+        """Return True if the plugin can handle the given source."""
+        raise NotImplementedError
+
+    def discover(self, app_path: str) -> List[RouteInfo]:
+        """Return discovered routes for the file."""
+        raise NotImplementedError
+
+
+_PLUGINS: List[RoutePlugin] = []
+
+
+def register_plugin(plugin: RoutePlugin) -> None:
+    """Register a new route discovery plugin."""
+    _PLUGINS.append(plugin)
+
+
+def get_plugins() -> List[RoutePlugin]:
+    if not _PLUGINS:
+        import importlib
+
+        importlib.import_module("openapi_doc_generator.plugins")
+    return list(_PLUGINS)
+
+
 class RouteDiscoverer:
     """Discover routes from application source files."""
 
     def __init__(self, app_path: str) -> None:
         self.app_path = Path(app_path)
+        self._logger = logging.getLogger(self.__class__.__name__)
         if not self.app_path.exists():
             raise FileNotFoundError(f"{app_path} does not exist")
 
     def discover(self) -> List[RouteInfo]:
         """Discover routes based on detected framework."""
+        self._logger.debug("Scanning %s for routes", self.app_path)
         source = self.app_path.read_text()
+        for plugin in get_plugins():
+            if plugin.detect(source):
+                self._logger.debug("Using plugin %s", plugin.__class__.__name__)
+                return plugin.discover(str(self.app_path))
         lowered = source.lower()
         if "fastapi" in lowered:
             return self._discover_fastapi()

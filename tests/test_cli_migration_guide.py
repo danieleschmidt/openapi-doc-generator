@@ -10,14 +10,16 @@ def test_cli_migration(tmp_path, capsys):
     old_spec = tmp_path / "old.json"
     old_spec.write_text(json.dumps({"paths": {"/old": {"get": {}}}}))
 
-    main([
-        "--app",
-        str(app),
-        "--format",
-        "guide",
-        "--old-spec",
-        str(old_spec),
-    ])
+    main(
+        [
+            "--app",
+            str(app),
+            "--format",
+            "guide",
+            "--old-spec",
+            str(old_spec),
+        ]
+    )
     out = capsys.readouterr().out
     assert "GET /old" in out
     assert "GET /new" in out

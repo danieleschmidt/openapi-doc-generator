@@ -8,6 +8,7 @@ def test_migration_guide():
     assert "POST /b" in guide
     assert "GET /c" in guide
 
+
 def test_migration_guide_no_changes():
     spec = {"paths": {"/a": {"get": {}}}}
     guide = MigrationGuideGenerator(spec, spec).generate_markdown()

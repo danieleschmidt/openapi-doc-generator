@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import ast
+from importlib import metadata
 from pathlib import Path
 import logging
 from typing import List, TYPE_CHECKING
@@ -47,6 +48,14 @@ def get_plugins() -> List[RoutePlugin]:
         import importlib
 
         importlib.import_module("openapi_doc_generator.plugins")
+        for ep in metadata.entry_points(group="openapi_doc_generator.plugins"):
+            try:
+                plugin_cls = ep.load()
+                register_plugin(plugin_cls())
+            except Exception:  # pragma: no cover - import failures logged
+                logging.getLogger(__name__).exception(
+                    "Failed to load plugin %s", ep.name
+                )
     return list(_PLUGINS)
 
 

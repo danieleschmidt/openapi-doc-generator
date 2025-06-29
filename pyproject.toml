@@ -28,6 +28,9 @@ packages = [
     "openapi_doc_generator.plugins",
 ]
 
+[project.entry-points."openapi_doc_generator.plugins"]
+aiohttp = "openapi_doc_generator.plugins.aiohttp:AioHTTPPlugin"
+
 [project.scripts]
 "openapi-doc-generator" = "openapi_doc_generator.cli:main"
 

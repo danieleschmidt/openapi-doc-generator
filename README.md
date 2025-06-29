@@ -34,9 +34,31 @@ openapi-doc-generator --version
 Documentation for the example app in `examples/app.py` is automatically built
 and published to GitHub Pages whenever changes are pushed to `main`.
 
+## Development
+Install pre-commit hooks for local secret scanning:
+```bash
+pre-commit install
+```
+
+### Plugins
+Third-party route discovery plugins can be installed via the
+`openapi_doc_generator.plugins` entry point. See [EXTENDING.md](EXTENDING.md)
+for details.
+
 ## Logging
 The CLI emits informational logs to stderr. Set the `LOG_LEVEL` environment
 variable to `DEBUG` for verbose output during troubleshooting.
+
+## CLI Error Codes
+`openapi-doc-generator` exits with standardized codes when input validation fails:
+
+| Code   | Meaning                     |
+|-------|-----------------------------|
+| CLI001 | App file not found          |
+| CLI002 | Old spec file missing       |
+| CLI003 | Old spec file is invalid    |
+| CLI004 | `--output` path is invalid  |
+| CLI005 | `--tests` path is invalid   |
 
 ## Testing
 Run the test suite with:

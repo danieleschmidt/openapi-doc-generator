@@ -1,3 +1,4 @@
+import logging
 import pytest
 from openapi_doc_generator.cli import main
 
@@ -13,6 +14,9 @@ def test_success(tmp_path, capsys):
     assert "/hello" in out
 
 
-def test_edge_case_invalid_input():
-    with pytest.raises(SystemExit):
-        main(["--app", "nonexistent.py"])
+def test_edge_case_invalid_input(caplog, capsys):
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(SystemExit):
+            main(["--app", "nonexistent.py"])
+    err = capsys.readouterr().err
+    assert "CLI001" in err

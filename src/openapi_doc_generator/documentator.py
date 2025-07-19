@@ -10,6 +10,7 @@ from .discovery import RouteDiscoverer, RouteInfo
 from .schema import SchemaInferer, SchemaInfo
 from .spec import OpenAPISpecGenerator
 from .markdown import MarkdownGenerator
+from .config import config
 
 
 @dataclass
@@ -17,14 +18,14 @@ class DocumentationResult:
     routes: List[RouteInfo]
     schemas: List[SchemaInfo]
 
-    def generate_openapi_spec(self, title: str = "API", version: str = "1.0.0") -> dict:
+    def generate_openapi_spec(self, title: str = config.DEFAULT_API_TITLE, version: str = config.DEFAULT_API_VERSION) -> dict:
         """Return OpenAPI specification for the analyzed app."""
         generator = OpenAPISpecGenerator(
             self.routes, self.schemas, title=title, version=version
         )
         return generator.generate()
 
-    def generate_markdown(self, title: str = "API", version: str = "1.0.0") -> str:
+    def generate_markdown(self, title: str = config.DEFAULT_API_TITLE, version: str = config.DEFAULT_API_VERSION) -> str:
         """Return markdown documentation for the analyzed app."""
         spec = self.generate_openapi_spec(title=title, version=version)
         return MarkdownGenerator().generate(spec)

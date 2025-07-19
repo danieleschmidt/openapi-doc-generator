@@ -8,6 +8,7 @@ from typing import Dict, List, Any
 
 from .discovery import RouteInfo
 from .schema import SchemaInfo
+from .config import config
 
 
 def _type_to_openapi(py_type: str) -> str:
@@ -34,14 +35,14 @@ class OpenAPISpecGenerator:
     routes: List[RouteInfo]
     schemas: List[SchemaInfo]
 
-    title: str = "API"
-    version: str = "1.0.0"
+    title: str = config.DEFAULT_API_TITLE
+    version: str = config.DEFAULT_API_VERSION
 
     def generate(self) -> Dict[str, Any]:
         logger = logging.getLogger(self.__class__.__name__)
         logger.debug("Generating OpenAPI spec")
         spec: Dict[str, Any] = {
-            "openapi": "3.0.0",
+            "openapi": config.OPENAPI_VERSION,
             "info": {"title": self.title, "version": self.version},
             "paths": {},
             "components": {"schemas": {}},
@@ -52,7 +53,7 @@ class OpenAPISpecGenerator:
             for method in route.methods:
                 operation = {
                     "summary": route.docstring or route.name,
-                    "responses": {"200": {"description": "Success"}},
+                    "responses": config.DEFAULT_SUCCESS_RESPONSE,
                 }
                 path_item[method.lower()] = operation
 

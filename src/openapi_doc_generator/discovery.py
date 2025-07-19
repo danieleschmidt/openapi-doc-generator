@@ -90,13 +90,13 @@ class RouteDiscoverer:
         
         framework = self._detect_framework(source)
         if framework == "fastapi":
-            return self._discover_fastapi()
+            return self._discover_fastapi(source)
         elif framework == "flask":
-            return self._discover_flask()
+            return self._discover_flask(source)
         elif framework == "django":
-            return self._discover_django()
+            return self._discover_django(source)
         elif framework == "express":
-            return self._discover_express()
+            return self._discover_express(source)
         else:
             raise ValueError("Unable to determine framework for route discovery")
 
@@ -142,8 +142,8 @@ class RouteDiscoverer:
         return None
 
     # --- Framework specific discovery methods ---------------------------------
-    def _discover_fastapi(self) -> List[RouteInfo]:
-        tree = ast.parse(self.app_path.read_text(), filename=str(self.app_path))
+    def _discover_fastapi(self, source: str) -> List[RouteInfo]:
+        tree = ast.parse(source, filename=str(self.app_path))
         routes: List[RouteInfo] = []
 
         class Visitor(ast.NodeVisitor):
@@ -175,8 +175,8 @@ class RouteDiscoverer:
         Visitor().visit(tree)
         return routes
 
-    def _discover_flask(self) -> List[RouteInfo]:
-        tree = ast.parse(self.app_path.read_text(), filename=str(self.app_path))
+    def _discover_flask(self, source: str) -> List[RouteInfo]:
+        tree = ast.parse(source, filename=str(self.app_path))
         routes: List[RouteInfo] = []
 
         class Visitor(ast.NodeVisitor):
@@ -216,8 +216,8 @@ class RouteDiscoverer:
         Visitor().visit(tree)
         return routes
 
-    def _discover_django(self) -> List[RouteInfo]:
-        tree = ast.parse(self.app_path.read_text(), filename=str(self.app_path))
+    def _discover_django(self, source: str) -> List[RouteInfo]:
+        tree = ast.parse(source, filename=str(self.app_path))
         routes: List[RouteInfo] = []
 
         class Visitor(ast.NodeVisitor):
@@ -243,10 +243,10 @@ class RouteDiscoverer:
         Visitor().visit(tree)
         return routes
 
-    def _discover_express(self) -> List[RouteInfo]:
+    def _discover_express(self, source: str) -> List[RouteInfo]:
         import re
 
-        text = self.app_path.read_text()
+        text = source
         pattern = re.compile(r"app\.(get|post|put|patch|delete)\(['\"]([^'\"]+)['\"]")
         routes: List[RouteInfo] = []
         for match in pattern.finditer(text):

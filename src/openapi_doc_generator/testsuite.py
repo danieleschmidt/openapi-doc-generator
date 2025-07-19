@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import List
 
 from .documentator import DocumentationResult
+from .config import config
 
 
 @dataclass
@@ -28,6 +29,6 @@ class TestSuiteGenerator:
                 lines.append(
                     f"    resp = requests.{method.lower()}('http://localhost{path}')"
                 )
-                lines.append("    assert resp.status_code == 200")
+                lines.append(f"    assert resp.status_code == {config.DEFAULT_SUCCESS_STATUS_INT}")
                 lines.append("")
         return "\n".join(lines)

@@ -14,6 +14,7 @@ from .playground import PlaygroundGenerator
 from .graphql import GraphQLSchema
 from .testsuite import TestSuiteGenerator
 from .migration import MigrationGuideGenerator
+from .config import config
 from . import __version__
 
 
@@ -63,12 +64,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--title",
-        default="API",
+        default=config.DEFAULT_API_TITLE,
         help="Title for generated API documentation",
     )
     parser.add_argument(
         "--api-version",
-        default="1.0.0",
+        default=config.DEFAULT_API_VERSION,
         help="Version string for generated API documentation",
     )
     return parser

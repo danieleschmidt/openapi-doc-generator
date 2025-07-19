@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import ast
+from abc import ABC, abstractmethod
 from importlib import metadata
 from pathlib import Path
 import logging
@@ -23,16 +24,18 @@ class RouteInfo:
     docstring: str | None = None
 
 
-class RoutePlugin:
+class RoutePlugin(ABC):
     """Base class for route discovery plugins."""
 
+    @abstractmethod
     def detect(self, source: str) -> bool:
         """Return True if the plugin can handle the given source."""
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def discover(self, app_path: str) -> List[RouteInfo]:
         """Return discovered routes for the file."""
-        raise NotImplementedError
+        pass
 
 
 _PLUGINS: List[RoutePlugin] = []
@@ -52,9 +55,17 @@ def get_plugins() -> List[RoutePlugin]:
             try:
                 plugin_cls = ep.load()
                 register_plugin(plugin_cls())
-            except Exception:  # pragma: no cover - import failures logged
+            except (ImportError, ModuleNotFoundError, AttributeError) as e:  # pragma: no cover
+                logging.getLogger(__name__).warning(
+                    "Failed to import plugin %s: %s", ep.name, e
+                )
+            except (TypeError, ValueError) as e:  # pragma: no cover
+                logging.getLogger(__name__).warning(
+                    "Failed to instantiate plugin %s: %s", ep.name, e
+                )
+            except Exception as e:  # pragma: no cover - catch unexpected errors
                 logging.getLogger(__name__).exception(
-                    "Failed to load plugin %s", ep.name
+                    "Unexpected error loading plugin %s: %s", ep.name, e
                 )
     return list(_PLUGINS)
 
@@ -76,16 +87,59 @@ class RouteDiscoverer:
             if plugin.detect(source):
                 self._logger.debug("Using plugin %s", plugin.__class__.__name__)
                 return plugin.discover(str(self.app_path))
-        lowered = source.lower()
-        if "fastapi" in lowered:
+        
+        framework = self._detect_framework(source)
+        if framework == "fastapi":
             return self._discover_fastapi()
-        if "flask" in lowered:
+        elif framework == "flask":
             return self._discover_flask()
-        if "django" in lowered:
+        elif framework == "django":
             return self._discover_django()
-        if "express" in lowered:
+        elif framework == "express":
             return self._discover_express()
-        raise ValueError("Unable to determine framework for route discovery")
+        else:
+            raise ValueError("Unable to determine framework for route discovery")
+
+    def _detect_framework(self, source: str) -> str | None:
+        """Detect framework based on imports and patterns."""
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            # Fall back to string matching for non-Python files
+            return self._detect_framework_fallback(source)
+        
+        imports = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imports.add(alias.name)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    imports.add(node.module)
+        
+        # Check for framework-specific imports
+        if any(imp.startswith("fastapi") for imp in imports):
+            return "fastapi"
+        elif any(imp.startswith("flask") for imp in imports):
+            return "flask"
+        elif any(imp.startswith("django") for imp in imports):
+            return "django"
+        
+        # Fall back to content analysis
+        return self._detect_framework_fallback(source)
+
+    def _detect_framework_fallback(self, source: str) -> str | None:
+        """Fallback framework detection using string matching."""
+        lowered = source.lower()
+        if "fastapi" in lowered or "from fastapi" in lowered:
+            return "fastapi"
+        elif "flask" in lowered or "from flask" in lowered:
+            return "flask"
+        elif "django" in lowered or "from django" in lowered:
+            return "django"
+        elif "express" in lowered or "require('express')" in lowered:
+            return "express"
+        return None
 
     # --- Framework specific discovery methods ---------------------------------
     def _discover_fastapi(self) -> List[RouteInfo]:

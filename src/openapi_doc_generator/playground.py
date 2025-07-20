@@ -40,7 +40,8 @@ class PlaygroundGenerator:
         if not isinstance(spec, dict):
             raise TypeError("spec must be a dict")
         template = Template(self.template)
-        spec_json = json.dumps(spec)
+        # Safely serialize JSON for JavaScript context to prevent XSS
+        spec_json = json.dumps(spec).replace('<', '\\u003c').replace('>', '\\u003e')
         return template.render(
             title=html.escape(spec.get("info", {}).get("title", "API")),
             spec=spec_json,

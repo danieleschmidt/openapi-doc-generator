@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 
 from .documentator import APIDocumentator, DocumentationResult
 from .playground import PlaygroundGenerator
@@ -76,17 +77,30 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _validate_file_target(
-    path_str: str, flag: str, parser: argparse.ArgumentParser, logger: logging.Logger, code: str
+    path_str: str, 
+    flag: str, 
+    parser: argparse.ArgumentParser, 
+    logger: logging.Logger, 
+    code: str
 ) -> Path:
     """Ensure a CLI file argument points to a writable file path."""
-    path = Path(path_str)
+    # Normalize and validate the path to prevent directory traversal
+    path = Path(path_str).resolve()
+    
+    # Check for suspicious path patterns
+    if ".." in str(path) or str(path).startswith("/"):
+        logger.error("Suspicious path detected: %s", path)
+        parser.error(f"[{code}] Invalid path: path traversal attempts not allowed")
+    
     if path.exists() and path.is_dir():
         logger.error("%s path '%s' is a directory", flag, path)
         parser.error(f"[{code}] {flag} path '{path}' is a directory")
+    
     parent = path.parent
     if parent and not parent.exists():
         logger.error("Directory '%s' does not exist", parent)
         parser.error(f"[{code}] directory '{parent}' does not exist")
+    
     return path
 
 
@@ -124,7 +138,7 @@ def _generate_output(
     parser.error(f"Unknown format '{args.format}'")
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[list[str]] = None) -> int:
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
     level = getattr(logging, level_name, logging.INFO)
     logging.basicConfig(level=level, format="%(levelname)s:%(name)s:%(message)s")
@@ -133,7 +147,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    app_path = Path(args.app)
+    # Validate and normalize app path
+    try:
+        app_path = Path(args.app).resolve()
+        # Additional security check - ensure path doesn't escape current working directory  
+        cwd = Path.cwd()
+        app_path.relative_to(cwd)  # Will raise ValueError if path escapes cwd
+    except (ValueError, OSError) as e:
+        logger.error("Invalid app path '%s': %s", args.app, e)
+        parser.error(f"[{ErrorCode.APP_NOT_FOUND}] Invalid app path: {e}")
+    
     if not app_path.exists():
         logger.error("App file '%s' not found", app_path)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] App file '{app_path}' not found")

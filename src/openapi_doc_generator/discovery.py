@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from importlib import metadata
 from pathlib import Path
 import logging
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from .plugins import RoutePlugin
@@ -21,7 +21,7 @@ class RouteInfo:
     path: str
     methods: List[str]
     name: str
-    docstring: str | None = None
+    docstring: Optional[str] = None
 
 
 class RoutePlugin(ABC):
@@ -47,6 +47,7 @@ def register_plugin(plugin: RoutePlugin) -> None:
 
 
 def get_plugins() -> List[RoutePlugin]:
+    """Get all registered route discovery plugins."""
     if not _PLUGINS:
         import importlib
 
@@ -100,7 +101,7 @@ class RouteDiscoverer:
         else:
             raise ValueError("Unable to determine framework for route discovery")
 
-    def _detect_framework(self, source: str) -> str | None:
+    def _detect_framework(self, source: str) -> Optional[str]:
         """Detect framework based on imports and patterns."""
         try:
             tree = ast.parse(source)
@@ -128,7 +129,7 @@ class RouteDiscoverer:
         # Fall back to content analysis
         return self._detect_framework_fallback(source)
 
-    def _detect_framework_fallback(self, source: str) -> str | None:
+    def _detect_framework_fallback(self, source: str) -> Optional[str]:
         """Fallback framework detection using string matching."""
         lowered = source.lower()
         if "fastapi" in lowered or "from fastapi" in lowered:

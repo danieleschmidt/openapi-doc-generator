@@ -1,3 +1,10 @@
+## v0.1.4
+ - **QUALITY**: Achieve 100% test coverage in schema module (up from 82%)
+ - **ENHANCEMENT**: Add comprehensive schema file I/O error handling tests (9 new tests)
+ - **ROBUSTNESS**: Test handling of unreadable files, encoding errors, and syntax errors
+ - **RELIABILITY**: Ensure graceful degradation when schema processing fails
+ - **QUALITY**: Improve overall test coverage to 96% with 86 total tests
+
 ## v0.1.3
  - **SECURITY**: Add comprehensive path traversal attack test coverage (16 new tests)
  - **ENHANCEMENT**: Improve GraphQL error handling with robust exception management  

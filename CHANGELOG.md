@@ -1,3 +1,11 @@
+## v0.1.1
+ - **SECURITY**: Fix XSS vulnerability in playground HTML generation by properly escaping user input
+ - **SECURITY**: Add path validation to prevent directory traversal attacks in CLI
+ - **ENHANCEMENT**: Improve type safety with comprehensive type annotations across modules
+ - **ENHANCEMENT**: Add robust error handling for file I/O and AST parsing operations
+ - **ENHANCEMENT**: Add security tests for XSS prevention in playground generation
+ - **QUALITY**: Add specific exception handling in schema inference and discovery modules
+
 ## v0.1.0
  - Introduce plugin interface for custom route discovery
  - Provide built-in aiohttp plugin

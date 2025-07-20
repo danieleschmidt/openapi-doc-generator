@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Dict
+import html
 import json
 
 from jinja2 import Template
@@ -20,7 +21,7 @@ DEFAULT_TEMPLATE = """
   <div id="swagger-ui"></div>
   <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
   <script>
-  const spec = {{ spec }};
+  const spec = {{ spec | safe }};
   SwaggerUIBundle({ spec: spec, dom_id: '#swagger-ui' });
   </script>
 </body>
@@ -41,6 +42,6 @@ class PlaygroundGenerator:
         template = Template(self.template)
         spec_json = json.dumps(spec)
         return template.render(
-            title=spec.get("info", {}).get("title", "API"),
+            title=html.escape(spec.get("info", {}).get("title", "API")),
             spec=spec_json,
         )

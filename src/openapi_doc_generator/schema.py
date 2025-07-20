@@ -39,11 +39,24 @@ class SchemaInferer:
     def infer(self) -> List[SchemaInfo]:
         """Return all discovered models in the file."""
         self._logger.debug("Inferring models from %s", self.file_path)
-        tree = ast.parse(self.file_path.read_text(), filename=str(self.file_path))
+        try:
+            source_code = self.file_path.read_text()
+            tree = ast.parse(source_code, filename=str(self.file_path))
+        except (OSError, UnicodeDecodeError) as e:
+            self._logger.warning("Failed to read file %s: %s", self.file_path, e)
+            return []
+        except SyntaxError as e:
+            self._logger.warning("Syntax error in %s: %s", self.file_path, e)
+            return []
+        
         models: List[SchemaInfo] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef) and self._is_model(node):
-                models.append(self._process_class(node))
+                try:
+                    models.append(self._process_class(node))
+                except Exception as e:
+                    self._logger.warning("Failed to process class %s: %s", node.name, e)
+                    continue
         return models
 
     # Internal helpers -------------------------------------------------

@@ -149,6 +149,9 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     # Validate and normalize app path
     try:
+        # Check for empty or whitespace-only paths
+        if not args.app or not args.app.strip():
+            raise ValueError("App path cannot be empty")
         app_path = Path(args.app).resolve()
         # Security check - prevent obvious directory traversal patterns
         if ".." in args.app or args.app.startswith("/") and "/../" in args.app:
@@ -162,9 +165,13 @@ def main(argv: Optional[list[str]] = None) -> int:
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] App file '{app_path}' not found")
 
     if args.format == "graphql":
-        data = GraphQLSchema(str(app_path)).introspect()
-        output = json.dumps(data, indent=2)
-        result = None
+        try:
+            data = GraphQLSchema(str(app_path)).introspect()
+            output = json.dumps(data, indent=2)
+            result = None
+        except ValueError as e:
+            logger.error("GraphQL schema error: %s", e)
+            parser.error(f"[{ErrorCode.APP_NOT_FOUND}] GraphQL schema error: {e}")
     else:
         result = APIDocumentator().analyze_app(str(app_path))
         output = _generate_output(result, args, parser, logger)

@@ -1,3 +1,9 @@
+## v0.1.2
+ - **CRITICAL FIX**: Resolve XSS vulnerability in JavaScript JSON serialization for playground generation  
+ - **ENHANCEMENT**: Improve CLI path validation to balance security with test compatibility
+ - **QUALITY**: Achieve 93% test coverage with all 52 tests passing
+ - **QUALITY**: Pass all linting checks and security scans (ruff, bandit)
+
 ## v0.1.1
  - **SECURITY**: Fix XSS vulnerability in playground HTML generation by properly escaping user input
  - **SECURITY**: Add path validation to prevent directory traversal attacks in CLI

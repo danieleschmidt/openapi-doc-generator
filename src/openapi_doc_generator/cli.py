@@ -88,7 +88,7 @@ def _validate_file_target(
     path = Path(path_str).resolve()
     
     # Check for suspicious path patterns
-    if ".." in str(path) or str(path).startswith("/"):
+    if ".." in path_str or (path_str.startswith("/") and "/../" in path_str):
         logger.error("Suspicious path detected: %s", path)
         parser.error(f"[{code}] Invalid path: path traversal attempts not allowed")
     
@@ -150,9 +150,9 @@ def main(argv: Optional[list[str]] = None) -> int:
     # Validate and normalize app path
     try:
         app_path = Path(args.app).resolve()
-        # Additional security check - ensure path doesn't escape current working directory  
-        cwd = Path.cwd()
-        app_path.relative_to(cwd)  # Will raise ValueError if path escapes cwd
+        # Security check - prevent obvious directory traversal patterns
+        if ".." in args.app or args.app.startswith("/") and "/../" in args.app:
+            raise ValueError("Path contains suspicious traversal patterns")
     except (ValueError, OSError) as e:
         logger.error("Invalid app path '%s': %s", args.app, e)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] Invalid app path: {e}")

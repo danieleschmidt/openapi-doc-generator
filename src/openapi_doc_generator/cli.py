@@ -138,40 +138,66 @@ def _generate_output(
     parser.error(f"Unknown format '{args.format}'")
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def _setup_logging() -> logging.Logger:
+    """Configure logging and return logger instance."""
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
     level = getattr(logging, level_name, logging.INFO)
     logging.basicConfig(level=level, format="%(levelname)s:%(name)s:%(message)s")
-    logger = logging.getLogger(__name__)
+    return logging.getLogger(__name__)
 
-    parser = build_parser()
-    args = parser.parse_args(argv)
 
-    # Validate and normalize app path
+def _validate_app_path(app_path_str: str, parser: argparse.ArgumentParser, logger: logging.Logger) -> Path:
+    """Validate and normalize app path with security checks."""
     try:
         # Check for empty or whitespace-only paths
-        if not args.app or not args.app.strip():
+        if not app_path_str or not app_path_str.strip():
             raise ValueError("App path cannot be empty")
-        app_path = Path(args.app).resolve()
+        app_path = Path(app_path_str).resolve()
         # Security check - prevent obvious directory traversal patterns
-        if ".." in args.app or args.app.startswith("/") and "/../" in args.app:
+        if ".." in app_path_str or app_path_str.startswith("/") and "/../" in app_path_str:
             raise ValueError("Path contains suspicious traversal patterns")
     except (ValueError, OSError) as e:
-        logger.error("Invalid app path '%s': %s", args.app, e)
+        logger.error("Invalid app path '%s': %s", app_path_str, e)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] Invalid app path: {e}")
     
     if not app_path.exists():
         logger.error("App file '%s' not found", app_path)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] App file '{app_path}' not found")
+    
+    return app_path
+
+
+def _process_graphql_format(app_path: Path, parser: argparse.ArgumentParser, logger: logging.Logger) -> str:
+    """Process GraphQL format and return JSON output."""
+    try:
+        data = GraphQLSchema(str(app_path)).introspect()
+        return json.dumps(data, indent=2)
+    except ValueError as e:
+        logger.error("GraphQL schema error: %s", e)
+        parser.error(f"[{ErrorCode.APP_NOT_FOUND}] GraphQL schema error: {e}")
+
+
+def _write_output(output: str, output_path: Optional[str], parser: argparse.ArgumentParser, logger: logging.Logger) -> None:
+    """Write output to file or stdout."""
+    if output_path:
+        out_path = _validate_file_target(
+            output_path, "--output", parser, logger, ErrorCode.OUTPUT_PATH_INVALID
+        )
+        out_path.write_text(output, encoding="utf-8")
+    else:
+        sys.stdout.write(output)
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    logger = _setup_logging()
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    app_path = _validate_app_path(args.app, parser, logger)
 
     if args.format == "graphql":
-        try:
-            data = GraphQLSchema(str(app_path)).introspect()
-            output = json.dumps(data, indent=2)
-            result = None
-        except ValueError as e:
-            logger.error("GraphQL schema error: %s", e)
-            parser.error(f"[{ErrorCode.APP_NOT_FOUND}] GraphQL schema error: {e}")
+        output = _process_graphql_format(app_path, parser, logger)
+        result = None
     else:
         result = APIDocumentator().analyze_app(str(app_path))
         output = _generate_output(result, args, parser, logger)
@@ -184,14 +210,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             TestSuiteGenerator(result).generate_pytest(), encoding="utf-8"
         )
 
-    if args.output:
-        out_path = _validate_file_target(
-            args.output, "--output", parser, logger, ErrorCode.OUTPUT_PATH_INVALID
-        )
-        out_path.write_text(output, encoding="utf-8")
-    else:
-        sys.stdout.write(output)
-
+    _write_output(output, args.output, parser, logger)
     return 0
 
 

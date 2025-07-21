@@ -101,13 +101,12 @@ class RouteDiscoverer:
         else:
             raise ValueError("Unable to determine framework for route discovery")
 
-    def _detect_framework(self, source: str) -> Optional[str]:
-        """Detect framework based on imports and patterns."""
+    def _extract_imports_from_ast(self, source: str) -> Optional[set[str]]:
+        """Extract import names from AST, return None if parsing fails."""
         try:
             tree = ast.parse(source)
         except SyntaxError:
-            # Fall back to string matching for non-Python files
-            return self._detect_framework_fallback(source)
+            return None
         
         imports = set()
         for node in ast.walk(tree):
@@ -117,14 +116,29 @@ class RouteDiscoverer:
             elif isinstance(node, ast.ImportFrom):
                 if node.module:
                     imports.add(node.module)
+        return imports
+    
+    def _detect_framework_from_imports(self, imports: set[str]) -> Optional[str]:
+        """Detect framework from import names using priority order."""
+        framework_patterns = [
+            ("fastapi", "fastapi"),
+            ("flask", "flask"), 
+            ("django", "django")
+        ]
         
-        # Check for framework-specific imports
-        if any(imp.startswith("fastapi") for imp in imports):
-            return "fastapi"
-        elif any(imp.startswith("flask") for imp in imports):
-            return "flask"
-        elif any(imp.startswith("django") for imp in imports):
-            return "django"
+        for framework, pattern in framework_patterns:
+            if any(imp.startswith(pattern) for imp in imports):
+                return framework
+        return None
+    
+    def _detect_framework(self, source: str) -> Optional[str]:
+        """Detect framework based on imports and patterns."""
+        imports = self._extract_imports_from_ast(source)
+        
+        if imports is not None:
+            framework = self._detect_framework_from_imports(imports)
+            if framework:
+                return framework
         
         # Fall back to content analysis
         return self._detect_framework_fallback(source)

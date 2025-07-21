@@ -40,8 +40,9 @@ class SchemaInferer:
         """Return all discovered models in the file."""
         self._logger.debug("Inferring models from %s", self.file_path)
         try:
+            from .utils import get_cached_ast
             source_code = self.file_path.read_text()
-            tree = ast.parse(source_code, filename=str(self.file_path))
+            tree = get_cached_ast(source_code, str(self.file_path))
         except (OSError, UnicodeDecodeError) as e:
             self._logger.warning("Failed to read file %s: %s", self.file_path, e)
             return []

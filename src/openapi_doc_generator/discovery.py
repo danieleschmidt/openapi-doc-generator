@@ -104,7 +104,8 @@ class RouteDiscoverer:
     def _extract_imports_from_ast(self, source: str) -> Optional[set[str]]:
         """Extract import names from AST, return None if parsing fails."""
         try:
-            tree = ast.parse(source)
+            from .utils import get_cached_ast
+            tree = get_cached_ast(source, str(self.app_path))
         except SyntaxError:
             return None
         
@@ -158,7 +159,8 @@ class RouteDiscoverer:
 
     # --- Framework specific discovery methods ---------------------------------
     def _discover_fastapi(self, source: str) -> List[RouteInfo]:
-        tree = ast.parse(source, filename=str(self.app_path))
+        from .utils import get_cached_ast
+        tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
 
         class Visitor(ast.NodeVisitor):
@@ -191,7 +193,8 @@ class RouteDiscoverer:
         return routes
 
     def _discover_flask(self, source: str) -> List[RouteInfo]:
-        tree = ast.parse(source, filename=str(self.app_path))
+        from .utils import get_cached_ast
+        tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
 
         class Visitor(ast.NodeVisitor):
@@ -232,7 +235,8 @@ class RouteDiscoverer:
         return routes
 
     def _discover_django(self, source: str) -> List[RouteInfo]:
-        tree = ast.parse(source, filename=str(self.app_path))
+        from .utils import get_cached_ast
+        tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
 
         class Visitor(ast.NodeVisitor):

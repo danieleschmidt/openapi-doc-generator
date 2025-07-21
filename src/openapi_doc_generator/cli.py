@@ -73,6 +73,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=config.DEFAULT_API_VERSION,
         help="Version string for generated API documentation",
     )
+    parser.add_argument(
+        "--log-format",
+        choices=["standard", "json"],
+        default="standard",
+        help="Log format: standard (default) or json for structured logging",
+    )
     return parser
 
 
@@ -138,12 +144,18 @@ def _generate_output(
     parser.error(f"Unknown format '{args.format}'")
 
 
-def _setup_logging() -> logging.Logger:
+def _setup_logging(log_format: str = "standard") -> logging.Logger:
     """Configure logging and return logger instance."""
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
     level = getattr(logging, level_name, logging.INFO)
-    logging.basicConfig(level=level, format="%(levelname)s:%(name)s:%(message)s")
-    return logging.getLogger(__name__)
+    
+    if log_format == "json":
+        from .utils import setup_json_logging
+        return setup_json_logging(level)
+    else:
+        # Standard logging format
+        logging.basicConfig(level=level, format="%(levelname)s:%(name)s:%(message)s")
+        return logging.getLogger(__name__)
 
 
 def _validate_app_path(app_path_str: str, parser: argparse.ArgumentParser, logger: logging.Logger) -> Path:
@@ -189,9 +201,9 @@ def _write_output(output: str, output_path: Optional[str], parser: argparse.Argu
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    logger = _setup_logging()
     parser = build_parser()
     args = parser.parse_args(argv)
+    logger = _setup_logging(args.log_format)
 
     app_path = _validate_app_path(args.app, parser, logger)
 

@@ -163,6 +163,22 @@
 - **Risk:** Low - improves maintainability
 - **RESULT:** Reduced complexity by creating _validate_component_schemas, _validate_single_schema, _has_valid_schema_properties methods
 
+### 15. **✅ Improve Documentator Coverage** - COMPLETED
+- **WSJF:** 3.33 (Impact: 10, Effort: 3)
+- **Description:** Achieve 100% test coverage for documentator.py module (90% → 100%)
+- **Implementation:** Add tests for FileNotFoundError handling in schema inference
+- **Risk:** Very Low - additive testing only
+- **RESULT:** Created comprehensive error handling tests, improved coverage to 100%
+
+## New High Priority Tasks (WSJF > 2.0)
+
+### 16. **Improve CLI Module Coverage** - NEW
+- **WSJF:** 4.0 (Impact: 8, Effort: 2)
+- **Description:** Improve CLI module test coverage from 24% to >90%
+- **Implementation:** Add tests for error paths, format handling, validation functions
+- **Risk:** Low - testing existing functionality
+- **Files:** `src/openapi_doc_generator/cli.py` - main user interface needs comprehensive testing
+
 ## Next Actions
 
 1. **Immediate (Next 1 hour):** Start with Task #9 (Discovery module complexity) - highest new WSJF

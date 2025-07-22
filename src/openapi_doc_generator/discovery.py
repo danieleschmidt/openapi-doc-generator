@@ -205,7 +205,9 @@ class RouteDiscoverer:
         Visitor().visit(tree)
         return routes
 
-    def _extract_fastapi_route(self, deco: ast.expr, node: ast.FunctionDef) -> Optional[RouteInfo]:
+    def _extract_fastapi_route(
+        self, deco: ast.expr, node: ast.FunctionDef
+    ) -> Optional[RouteInfo]:
         """Extract FastAPI route information from decorator and function node."""
         if not (isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute)):
             return None
@@ -245,7 +247,9 @@ class RouteDiscoverer:
         Visitor().visit(tree)
         return routes
 
-    def _extract_flask_route(self, deco: ast.expr, node: ast.FunctionDef) -> Optional[RouteInfo]:
+    def _extract_flask_route(
+        self, deco: ast.expr, node: ast.FunctionDef
+    ) -> Optional[RouteInfo]:
         """Extract Flask route information from decorator and function node."""
         if not self._is_flask_route_decorator(deco):
             return None

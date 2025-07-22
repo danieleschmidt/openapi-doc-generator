@@ -125,7 +125,9 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_single_operation(self, method: str, path: str, operation: Any) -> List[str]:
+    def _validate_single_operation(
+        self, method: str, path: str, operation: Any
+    ) -> List[str]:
         """Validate a single operation."""
         suggestions = []
         
@@ -151,7 +153,9 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_operation_responses(self, method: str, path: str, operation: Dict[str, Any]) -> List[str]:
+    def _validate_operation_responses(
+        self, method: str, path: str, operation: Dict[str, Any]
+    ) -> List[str]:
         """Validate responses section of an operation."""
         suggestions = []
         
@@ -192,7 +196,8 @@ class SpecValidator:
 
                 if not schema_def:
                     suggestions.append(
-                        f"Schema '{schema_name}' is empty - consider adding 'type' or 'properties'"
+                        f"Schema '{schema_name}' is empty - consider adding "
+                        f"'type' or 'properties'"
                     )
                 elif (
                     "type" not in schema_def
@@ -200,7 +205,8 @@ class SpecValidator:
                     and "$ref" not in schema_def
                 ):
                     suggestions.append(
-                        f"Schema '{schema_name}' should define 'type', 'properties', or '$ref'"
+                        f"Schema '{schema_name}' should define 'type', "
+                        f"'properties', or '$ref'"
                     )
 
         return suggestions
@@ -215,7 +221,8 @@ class SpecValidator:
         for scheme in referenced_schemes:
             if scheme not in security_schemes:
                 suggestions.append(
-                    f"Security scheme '{scheme}' is referenced but not defined in components.securitySchemes"
+                    f"Security scheme '{scheme}' is referenced but not defined "
+                    f"in components.securitySchemes"
                 )
 
         return suggestions

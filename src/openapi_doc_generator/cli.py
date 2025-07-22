@@ -133,7 +133,8 @@ def _generate_output(
     if args.format == "guide":
         if not args.old_spec:
             parser.error(
-                f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required for guide format"
+                f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required "
+                f"for guide format"
             )
         old_path = Path(args.old_spec)
         if not old_path.exists():

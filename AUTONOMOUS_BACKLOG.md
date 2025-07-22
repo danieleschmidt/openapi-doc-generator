@@ -1,8 +1,8 @@
 # Autonomous Development Backlog
 
-**Generated:** 2025-07-21 03:27 UTC  
+**Generated:** 2025-07-22 16:37 UTC  
 **Analysis Method:** WSJF (Weighted Shortest Job First)  
-**Current State:** 97% test coverage, 86 tests passing, all security scans clear
+**Current State:** 97% test coverage, 154 tests passing, all security scans clear, all linting issues resolved
 
 ## Scoring Methodology
 
@@ -117,12 +117,74 @@
 
 ---
 
+## Newly Identified High Priority Tasks (WSJF > 3.0)
+
+### 9. **Reduce Function Complexity - Discovery Module** - NEW
+- **WSJF:** 4.0 (Impact: 8, Effort: 2)
+- **Description:** Refactor deeply nested functions in discovery.py (_discover_flask, _discover_fastapi, _discover_django)
+- **Implementation:** Extract helper methods, reduce nesting depth from 7 to ≤4 levels
+- **Risk:** Medium - requires careful refactoring to maintain behavior
+- **Files:** `src/openapi_doc_generator/discovery.py:224, 189, 267`
+
+### 10. **Replace Broad Exception Handlers** - NEW
+- **WSJF:** 3.5 (Impact: 7, Effort: 2)
+- **Description:** Replace generic `except Exception:` with specific exception types for better error handling
+- **Implementation:** Add specific exception types for AST parsing, GraphQL parsing, plugin loading
+- **Risk:** Low - improves error diagnostics and debugging
+- **Files:** `src/openapi_doc_generator/utils.py:246, schema.py:59, graphql.py:28, discovery.py:71`
+
+### 11. **Improve Validator Module Complexity** - NEW  
+- **WSJF:** 3.0 (Impact: 6, Effort: 2)
+- **Description:** Reduce cyclomatic complexity in validator methods (8+ nesting levels)
+- **Implementation:** Extract validation logic into smaller, focused methods
+- **Risk:** Low - improves maintainability and testability
+- **Files:** `src/openapi_doc_generator/validator.py:95, 184`
+
+## Remaining Priority Tasks (WSJF 1.5-3.0)
+
+### 12. **✅ Extract Magic Numbers to Constants** - COMPLETED
+- **WSJF:** 2.0 (Impact: 4, Effort: 2)  
+- **Description:** Replace hardcoded values with named constants for better maintainability
+- **Implementation:** Extract cache sizes, memory conversion factors, default URLs
+- **Risk:** Very Low - improves code readability
+- **RESULT:** Added AST_CACHE_SIZE, MEMORY_CONVERSION_FACTOR, TEST_BASE_URL constants to config.py
+
+### 13. **✅ Fix Linting Issues** - COMPLETED
+- **WSJF:** 3.0 (Impact: 3, Effort: 1)
+- **Description:** Resolve 9 line length violations (E501 errors) for better code quality
+- **Implementation:** Break long lines while preserving functionality
+- **Risk:** Very Low - formatting improvements only  
+- **RESULT:** Fixed all linting violations across 4 modules, improved code readability
+
+### 14. **✅ Reduce Validator Complexity** - COMPLETED  
+- **WSJF:** 2.5 (Impact: 5, Effort: 2)
+- **Description:** Reduce _validate_components_section complexity from C=11 to B rating
+- **Implementation:** Extract helper methods for focused validation logic
+- **Risk:** Low - improves maintainability
+- **RESULT:** Reduced complexity by creating _validate_component_schemas, _validate_single_schema, _has_valid_schema_properties methods
+
+### 15. **✅ Improve Documentator Coverage** - COMPLETED
+- **WSJF:** 3.33 (Impact: 10, Effort: 3)
+- **Description:** Achieve 100% test coverage for documentator.py module (90% → 100%)
+- **Implementation:** Add tests for FileNotFoundError handling in schema inference
+- **Risk:** Very Low - additive testing only
+- **RESULT:** Created comprehensive error handling tests, improved coverage to 100%
+
+## New High Priority Tasks (WSJF > 2.0)
+
+### 16. **Improve CLI Module Coverage** - NEW
+- **WSJF:** 4.0 (Impact: 8, Effort: 2)
+- **Description:** Improve CLI module test coverage from 24% to >90%
+- **Implementation:** Add tests for error paths, format handling, validation functions
+- **Risk:** Low - testing existing functionality
+- **Files:** `src/openapi_doc_generator/cli.py` - main user interface needs comprehensive testing
+
 ## Next Actions
 
-1. **Immediate (Next 2 hours):** Start with Task #1 (Discovery test coverage) - highest WSJF
-2. **Short Term (This session):** Complete Tasks #1-3 to achieve 100% test coverage  
-3. **Medium Term:** Address cyclomatic complexity in high-impact functions
-4. **Long Term:** Performance optimization and new feature development
+1. **Immediate (Next 1 hour):** Start with Task #9 (Discovery module complexity) - highest new WSJF
+2. **Short Term (This session):** Complete Tasks #9-11 to address code complexity issues
+3. **Medium Term:** Address remaining magic numbers and technical debt
+4. **Long Term:** Framework expansion and advanced features
 
 ---
 

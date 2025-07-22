@@ -1,3 +1,27 @@
+## v0.1.6
+ - **COVERAGE**: Achieve 100% test coverage for documentator module
+   - Added comprehensive error handling tests for FileNotFoundError scenarios
+   - Improved coverage from 90% to 100% with 3 new focused test cases
+   - Enhanced robustness of schema inference failure handling
+ - **TESTING**: Comprehensive edge case coverage for core modules
+   - Test graceful degradation when schema files are missing
+   - Test appropriate logging and error messages
+   - Following TDD principles with test-first development approach
+
+## v0.1.5
+ - **REFACTORING**: Reduce function complexity and improve code maintainability
+   - Refactored discovery module: extracted helper methods, reduced nesting depth from 7 to 4 levels
+   - Enhanced exception handling: replaced generic exceptions with specific types
+   - Simplified validator complexity: broke down complex methods into focused helpers
+ - **QUALITY**: Extract magic numbers to named constants for better configuration management
+   - Added AST_CACHE_SIZE, MEMORY_CONVERSION_FACTOR, and TEST_BASE_URL constants
+   - Centralized configuration for improved maintainability and testability
+ - **LINTING**: Fixed all code style violations for improved readability
+   - Resolved 9 line length violations (E501 errors)
+   - Improved code formatting across 4 modules
+ - **TESTING**: Maintained 97% test coverage with 154 passing tests
+ - **COMPLEXITY**: Reduced cyclomatic complexity from C-rating to B-rating functions
+
 ## v0.1.4
  - **QUALITY**: Achieve 100% test coverage in schema module (up from 82%)
  - **ENHANCEMENT**: Add comprehensive schema file I/O error handling tests (9 new tests)

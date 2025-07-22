@@ -21,6 +21,13 @@ class OpenAPIConfig:
     DEFAULT_SUCCESS_STATUS: str = "200"
     DEFAULT_SUCCESS_DESCRIPTION: str = "Success"
     DEFAULT_SUCCESS_STATUS_INT: int = 200
+    
+    # Performance and caching configuration
+    AST_CACHE_SIZE: int = 128
+    MEMORY_CONVERSION_FACTOR: int = 1024 * 1024  # Bytes to MB
+    
+    # Test configuration
+    TEST_BASE_URL: str = "http://localhost"
 
     # Response schema template
     DEFAULT_SUCCESS_RESPONSE: Dict[str, Any] = None

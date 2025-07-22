@@ -56,7 +56,8 @@ class SchemaInferer:
             if isinstance(node, ast.ClassDef) and self._is_model(node):
                 try:
                     models.append(self._process_class(node))
-                except Exception as e:
+                except (AttributeError, TypeError, ValueError) as e:
+                    # Handle specific AST processing errors
                     self._logger.warning("Failed to process class %s: %s", node.name, e)
                     continue
         return models

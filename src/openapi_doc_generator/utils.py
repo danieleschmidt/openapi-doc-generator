@@ -243,7 +243,9 @@ def measure_performance(operation_name: str) -> Callable[[F], F]:
                         memory_peak = round(
                             (peak_memory - memory_start) / (1024 * 1024), 2
                         )
-                    except Exception:
+                    except (ValueError, AttributeError, OSError) as e:
+                        # Handle specific tracemalloc errors
+                        logger.debug("Memory tracking failed: %s", e)
                         memory_peak = None
 
                 # Update aggregated statistics

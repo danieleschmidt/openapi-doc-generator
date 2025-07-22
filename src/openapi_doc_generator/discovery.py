@@ -68,9 +68,10 @@ def get_plugins() -> List[RoutePlugin]:
                 logging.getLogger(__name__).warning(
                     "Failed to instantiate plugin %s: %s", ep.name, e
                 )
-            except Exception as e:  # pragma: no cover - catch unexpected errors
+            except (ImportError, AttributeError, TypeError) as e:  # pragma: no cover
+                # Handle specific plugin loading errors
                 logging.getLogger(__name__).exception(
-                    "Unexpected error loading plugin %s: %s", ep.name, e
+                    "Plugin loading error %s: %s", ep.name, e
                 )
     return list(_PLUGINS)
 
@@ -191,107 +192,158 @@ class RouteDiscoverer:
 
         tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
+        discoverer = self
 
         class Visitor(ast.NodeVisitor):
             def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
                 for deco in node.decorator_list:
-                    if isinstance(deco, ast.Call) and isinstance(
-                        deco.func, ast.Attribute
-                    ):
-                        method = deco.func.attr
-                        if method in {"get", "post", "put", "patch", "delete"}:
-                            if (
-                                isinstance(deco.func.value, ast.Name)
-                                and deco.func.value.id == "app"
-                            ):
-                                path = ""
-                                if deco.args and isinstance(deco.args[0], ast.Constant):
-                                    path = str(deco.args[0].value)
-                                doc = ast.get_docstring(node)
-                                routes.append(
-                                    RouteInfo(
-                                        path=path,
-                                        methods=[method.upper()],
-                                        name=node.name,
-                                        docstring=doc,
-                                    )
-                                )
+                    route_info = discoverer._extract_fastapi_route(deco, node)
+                    if route_info:
+                        routes.append(route_info)
                 self.generic_visit(node)
 
         Visitor().visit(tree)
         return routes
+
+    def _extract_fastapi_route(self, deco: ast.expr, node: ast.FunctionDef) -> Optional[RouteInfo]:
+        """Extract FastAPI route information from decorator and function node."""
+        if not (isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute)):
+            return None
+            
+        method = deco.func.attr
+        if method not in {"get", "post", "put", "patch", "delete"}:
+            return None
+            
+        if not self._is_app_decorator(deco.func):
+            return None
+            
+        path = self._extract_path_from_args(deco.args)
+        doc = ast.get_docstring(node)
+        
+        return RouteInfo(
+            path=path,
+            methods=[method.upper()],
+            name=node.name,
+            docstring=doc,
+        )
 
     def _discover_flask(self, source: str) -> List[RouteInfo]:
         from .utils import get_cached_ast
 
         tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
+        discoverer = self
 
         class Visitor(ast.NodeVisitor):
             def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
                 for deco in node.decorator_list:
-                    if isinstance(deco, ast.Call) and isinstance(
-                        deco.func, ast.Attribute
-                    ):
-                        if (
-                            isinstance(deco.func.value, ast.Name)
-                            and deco.func.value.id == "app"
-                            and deco.func.attr == "route"
-                        ):
-                            path = ""
-                            if deco.args and isinstance(deco.args[0], ast.Constant):
-                                path = str(deco.args[0].value)
-                            methods: List[str] = ["GET"]
-                            for kw in deco.keywords:
-                                if kw.arg == "methods" and isinstance(
-                                    kw.value, (ast.List, ast.Tuple)
-                                ):
-                                    methods = []
-                                    for elt in kw.value.elts:
-                                        if isinstance(elt, ast.Constant):
-                                            methods.append(str(elt.value).upper())
-                            doc = ast.get_docstring(node)
-                            routes.append(
-                                RouteInfo(
-                                    path=path,
-                                    methods=methods,
-                                    name=node.name,
-                                    docstring=doc,
-                                )
-                            )
+                    route_info = discoverer._extract_flask_route(deco, node)
+                    if route_info:
+                        routes.append(route_info)
                 self.generic_visit(node)
 
         Visitor().visit(tree)
         return routes
+
+    def _extract_flask_route(self, deco: ast.expr, node: ast.FunctionDef) -> Optional[RouteInfo]:
+        """Extract Flask route information from decorator and function node."""
+        if not self._is_flask_route_decorator(deco):
+            return None
+            
+        path = self._extract_path_from_args(deco.args)
+        methods = self._extract_flask_methods(deco.keywords)
+        doc = ast.get_docstring(node)
+        
+        return RouteInfo(
+            path=path,
+            methods=methods,
+            name=node.name,
+            docstring=doc,
+        )
+        
+    def _is_flask_route_decorator(self, deco: ast.expr) -> bool:
+        """Check if decorator is a Flask route decorator."""
+        if not (isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute)):
+            return False
+            
+        return (
+            isinstance(deco.func.value, ast.Name)
+            and deco.func.value.id == "app"
+            and deco.func.attr == "route"
+        )
+        
+    def _extract_flask_methods(self, keywords: List[ast.keyword]) -> List[str]:
+        """Extract HTTP methods from Flask route keyword arguments."""
+        methods: List[str] = ["GET"]  # Default Flask method
+        
+        for kw in keywords:
+            if kw.arg == "methods" and isinstance(kw.value, (ast.List, ast.Tuple)):
+                methods = []
+                for elt in kw.value.elts:
+                    if isinstance(elt, ast.Constant):
+                        methods.append(str(elt.value).upper())
+                        
+        return methods
 
     def _discover_django(self, source: str) -> List[RouteInfo]:
         from .utils import get_cached_ast
 
         tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
+        discoverer = self
 
         class Visitor(ast.NodeVisitor):
             def visit_Call(self, node: ast.Call) -> None:
-                if isinstance(node.func, ast.Name) and node.func.id in {
-                    "path",
-                    "re_path",
-                }:
-                    if node.args and isinstance(node.args[0], ast.Constant):
-                        path_value = str(node.args[0].value)
-                        name = ""
-                        if len(node.args) > 1:
-                            target = node.args[1]
-                            if isinstance(target, ast.Attribute):
-                                name = target.attr
-                            elif isinstance(target, ast.Name):
-                                name = target.id
-                        routes.append(
-                            RouteInfo(path=path_value, methods=["GET"], name=name)
-                        )
+                route_info = discoverer._extract_django_route(node)
+                if route_info:
+                    routes.append(route_info)
                 self.generic_visit(node)
 
         Visitor().visit(tree)
         return routes
+        
+    def _extract_django_route(self, node: ast.Call) -> Optional[RouteInfo]:
+        """Extract Django route information from Call node."""
+        if not self._is_django_path_call(node):
+            return None
+            
+        if not (node.args and isinstance(node.args[0], ast.Constant)):
+            return None
+            
+        path_value = str(node.args[0].value)
+        name = self._extract_django_view_name(node.args)
+        
+        return RouteInfo(path=path_value, methods=["GET"], name=name)
+        
+    def _is_django_path_call(self, node: ast.Call) -> bool:
+        """Check if Call node is a Django path or re_path call."""
+        return (
+            isinstance(node.func, ast.Name) 
+            and node.func.id in {"path", "re_path"}
+        )
+        
+    def _extract_django_view_name(self, args: List[ast.expr]) -> str:
+        """Extract view name from Django path arguments."""
+        if len(args) > 1:
+            target = args[1]
+            if isinstance(target, ast.Attribute):
+                return target.attr
+            elif isinstance(target, ast.Name):
+                return target.id
+        return ""
+        
+    def _is_app_decorator(self, func: ast.Attribute) -> bool:
+        """Check if decorator function is an app decorator."""
+        return (
+            isinstance(func.value, ast.Name)
+            and func.value.id == "app"
+        )
+        
+    def _extract_path_from_args(self, args: List[ast.expr]) -> str:
+        """Extract path string from function arguments."""
+        if args and isinstance(args[0], ast.Constant):
+            return str(args[0].value)
+        return ""
 
     def _discover_express(self, source: str) -> List[RouteInfo]:
         import re

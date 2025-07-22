@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from graphql import build_schema, get_introspection_query, graphql_sync
+from graphql.error import GraphQLSyntaxError
 
 
 class GraphQLSchema:
@@ -25,7 +26,8 @@ class GraphQLSchema:
 
         try:
             schema = build_schema(schema_str)
-        except Exception as e:
+        except (ValueError, TypeError, SyntaxError, GraphQLSyntaxError) as e:
+            # Handle specific GraphQL schema parsing errors
             raise ValueError(f"Invalid GraphQL schema syntax: {e}")
 
         query = get_introspection_query()

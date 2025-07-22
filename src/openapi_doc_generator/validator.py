@@ -102,48 +102,72 @@ class SpecValidator:
             return suggestions
 
         for path, operations in paths.items():
-            if not isinstance(operations, dict):
-                suggestions.append(
-                    f"Path '{path}' must contain an object with operations"
-                )
-                continue
+            suggestions.extend(self._validate_path_operations(path, operations))
 
-            if not operations:
-                suggestions.append(f"Path '{path}' has no operations")
-                continue
+        return suggestions
 
-            for method, operation in operations.items():
-                # Validate HTTP method
-                if method.lower() not in self.VALID_HTTP_METHODS:
-                    suggestions.append(
-                        f"Invalid HTTP method '{method}' in path '{path}'"
-                    )
-                    continue
+    def _validate_path_operations(self, path: str, operations: Any) -> List[str]:
+        """Validate operations for a single path."""
+        suggestions = []
+        
+        if not isinstance(operations, dict):
+            suggestions.append(
+                f"Path '{path}' must contain an object with operations"
+            )
+            return suggestions
 
-                if not isinstance(operation, dict):
-                    suggestions.append(f"Operation '{method} {path}' must be an object")
-                    continue
+        if not operations:
+            suggestions.append(f"Path '{path}' has no operations")
+            return suggestions
 
-                # Check for missing summary
-                if "summary" not in operation:
-                    suggestions.append(
-                        f"Operation '{method} {path}' is missing summary"
-                    )
+        for method, operation in operations.items():
+            suggestions.extend(self._validate_single_operation(method, path, operation))
 
-                # Check for missing responses
-                if "responses" not in operation:
-                    suggestions.append(
-                        f"Operation '{method} {path}' is missing responses"
-                    )
-                elif not isinstance(operation["responses"], dict):
-                    suggestions.append(
-                        f"Operation '{method} {path}' responses must be an object"
-                    )
-                elif not operation["responses"]:
-                    suggestions.append(
-                        f"Operation '{method} {path}' has no response definitions"
-                    )
+        return suggestions
 
+    def _validate_single_operation(self, method: str, path: str, operation: Any) -> List[str]:
+        """Validate a single operation."""
+        suggestions = []
+        
+        # Validate HTTP method
+        if method.lower() not in self.VALID_HTTP_METHODS:
+            suggestions.append(
+                f"Invalid HTTP method '{method}' in path '{path}'"
+            )
+            return suggestions
+
+        if not isinstance(operation, dict):
+            suggestions.append(f"Operation '{method} {path}' must be an object")
+            return suggestions
+
+        # Check for missing summary
+        if "summary" not in operation:
+            suggestions.append(
+                f"Operation '{method} {path}' is missing summary"
+            )
+
+        # Check for missing or invalid responses
+        suggestions.extend(self._validate_operation_responses(method, path, operation))
+
+        return suggestions
+
+    def _validate_operation_responses(self, method: str, path: str, operation: Dict[str, Any]) -> List[str]:
+        """Validate responses section of an operation."""
+        suggestions = []
+        
+        if "responses" not in operation:
+            suggestions.append(
+                f"Operation '{method} {path}' is missing responses"
+            )
+        elif not isinstance(operation["responses"], dict):
+            suggestions.append(
+                f"Operation '{method} {path}' responses must be an object"
+            )
+        elif not operation["responses"]:
+            suggestions.append(
+                f"Operation '{method} {path}' has no response definitions"
+            )
+            
         return suggestions
 
     def _validate_components_section(self, spec: Dict[str, Any]) -> List[str]:
@@ -184,26 +208,8 @@ class SpecValidator:
     def _validate_security(self, spec: Dict[str, Any]) -> List[str]:
         """Validate security configuration."""
         suggestions = []
-        components = spec.get("components", {})
-        security_schemes = {}
-        if isinstance(components, dict):
-            security_schemes = components.get("securitySchemes", {})
-
-        # Check if operations reference security schemes that don't exist
-        paths = spec.get("paths", {})
-        referenced_schemes = set()
-
-        # Only process if paths is actually a dictionary
-        if isinstance(paths, dict):
-            for path, operations in paths.items():
-                if isinstance(operations, dict):
-                    for method, operation in operations.items():
-                        if isinstance(operation, dict) and "security" in operation:
-                            security = operation["security"]
-                            if isinstance(security, list):
-                                for security_req in security:
-                                    if isinstance(security_req, dict):
-                                        referenced_schemes.update(security_req.keys())
+        security_schemes = self._extract_security_schemes(spec)
+        referenced_schemes = self._find_referenced_security_schemes(spec)
 
         # Check for undefined security schemes
         for scheme in referenced_schemes:
@@ -213,3 +219,39 @@ class SpecValidator:
                 )
 
         return suggestions
+
+    def _extract_security_schemes(self, spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract security schemes from spec components."""
+        components = spec.get("components", {})
+        if isinstance(components, dict):
+            return components.get("securitySchemes", {})
+        return {}
+
+    def _find_referenced_security_schemes(self, spec: Dict[str, Any]) -> set[str]:
+        """Find all security schemes referenced in operations."""
+        referenced_schemes = set()
+        paths = spec.get("paths", {})
+
+        if not isinstance(paths, dict):
+            return referenced_schemes
+
+        for operations in paths.values():
+            if isinstance(operations, dict):
+                for operation in operations.values():
+                    if isinstance(operation, dict) and "security" in operation:
+                        schemes = self._extract_schemes_from_operation(operation)
+                        referenced_schemes.update(schemes)
+
+        return referenced_schemes
+
+    def _extract_schemes_from_operation(self, operation: Dict[str, Any]) -> set[str]:
+        """Extract security scheme names from a single operation."""
+        schemes = set()
+        security = operation.get("security", [])
+        
+        if isinstance(security, list):
+            for security_req in security:
+                if isinstance(security_req, dict):
+                    schemes.update(security_req.keys())
+                    
+        return schemes

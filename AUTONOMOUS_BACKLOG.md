@@ -1,8 +1,8 @@
 # Autonomous Development Backlog
 
-**Generated:** 2025-07-21 03:27 UTC  
+**Generated:** 2025-07-22 00:56 UTC  
 **Analysis Method:** WSJF (Weighted Shortest Job First)  
-**Current State:** 97% test coverage, 86 tests passing, all security scans clear
+**Current State:** 97% test coverage, 154 tests passing, all security scans clear
 
 ## Scoring Methodology
 
@@ -117,12 +117,44 @@
 
 ---
 
+## Newly Identified High Priority Tasks (WSJF > 3.0)
+
+### 9. **Reduce Function Complexity - Discovery Module** - NEW
+- **WSJF:** 4.0 (Impact: 8, Effort: 2)
+- **Description:** Refactor deeply nested functions in discovery.py (_discover_flask, _discover_fastapi, _discover_django)
+- **Implementation:** Extract helper methods, reduce nesting depth from 7 to ≤4 levels
+- **Risk:** Medium - requires careful refactoring to maintain behavior
+- **Files:** `src/openapi_doc_generator/discovery.py:224, 189, 267`
+
+### 10. **Replace Broad Exception Handlers** - NEW
+- **WSJF:** 3.5 (Impact: 7, Effort: 2)
+- **Description:** Replace generic `except Exception:` with specific exception types for better error handling
+- **Implementation:** Add specific exception types for AST parsing, GraphQL parsing, plugin loading
+- **Risk:** Low - improves error diagnostics and debugging
+- **Files:** `src/openapi_doc_generator/utils.py:246, schema.py:59, graphql.py:28, discovery.py:71`
+
+### 11. **Improve Validator Module Complexity** - NEW  
+- **WSJF:** 3.0 (Impact: 6, Effort: 2)
+- **Description:** Reduce cyclomatic complexity in validator methods (8+ nesting levels)
+- **Implementation:** Extract validation logic into smaller, focused methods
+- **Risk:** Low - improves maintainability and testability
+- **Files:** `src/openapi_doc_generator/validator.py:95, 184`
+
+## Remaining Priority Tasks (WSJF 1.5-3.0)
+
+### 12. **Extract Magic Numbers to Constants** - NEW
+- **WSJF:** 2.0 (Impact: 4, Effort: 2)  
+- **Description:** Replace hardcoded values with named constants for better maintainability
+- **Implementation:** Extract cache sizes, memory conversion factors, default URLs
+- **Risk:** Very Low - improves code readability
+- **Files:** `src/openapi_doc_generator/utils.py:22, 244; testsuite.py:30`
+
 ## Next Actions
 
-1. **Immediate (Next 2 hours):** Start with Task #1 (Discovery test coverage) - highest WSJF
-2. **Short Term (This session):** Complete Tasks #1-3 to achieve 100% test coverage  
-3. **Medium Term:** Address cyclomatic complexity in high-impact functions
-4. **Long Term:** Performance optimization and new feature development
+1. **Immediate (Next 1 hour):** Start with Task #9 (Discovery module complexity) - highest new WSJF
+2. **Short Term (This session):** Complete Tasks #9-11 to address code complexity issues
+3. **Medium Term:** Address remaining magic numbers and technical debt
+4. **Long Term:** Framework expansion and advanced features
 
 ---
 

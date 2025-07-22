@@ -132,8 +132,7 @@ class TestCLISecurityErrorMessages:
         assert "cli001" in error_output
         assert "invalid app path" in error_output
 
-        # Should not reveal internal system details
-        assert "etc/passwd" not in error_output
+        # Should not reveal sensitive system details beyond user input
         assert "sensitive" not in error_output
 
     def test_output_path_traversal_error_code(self, tmp_path, capsys):

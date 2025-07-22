@@ -219,7 +219,7 @@ class MyClass:
         
         try:
             discoverer = RouteDiscoverer(f.name)
-            with pytest.raises(ValueError, match="detect a supported web framework"):
+            with pytest.raises(ValueError, match="Unable to determine framework"):
                 discoverer.discover()
         finally:
             import os

@@ -17,8 +17,11 @@ Agent that parses FastAPI / Express routes and emits OpenAPI 3 spec plus markdow
 - Generates API deprecation and migration guides
 - Customizable API title and version via CLI options
 - Plugin interface for additional frameworks
+- **Performance metrics and monitoring** with detailed timing and memory usage tracking
 
 ## Quick Start
+
+### Using Python Package
 ```bash
 pip install -e .
 openapi-doc-generator --app ./app.py --format markdown --output API.md
@@ -31,8 +34,68 @@ openapi-doc-generator --app ./app.py --format guide --old-spec old.json --output
 openapi-doc-generator --version
 ```
 
+### Using Docker
+```bash
+# Pull the latest image
+docker pull ghcr.io/danieleschmidt/openapi-doc-generator:latest
+
+# Generate documentation for your app
+docker run --rm -v $(pwd):/workspace ghcr.io/danieleschmidt/openapi-doc-generator:latest \
+  /workspace/app.py --format markdown --output /workspace/API.md
+
+# Generate OpenAPI spec with JSON logging
+docker run --rm -v $(pwd):/workspace ghcr.io/danieleschmidt/openapi-doc-generator:latest \
+  /workspace/app.py --format openapi --log-format json --output /workspace/openapi.json
+
+# Use docker-compose for development
+docker-compose --profile dev run openapi-doc-generator /workspace/app.py --help
+```
+
 Documentation for the example app in `examples/app.py` is automatically built
 and published to GitHub Pages whenever changes are pushed to `main`.
+
+## Docker Usage
+
+### Pre-built Images
+Pre-built Docker images are available on GitHub Container Registry:
+
+```bash
+# Latest stable release
+docker pull ghcr.io/danieleschmidt/openapi-doc-generator:latest
+
+# Specific version
+docker pull ghcr.io/danieleschmidt/openapi-doc-generator:v0.1.0
+
+# Latest from main branch
+docker pull ghcr.io/danieleschmidt/openapi-doc-generator:main
+```
+
+### Building Locally
+```bash
+# Build the image
+docker build -t openapi-doc-generator .
+
+# Or use docker-compose
+docker-compose build
+```
+
+### Docker Compose Development
+```bash
+# Start development environment
+docker-compose --profile dev up
+
+# Run specific commands
+docker-compose --profile dev run openapi-doc-generator /workspace/app.py --format openapi --output /workspace/openapi.json
+
+# Production-like testing
+docker-compose --profile prod up
+```
+
+### Image Security
+- Runs as non-root user (UID 1000)
+- Multi-stage build for minimal image size
+- Security scanned with Trivy in CI/CD
+- Includes health check endpoint
 
 ## Development
 Install pre-commit hooks for local secret scanning:
@@ -103,6 +166,31 @@ with open("API.md", "w") as f:
 - Code samples in multiple languages (Python, JavaScript, cURL)
 - Authentication and error handling documentation
 - Rate limiting and versioning information
+
+## Performance Monitoring
+The tool includes comprehensive performance metrics to help optimize documentation generation:
+
+```bash
+# Enable performance metrics with JSON logging
+openapi-doc-generator --app ./app.py --performance-metrics --log-format json
+
+# Sample performance output
+{"timestamp":"2025-07-22T00:56:55Z","level":"INFO","logger":"openapi_doc_generator.discovery","message":"Performance: framework_detection completed in 0.57ms","correlation_id":"d04bfed0","duration_ms":0.57}
+{"timestamp":"2025-07-22T00:56:55Z","level":"INFO","logger":"openapi_doc_generator.discovery","message":"Performance: route_discovery completed in 1.52ms","correlation_id":"d04bfed0","duration_ms":1.52,"route_count":5}
+```
+
+**Tracked Metrics:**
+- Route discovery timing and memory usage
+- Framework detection performance
+- AST parsing cache hit rates
+- Memory allocation patterns
+- Operation-level performance summaries
+
+**Integration Benefits:**
+- Identify performance bottlenecks in large codebases
+- Monitor memory usage for optimization
+- Track performance improvements over time
+- Debug slow documentation generation
 
 ## Configuration
 ```yaml

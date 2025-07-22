@@ -79,34 +79,39 @@ def build_parser() -> argparse.ArgumentParser:
         default="standard",
         help="Log format: standard (default) or json for structured logging",
     )
+    parser.add_argument(
+        "--performance-metrics",
+        action="store_true",
+        help="Enable detailed performance metrics collection and logging",
+    )
     return parser
 
 
 def _validate_file_target(
-    path_str: str, 
-    flag: str, 
-    parser: argparse.ArgumentParser, 
-    logger: logging.Logger, 
-    code: str
+    path_str: str,
+    flag: str,
+    parser: argparse.ArgumentParser,
+    logger: logging.Logger,
+    code: str,
 ) -> Path:
     """Ensure a CLI file argument points to a writable file path."""
     # Normalize and validate the path to prevent directory traversal
     path = Path(path_str).resolve()
-    
+
     # Check for suspicious path patterns
     if ".." in path_str or (path_str.startswith("/") and "/../" in path_str):
         logger.error("Suspicious path detected: %s", path)
         parser.error(f"[{code}] Invalid path: path traversal attempts not allowed")
-    
+
     if path.exists() and path.is_dir():
         logger.error("%s path '%s' is a directory", flag, path)
         parser.error(f"[{code}] {flag} path '{path}' is a directory")
-    
+
     parent = path.parent
     if parent and not parent.exists():
         logger.error("Directory '%s' does not exist", parent)
         parser.error(f"[{code}] directory '{parent}' does not exist")
-    
+
     return path
 
 
@@ -127,11 +132,15 @@ def _generate_output(
         return PlaygroundGenerator().generate(spec)
     if args.format == "guide":
         if not args.old_spec:
-            parser.error(f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required for guide format")
+            parser.error(
+                f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required for guide format"
+            )
         old_path = Path(args.old_spec)
         if not old_path.exists():
             logger.error("Old spec file '%s' not found", old_path)
-            parser.error(f"[{ErrorCode.OLD_SPEC_REQUIRED}] Old spec file '{old_path}' not found")
+            parser.error(
+                f"[{ErrorCode.OLD_SPEC_REQUIRED}] Old spec file '{old_path}' not found"
+            )
         try:
             old_data = json.loads(old_path.read_text())
         except json.JSONDecodeError as exc:  # pragma: no cover - manual error path
@@ -148,9 +157,10 @@ def _setup_logging(log_format: str = "standard") -> logging.Logger:
     """Configure logging and return logger instance."""
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
     level = getattr(logging, level_name, logging.INFO)
-    
+
     if log_format == "json":
         from .utils import setup_json_logging
+
         return setup_json_logging(level)
     else:
         # Standard logging format
@@ -158,7 +168,9 @@ def _setup_logging(log_format: str = "standard") -> logging.Logger:
         return logging.getLogger(__name__)
 
 
-def _validate_app_path(app_path_str: str, parser: argparse.ArgumentParser, logger: logging.Logger) -> Path:
+def _validate_app_path(
+    app_path_str: str, parser: argparse.ArgumentParser, logger: logging.Logger
+) -> Path:
     """Validate and normalize app path with security checks."""
     try:
         # Check for empty or whitespace-only paths
@@ -166,20 +178,26 @@ def _validate_app_path(app_path_str: str, parser: argparse.ArgumentParser, logge
             raise ValueError("App path cannot be empty")
         app_path = Path(app_path_str).resolve()
         # Security check - prevent obvious directory traversal patterns
-        if ".." in app_path_str or app_path_str.startswith("/") and "/../" in app_path_str:
+        if (
+            ".." in app_path_str
+            or app_path_str.startswith("/")
+            and "/../" in app_path_str
+        ):
             raise ValueError("Path contains suspicious traversal patterns")
     except (ValueError, OSError) as e:
         logger.error("Invalid app path '%s': %s", app_path_str, e)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] Invalid app path: {e}")
-    
+
     if not app_path.exists():
         logger.error("App file '%s' not found", app_path)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] App file '{app_path}' not found")
-    
+
     return app_path
 
 
-def _process_graphql_format(app_path: Path, parser: argparse.ArgumentParser, logger: logging.Logger) -> str:
+def _process_graphql_format(
+    app_path: Path, parser: argparse.ArgumentParser, logger: logging.Logger
+) -> str:
     """Process GraphQL format and return JSON output."""
     try:
         data = GraphQLSchema(str(app_path)).introspect()
@@ -189,7 +207,12 @@ def _process_graphql_format(app_path: Path, parser: argparse.ArgumentParser, log
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] GraphQL schema error: {e}")
 
 
-def _write_output(output: str, output_path: Optional[str], parser: argparse.ArgumentParser, logger: logging.Logger) -> None:
+def _write_output(
+    output: str,
+    output_path: Optional[str],
+    parser: argparse.ArgumentParser,
+    logger: logging.Logger,
+) -> None:
     """Write output to file or stdout."""
     if output_path:
         out_path = _validate_file_target(
@@ -204,6 +227,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     logger = _setup_logging(args.log_format)
+
+    # Configure performance metrics
+    from .utils import set_performance_tracking, get_performance_summary
+
+    set_performance_tracking(args.performance_metrics)
 
     app_path = _validate_app_path(args.app, parser, logger)
 
@@ -223,6 +251,19 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
 
     _write_output(output, args.output, parser, logger)
+
+    # Log performance summary if metrics are enabled
+    if args.performance_metrics:
+        summary = get_performance_summary()
+        if summary:
+            logger.info(
+                "Performance Summary:",
+                extra={
+                    "operation": "performance_summary",
+                    "performance_stats": summary,
+                },
+            )
+
     return 0
 
 

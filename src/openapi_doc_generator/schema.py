@@ -41,6 +41,7 @@ class SchemaInferer:
         self._logger.debug("Inferring models from %s", self.file_path)
         try:
             from .utils import get_cached_ast
+
             source_code = self.file_path.read_text()
             tree = get_cached_ast(source_code, str(self.file_path))
         except (OSError, UnicodeDecodeError) as e:
@@ -49,7 +50,7 @@ class SchemaInferer:
         except SyntaxError as e:
             self._logger.warning("Syntax error in %s: %s", self.file_path, e)
             return []
-        
+
         models: List[SchemaInfo] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef) and self._is_model(node):

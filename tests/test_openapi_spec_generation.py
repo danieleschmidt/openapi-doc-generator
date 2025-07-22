@@ -25,23 +25,23 @@ def test_type_to_openapi_conversions():
     assert _type_to_openapi("float") == "number"
     assert _type_to_openapi("str") == "string"
     assert _type_to_openapi("bool") == "boolean"
-    
+
     # Case insensitive
     assert _type_to_openapi("INT") == "integer"
     assert _type_to_openapi("Float") == "number"
-    
+
     # List/Sequence types (lines 23-24)
     assert _type_to_openapi("list") == "array"
     assert _type_to_openapi("List[str]") == "array"
     assert _type_to_openapi("sequence") == "array"
     assert _type_to_openapi("Sequence[int]") == "array"
-    
+
     # Dict/Mapping types (lines 25-26)
     assert _type_to_openapi("dict") == "object"
     assert _type_to_openapi("Dict[str, int]") == "object"
     assert _type_to_openapi("mapping") == "object"
     assert _type_to_openapi("Mapping[str, Any]") == "object"
-    
+
     # Default fallback (line 27)
     assert _type_to_openapi("unknown_type") == "string"
     assert _type_to_openapi("CustomClass") == "string"

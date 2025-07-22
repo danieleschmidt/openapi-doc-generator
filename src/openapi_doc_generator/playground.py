@@ -41,7 +41,7 @@ class PlaygroundGenerator:
             raise TypeError("spec must be a dict")
         template = Template(self.template)
         # Safely serialize JSON for JavaScript context to prevent XSS
-        spec_json = json.dumps(spec).replace('<', '\\u003c').replace('>', '\\u003e')
+        spec_json = json.dumps(spec).replace("<", "\\u003c").replace(">", "\\u003e")
         return template.render(
             title=html.escape(spec.get("info", {}).get("title", "API")),
             spec=spec_json,

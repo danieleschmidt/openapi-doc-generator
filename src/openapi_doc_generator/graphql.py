@@ -22,12 +22,12 @@ class GraphQLSchema:
             schema_str = self.schema_path.read_text()
         except (OSError, UnicodeDecodeError) as e:
             raise ValueError(f"Failed to read schema file: {e}")
-        
+
         try:
             schema = build_schema(schema_str)
         except Exception as e:
             raise ValueError(f"Invalid GraphQL schema syntax: {e}")
-        
+
         query = get_introspection_query()
         result = graphql_sync(schema, query)
         if result.errors:

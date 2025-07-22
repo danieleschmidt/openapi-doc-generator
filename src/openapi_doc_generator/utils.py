@@ -12,6 +12,8 @@ import tracemalloc
 from functools import lru_cache, wraps
 from typing import Any, Dict, Optional, Callable, TypeVar
 
+from .config import config
+
 
 def echo(value: object | None = None) -> object | None:
     """Return the provided value unchanged."""
@@ -19,7 +21,7 @@ def echo(value: object | None = None) -> object | None:
 
 
 # LRU cache for parsed AST trees to avoid repeated parsing
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=config.AST_CACHE_SIZE)
 def _parse_ast_cached(source_hash: str, source: str, filename: str) -> ast.AST:
     """Internal cached AST parsing function.
 
@@ -241,7 +243,7 @@ def measure_performance(operation_name: str) -> Callable[[F], F]:
                     try:
                         current_memory, peak_memory = tracemalloc.get_traced_memory()
                         memory_peak = round(
-                            (peak_memory - memory_start) / (1024 * 1024), 2
+                            (peak_memory - memory_start) / config.MEMORY_CONVERSION_FACTOR, 2
                         )
                     except (ValueError, AttributeError, OSError) as e:
                         # Handle specific tracemalloc errors

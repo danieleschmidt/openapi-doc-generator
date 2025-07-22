@@ -27,7 +27,7 @@ class TestSuiteGenerator:
                 test_name = f"test_{route.name}_{method.lower()}"
                 lines.append(f"def {test_name}():")
                 lines.append(
-                    f"    resp = requests.{method.lower()}('http://localhost{path}')"
+                    f"    resp = requests.{method.lower()}('{config.TEST_BASE_URL}{path}')"
                 )
                 lines.append(
                     f"    assert resp.status_code == "

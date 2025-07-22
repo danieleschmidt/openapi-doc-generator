@@ -187,29 +187,51 @@ class SpecValidator:
             return suggestions
 
         # Validate schemas
-        schemas = components.get("schemas", {})
-        if schemas and isinstance(schemas, dict):
-            for schema_name, schema_def in schemas.items():
-                if not isinstance(schema_def, dict):
-                    suggestions.append(f"Schema '{schema_name}' must be an object")
-                    continue
-
-                if not schema_def:
-                    suggestions.append(
-                        f"Schema '{schema_name}' is empty - consider adding "
-                        f"'type' or 'properties'"
-                    )
-                elif (
-                    "type" not in schema_def
-                    and "properties" not in schema_def
-                    and "$ref" not in schema_def
-                ):
-                    suggestions.append(
-                        f"Schema '{schema_name}' should define 'type', "
-                        f"'properties', or '$ref'"
-                    )
+        suggestions.extend(self._validate_component_schemas(components))
 
         return suggestions
+
+    def _validate_component_schemas(self, components: Dict[str, Any]) -> List[str]:
+        """Validate schemas section within components."""
+        suggestions = []
+        schemas = components.get("schemas", {})
+        
+        if not schemas or not isinstance(schemas, dict):
+            return suggestions
+
+        for schema_name, schema_def in schemas.items():
+            suggestions.extend(self._validate_single_schema(schema_name, schema_def))
+
+        return suggestions
+
+    def _validate_single_schema(self, schema_name: str, schema_def: Any) -> List[str]:
+        """Validate a single schema definition."""
+        suggestions = []
+        
+        if not isinstance(schema_def, dict):
+            suggestions.append(f"Schema '{schema_name}' must be an object")
+            return suggestions
+
+        if not schema_def:
+            suggestions.append(
+                f"Schema '{schema_name}' is empty - consider adding "
+                f"'type' or 'properties'"
+            )
+        elif not self._has_valid_schema_properties(schema_def):
+            suggestions.append(
+                f"Schema '{schema_name}' should define 'type', "
+                f"'properties', or '$ref'"
+            )
+
+        return suggestions
+
+    def _has_valid_schema_properties(self, schema_def: Dict[str, Any]) -> bool:
+        """Check if schema has valid defining properties."""
+        return (
+            "type" in schema_def
+            or "properties" in schema_def
+            or "$ref" in schema_def
+        )
 
     def _validate_security(self, spec: Dict[str, Any]) -> List[str]:
         """Validate security configuration."""

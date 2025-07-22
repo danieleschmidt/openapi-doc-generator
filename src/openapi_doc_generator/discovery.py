@@ -56,7 +56,11 @@ def get_plugins() -> List[RoutePlugin]:
             try:
                 plugin_cls = ep.load()
                 register_plugin(plugin_cls())
-            except (ImportError, ModuleNotFoundError, AttributeError) as e:  # pragma: no cover
+            except (
+                ImportError,
+                ModuleNotFoundError,
+                AttributeError,
+            ) as e:  # pragma: no cover
                 logging.getLogger(__name__).warning(
                     "Failed to import plugin %s: %s", ep.name, e
                 )
@@ -82,33 +86,51 @@ class RouteDiscoverer:
 
     def discover(self) -> List[RouteInfo]:
         """Discover routes based on detected framework."""
-        self._logger.debug("Scanning %s for routes", self.app_path)
-        source = self.app_path.read_text()
-        for plugin in get_plugins():
-            if plugin.detect(source):
-                self._logger.debug("Using plugin %s", plugin.__class__.__name__)
-                return plugin.discover(str(self.app_path))
-        
-        framework = self._detect_framework(source)
-        if framework == "fastapi":
-            return self._discover_fastapi(source)
-        elif framework == "flask":
-            return self._discover_flask(source)
-        elif framework == "django":
-            return self._discover_django(source)
-        elif framework == "express":
-            return self._discover_express(source)
-        else:
-            raise ValueError("Unable to determine framework for route discovery")
+        from .utils import measure_performance
+
+        @measure_performance("route_discovery")
+        def _discover_routes():
+            self._logger.debug("Scanning %s for routes", self.app_path)
+            source = self.app_path.read_text()
+            for plugin in get_plugins():
+                if plugin.detect(source):
+                    self._logger.debug("Using plugin %s", plugin.__class__.__name__)
+                    return plugin.discover(str(self.app_path))
+
+            framework = self._detect_framework(source)
+            if framework == "fastapi":
+                routes = self._discover_fastapi(source)
+            elif framework == "flask":
+                routes = self._discover_flask(source)
+            elif framework == "django":
+                routes = self._discover_django(source)
+            elif framework == "express":
+                routes = self._discover_express(source)
+            else:
+                raise ValueError("Unable to determine framework for route discovery")
+
+            # Log route count for performance tracking
+            self._logger.info(
+                f"Discovered {len(routes)} routes",
+                extra={
+                    "operation": "route_discovery",
+                    "route_count": len(routes),
+                    "framework": framework,
+                },
+            )
+            return routes
+
+        return _discover_routes()
 
     def _extract_imports_from_ast(self, source: str) -> Optional[set[str]]:
         """Extract import names from AST, return None if parsing fails."""
         try:
             from .utils import get_cached_ast
+
             tree = get_cached_ast(source, str(self.app_path))
         except SyntaxError:
             return None
-        
+
         imports = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -118,31 +140,37 @@ class RouteDiscoverer:
                 if node.module:
                     imports.add(node.module)
         return imports
-    
+
     def _detect_framework_from_imports(self, imports: set[str]) -> Optional[str]:
         """Detect framework from import names using priority order."""
         framework_patterns = [
             ("fastapi", "fastapi"),
-            ("flask", "flask"), 
-            ("django", "django")
+            ("flask", "flask"),
+            ("django", "django"),
         ]
-        
+
         for framework, pattern in framework_patterns:
             if any(imp.startswith(pattern) for imp in imports):
                 return framework
         return None
-    
+
     def _detect_framework(self, source: str) -> Optional[str]:
         """Detect framework based on imports and patterns."""
-        imports = self._extract_imports_from_ast(source)
-        
-        if imports is not None:
-            framework = self._detect_framework_from_imports(imports)
-            if framework:
-                return framework
-        
-        # Fall back to content analysis
-        return self._detect_framework_fallback(source)
+        from .utils import measure_performance
+
+        @measure_performance("framework_detection")
+        def _detect():
+            imports = self._extract_imports_from_ast(source)
+
+            if imports is not None:
+                framework = self._detect_framework_from_imports(imports)
+                if framework:
+                    return framework
+
+            # Fall back to content analysis
+            return self._detect_framework_fallback(source)
+
+        return _detect()
 
     def _detect_framework_fallback(self, source: str) -> Optional[str]:
         """Fallback framework detection using string matching."""
@@ -160,6 +188,7 @@ class RouteDiscoverer:
     # --- Framework specific discovery methods ---------------------------------
     def _discover_fastapi(self, source: str) -> List[RouteInfo]:
         from .utils import get_cached_ast
+
         tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
 
@@ -194,6 +223,7 @@ class RouteDiscoverer:
 
     def _discover_flask(self, source: str) -> List[RouteInfo]:
         from .utils import get_cached_ast
+
         tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
 
@@ -236,6 +266,7 @@ class RouteDiscoverer:
 
     def _discover_django(self, source: str) -> List[RouteInfo]:
         from .utils import get_cached_ast
+
         tree = get_cached_ast(source, str(self.app_path))
         routes: List[RouteInfo] = []
 

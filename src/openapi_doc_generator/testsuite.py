@@ -29,6 +29,8 @@ class TestSuiteGenerator:
                 lines.append(
                     f"    resp = requests.{method.lower()}('http://localhost{path}')"
                 )
-                lines.append(f"    assert resp.status_code == {config.DEFAULT_SUCCESS_STATUS_INT}")
+                lines.append(
+                    f"    assert resp.status_code == {config.DEFAULT_SUCCESS_STATUS_INT}"
+                )
                 lines.append("")
         return "\n".join(lines)

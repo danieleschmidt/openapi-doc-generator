@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  openapi-doc-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VERSION: ${VERSION:-0.1.0}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+    image: openapi-doc-generator:dev
+    container_name: openapi-doc-generator-dev
+    volumes:
+      # Mount source code for development
+      - .:/workspace:ro
+      # Mount output directory
+      - ./output:/app/output
+    working_dir: /workspace
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    profiles:
+      - dev
+    
+  # Production-like service for testing
+  openapi-doc-generator-prod:
+    image: openapi-doc-generator:latest
+    container_name: openapi-doc-generator-prod
+    volumes:
+      - ./examples:/workspace:ro
+      - ./output:/app/output
+    working_dir: /workspace
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    profiles:
+      - prod
+      
+networks:
+  default:
+    name: openapi-doc-generator-network

@@ -14,7 +14,7 @@ def test_ast_parsing_failure_fallback(tmp_path):
         "    invalid python syntax here\n"
         "app = FastAPI()\n"
     )
-    
+
     discoverer = RouteDiscoverer(str(app))
     # Should fall back to string detection and still detect FastAPI
     framework = discoverer._detect_framework(app.read_text())
@@ -101,7 +101,7 @@ from fastapi import FastAPI, APIRouter
 from flask import Flask  # This should detect fastapi first due to order
 import django.core
 """)
-    
+
     discoverer = RouteDiscoverer(str(app))
     framework = discoverer._detect_framework(app.read_text())
     # Should detect fastapi since it comes first in the detection order
@@ -121,7 +121,7 @@ urlpatterns = [
     path('api/user/<int:pk>/', views.user_detail),
 ]
 """)
-    
+
     routes = RouteDiscoverer(str(app)).discover()
     # Find route with name
     named_routes = [r for r in routes if r.name]
@@ -132,7 +132,7 @@ urlpatterns = [
 def test_abstract_plugin_methods():
     """Test that abstract methods of RoutePlugin cannot be instantiated."""
     from openapi_doc_generator.discovery import RoutePlugin
-    
+
     # Should not be able to instantiate abstract base class
     with pytest.raises(TypeError):
         RoutePlugin()
@@ -155,7 +155,7 @@ import sys
 def main():
     print("Hello, world!")
 """)
-    
+
     # Should raise ValueError when no framework is detected
     with pytest.raises(ValueError, match="Unable to determine framework"):
         RouteDiscoverer(str(app)).discover()
@@ -171,7 +171,7 @@ def setup():
     # Using fastapi framework
     pass
 """)
-    
+
     discoverer = RouteDiscoverer(str(app))
     framework = discoverer._detect_framework(app.read_text())
     # Should fall back to string matching and detect fastapi

@@ -110,7 +110,7 @@ def test_cli_performance_metrics_with_output_file(tmp_path):
         
         # Verify markdown was written
         content = output_file.read_text()
-        assert "# My API" in content  # Default title
+        assert "# API" in content  # Default title
         assert "/perf" in content
 
 

@@ -1,8 +1,8 @@
 # Autonomous Development Backlog
 
-**Generated:** 2025-07-22 16:37 UTC  
+**Generated:** 2025-07-23 03:15 UTC  
 **Analysis Method:** WSJF (Weighted Shortest Job First)  
-**Current State:** 97% test coverage, 154 tests passing, all security scans clear, all linting issues resolved
+**Current State:** 98% test coverage, 198 tests passing, zero security issues, average complexity A(3.32)
 
 ## Scoring Methodology
 
@@ -24,173 +24,130 @@
 
 ---
 
-## High Priority Tasks (WSJF > 2.5)
+## High Priority Tasks (WSJF > 3.0)
 
-### 1. **✅ Improve Test Coverage in Discovery Module** - COMPLETED
-- **WSJF:** 4.33 (Impact: 6, Effort: 3)
-- **Missing Coverage:** Lines 115-116, 130, 136, 138, 140, 143 in `discovery.py` (92% → 97%)
-- **Description:** Add edge case tests for AST parsing failures and framework detection edge cases
-- **Implementation:** Write tests for malformed Python files, missing imports, and fallback scenarios
+### 1. **Complete Coverage for Discovery Error Paths** - NEW
+- **WSJF:** 5.0 (Impact: 10, Effort: 2)
+- **Missing Coverage:** Lines 33, 38, 336 in `discovery.py` (99% → 100%)
+- **Description:** Add tests for abstract method instantiation attempts and fallback scenario edge cases
+- **Implementation:** Test direct RoutePlugin instantiation and plugin loading failure scenarios
+- **Risk:** Very Low - testing error paths only
+- **Priority:** Critical for 100% coverage milestone
+
+### 2. **Optimize Complex Framework Detection Logic** - NEW  
+- **WSJF:** 4.5 (Impact: 9, Effort: 2)
+- **Location:** `discovery.py:176` - `_detect_framework_fallback` (B complexity: 9)
+- **Description:** Reduce cyclomatic complexity by extracting pattern matching logic
+- **Implementation:** Extract framework-specific detection methods, reduce nested conditionals
+- **Risk:** Medium - requires careful behavior preservation
+- **Impact:** Improved maintainability and testability
+
+### 3. **Complete Utils Error Handling Coverage** - NEW
+- **WSJF:** 4.0 (Impact: 8, Effort: 2)  
+- **Missing Coverage:** Lines 107, 132, 136, 248-251 in `utils.py` (95% → 100%)
+- **Description:** Add comprehensive tests for memory tracking and AST caching error scenarios
+- **Implementation:** Test tracemalloc failures, cache eviction edge cases, memory measurement errors
+- **Risk:** Low - testing existing error handling paths
+- **Impact:** Complete error path validation
+
+### 4. **Enhance Validator Coverage and Error Handling** - NEW
+- **WSJF:** 3.5 (Impact: 7, Effort: 2)
+- **Missing Coverage:** Lines 58, 120-121, 200, 220-221, 230 in `validator.py` (95% → 100%)
+- **Description:** Add tests for schema validation edge cases and security scheme validation
+- **Implementation:** Test empty security schemes, invalid schema references, malformed components
 - **Risk:** Low - additive testing only
-- **RESULT:** Improved coverage from 92% to 97%, added 12 comprehensive edge case tests
+- **Impact:** Comprehensive OpenAPI validation coverage
 
-### 2. **✅ Complete CLI Error Path Coverage** - COMPLETED
-- **WSJF:** 3.5 (Impact: 7, Effort: 2)  
-- **Missing Coverage:** Lines 127-128, 138 in `cli.py` (97% → 99%)
-- **Description:** Add tests for JSON parsing errors and unknown format handling  
-- **Implementation:** Create malformed JSON old-spec files and test invalid format arguments
-- **Risk:** Low - testing error paths
-- **RESULT:** Improved coverage from 97% to 99%, identified line 138 as unreachable dead code
+---
 
-### 3. **✅ Enhance GraphQL Error Resilience** - COMPLETED
-- **WSJF:** 3.0 (Impact: 6, Effort: 2)
-- **Missing Coverage:** Lines 34, 36 in `graphql.py` (92% → 100%)  
-- **Description:** Add tests for GraphQL schema parsing failures and malformed schemas
-- **Implementation:** Test with invalid GraphQL schema files and corrupted input
+## Medium Priority Tasks (WSJF 2.0-3.0)
+
+### 5. **Simplify Complex Import Extraction Logic** - NEW
+- **WSJF:** 2.8 (Impact: 7, Effort: 2.5)
+- **Location:** `discovery.py:126` - `_extract_imports_from_ast` (B complexity: 7)
+- **Description:** Refactor AST import parsing to reduce nested conditional logic
+- **Implementation:** Extract import type handlers, simplify control flow
+- **Risk:** Medium - requires AST handling expertise
+- **Impact:** Better maintainability for framework detection
+
+### 6. **Streamline Plugin Loading Error Handling** - NEW
+- **WSJF:** 2.4 (Impact: 6, Effort: 2.5)
+- **Location:** `discovery.py:49` - `get_plugins` (B complexity: 6)
+- **Description:** Simplify exception handling in plugin discovery with specific error types
+- **Implementation:** Consolidate exception handling, improve error messages
 - **Risk:** Low - defensive improvement
-- **RESULT:** Achieved 100% coverage, added comprehensive error scenario testing
+- **Impact:** Better plugin ecosystem reliability
 
-### 4. **✅ Optimize Complex Functions (Cyclomatic Complexity)** - COMPLETED
-- **WSJF:** 2.67 (Impact: 8, Effort: 3)
-- **Description:** Refactor `main()` function (complexity C), `_detect_framework()` (complexity C), and validator methods
-- **Implementation:** Extract helper functions, reduce nesting, simplify conditional logic
-- **Risk:** Medium - requires careful refactoring to maintain behavior
-- **RESULT:** Successfully reduced both functions from complexity C to B, added 16 behavior verification tests
-
----
-
-## Medium Priority Tasks (WSJF 1.5-2.5)
-
-### 5. **✅ Performance Optimization: AST Caching** - COMPLETED
+### 7. **Optimize Test Suite Performance** - NEW
 - **WSJF:** 2.0 (Impact: 6, Effort: 3)
-- **Description:** Cache parsed AST results to avoid repeated parsing of the same files
-- **Implementation:** Add LRU cache to AST parsing functions, measure performance improvement
-- **Risk:** Low - performance enhancement with fallback
-- **RESULT:** Achieved 40.7% performance improvement (1.69x speedup), added 7 comprehensive tests
-
-### 6. **✅ Add Structured JSON Logging Option** - COMPLETED
-- **WSJF:** 1.75 (Impact: 7, Effort: 4) 
-- **Description:** Implement `--log-format json` CLI option for machine-readable logs
-- **Implementation:** Add structured logging with correlation IDs and timing metrics
-- **Risk:** Low - additive feature
-- **RESULT:** Implemented comprehensive JSON logging with correlation IDs, timing metrics, and 8 comprehensive tests
-
-### 7. **✅ Docker Image Creation** - COMPLETED
-- **WSJF:** 1.67 (Impact: 5, Effort: 3)
-- **Description:** Create automated Docker image build and publish workflow
-- **Implementation:** Add Dockerfile, GitHub Actions workflow, update documentation
-- **Risk:** Low - infrastructure improvement
-- **RESULT:** Created multi-stage optimized Dockerfile with security hardening, automated GitHub Actions CI/CD pipeline, comprehensive test suite with 9 tests, updated documentation with Docker usage examples
+- **Description:** Reduce test suite runtime from 59s to <30s through parallelization and optimization
+- **Implementation:** Add pytest-xdist, optimize fixture usage, reduce file I/O in tests
+- **Risk:** Low - performance enhancement
+- **Impact:** Improved developer experience
 
 ---
 
-## Lower Priority Tasks (WSJF < 1.5)
+## Lower Priority Tasks (WSJF < 2.0)
 
-### 8. **✅ Add Route Performance Metrics** - COMPLETED
-- **WSJF:** 1.4 (Impact: 7, Effort: 5)
-- **Description:** Collect and emit metrics on route discovery performance
-- **Implementation:** Add timing decorators, memory usage tracking, export to structured logs
-- **Risk:** Low - observability enhancement
-- **RESULT:** Implemented comprehensive performance measurement decorator with timing, memory tracking, and aggregated statistics. Added CLI option `--performance-metrics`, integrated with JSON logging, and created 11 comprehensive tests covering all functionality.
-
-### 9. **Expand Framework Support**
+### 8. **Add Advanced Framework Support** - EXISTING
 - **WSJF:** 1.2 (Impact: 6, Effort: 5)  
 - **Description:** Add support for Starlette, Tornado, or other frameworks
 - **Implementation:** Create new plugin, add detection logic, comprehensive testing
 - **Risk:** Medium - new feature requiring extensive testing
 
-### 10. **Advanced CLI Features**
+### 9. **Enhanced CLI User Experience** - EXISTING
 - **WSJF:** 1.0 (Impact: 4, Effort: 4)
 - **Description:** Add verbose/quiet modes, colored output, progress indicators
 - **Implementation:** Enhanced CLI with rich formatting and user experience improvements
 - **Risk:** Low - user experience enhancement
 
+### 10. **Performance Benchmarking Suite** - NEW
+- **WSJF:** 0.8 (Impact: 4, Effort: 5)
+- **Description:** Add comprehensive performance benchmarks and regression testing
+- **Implementation:** Benchmark suite for route discovery, memory usage tracking, CI integration
+- **Risk:** Low - infrastructure enhancement
+- **Impact:** Performance regression prevention
+
 ---
 
 ## Technical Debt Register
 
-| Component | Debt Type | Priority | Estimated Effort |
-|-----------|-----------|----------|------------------|
-| `discovery.py` | High complexity functions | Medium | 2-3 hours |
-| `validator.py` | Complex validation methods | Medium | 2-3 hours |
-| `cli.py` | Monolithic main function | Low | 1-2 hours |
+| Component | Debt Type | Priority | Estimated Effort | WSJF Score |
+|-----------|-----------|----------|------------------|------------|
+| `discovery.py:176` | High complexity method (B:9) | High | 1-2 hours | 4.5 |
+| `discovery.py:126` | Complex AST parsing (B:7) | Medium | 1.5-2 hours | 2.8 |
+| `discovery.py:49` | Complex exception handling (B:6) | Medium | 1-2 hours | 2.4 |
+| Test suite | Performance optimization | Low | 3-4 hours | 2.0 |
 
 ---
 
-## Newly Identified High Priority Tasks (WSJF > 3.0)
-
-### 9. **Reduce Function Complexity - Discovery Module** - NEW
-- **WSJF:** 4.0 (Impact: 8, Effort: 2)
-- **Description:** Refactor deeply nested functions in discovery.py (_discover_flask, _discover_fastapi, _discover_django)
-- **Implementation:** Extract helper methods, reduce nesting depth from 7 to ≤4 levels
-- **Risk:** Medium - requires careful refactoring to maintain behavior
-- **Files:** `src/openapi_doc_generator/discovery.py:224, 189, 267`
-
-### 10. **Replace Broad Exception Handlers** - NEW
-- **WSJF:** 3.5 (Impact: 7, Effort: 2)
-- **Description:** Replace generic `except Exception:` with specific exception types for better error handling
-- **Implementation:** Add specific exception types for AST parsing, GraphQL parsing, plugin loading
-- **Risk:** Low - improves error diagnostics and debugging
-- **Files:** `src/openapi_doc_generator/utils.py:246, schema.py:59, graphql.py:28, discovery.py:71`
-
-### 11. **Improve Validator Module Complexity** - NEW  
-- **WSJF:** 3.0 (Impact: 6, Effort: 2)
-- **Description:** Reduce cyclomatic complexity in validator methods (8+ nesting levels)
-- **Implementation:** Extract validation logic into smaller, focused methods
-- **Risk:** Low - improves maintainability and testability
-- **Files:** `src/openapi_doc_generator/validator.py:95, 184`
-
-## Remaining Priority Tasks (WSJF 1.5-3.0)
-
-### 12. **✅ Extract Magic Numbers to Constants** - COMPLETED
-- **WSJF:** 2.0 (Impact: 4, Effort: 2)  
-- **Description:** Replace hardcoded values with named constants for better maintainability
-- **Implementation:** Extract cache sizes, memory conversion factors, default URLs
-- **Risk:** Very Low - improves code readability
-- **RESULT:** Added AST_CACHE_SIZE, MEMORY_CONVERSION_FACTOR, TEST_BASE_URL constants to config.py
-
-### 13. **✅ Fix Linting Issues** - COMPLETED
-- **WSJF:** 3.0 (Impact: 3, Effort: 1)
-- **Description:** Resolve 9 line length violations (E501 errors) for better code quality
-- **Implementation:** Break long lines while preserving functionality
-- **Risk:** Very Low - formatting improvements only  
-- **RESULT:** Fixed all linting violations across 4 modules, improved code readability
-
-### 14. **✅ Reduce Validator Complexity** - COMPLETED  
-- **WSJF:** 2.5 (Impact: 5, Effort: 2)
-- **Description:** Reduce _validate_components_section complexity from C=11 to B rating
-- **Implementation:** Extract helper methods for focused validation logic
-- **Risk:** Low - improves maintainability
-- **RESULT:** Reduced complexity by creating _validate_component_schemas, _validate_single_schema, _has_valid_schema_properties methods
-
-### 15. **✅ Improve Documentator Coverage** - COMPLETED
-- **WSJF:** 3.33 (Impact: 10, Effort: 3)
-- **Description:** Achieve 100% test coverage for documentator.py module (90% → 100%)
-- **Implementation:** Add tests for FileNotFoundError handling in schema inference
-- **Risk:** Very Low - additive testing only
-- **RESULT:** Created comprehensive error handling tests, improved coverage to 100%
-
-## New High Priority Tasks (WSJF > 2.0)
-
-### 16. **Improve CLI Module Coverage** - NEW
-- **WSJF:** 4.0 (Impact: 8, Effort: 2)
-- **Description:** Improve CLI module test coverage from 24% to >90%
-- **Implementation:** Add tests for error paths, format handling, validation functions
-- **Risk:** Low - testing existing functionality
-- **Files:** `src/openapi_doc_generator/cli.py` - main user interface needs comprehensive testing
-
 ## Next Actions
 
-1. **Immediate (Next 1 hour):** Start with Task #9 (Discovery module complexity) - highest new WSJF
-2. **Short Term (This session):** Complete Tasks #9-11 to address code complexity issues
-3. **Medium Term:** Address remaining magic numbers and technical debt
-4. **Long Term:** Framework expansion and advanced features
+1. **Immediate (Next 30 minutes):** Start with Task #1 (Discovery error path coverage) - highest WSJF
+2. **Short Term (This session):** Complete Tasks #1-4 to achieve 100% coverage
+3. **Medium Term:** Address complexity reduction in discovery module
+4. **Long Term:** Framework expansion and performance optimization
 
 ---
 
 ## Success Metrics
 
-- **Coverage Target:** 100% test coverage across all modules
-- **Performance Target:** Route discovery < 1s for typical applications
-- **Quality Target:** All functions complexity < B rating
-- **Security Target:** Zero security issues in all scans
+- **Coverage Target:** 100% test coverage across all modules ✓ (Next: 98% → 100%)
+- **Performance Target:** Route discovery < 1s for typical applications ✓
+- **Quality Target:** All functions complexity ≤ B rating (Current: 3 functions at B)
+- **Security Target:** Zero security issues ✓ (Maintained)
+- **Test Performance:** Test suite runtime < 30s (Current: 59s)
+
+---
+
+## Autonomous Development Process
+
+This backlog follows disciplined autonomous development principles:
+
+1. **Impact-First Prioritization**: WSJF methodology ensures highest-value work first
+2. **Risk-Aware Implementation**: Each task includes risk assessment and mitigation
+3. **Test-Driven Development**: All changes require comprehensive test coverage
+4. **Continuous Integration**: Security scans, linting, and complexity monitoring
+5. **Documentation-Driven**: Changes include rationale, testing approach, rollback plans
+
+**Status**: Ready to begin autonomous implementation of highest-priority tasks.

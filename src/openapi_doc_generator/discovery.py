@@ -50,30 +50,28 @@ def get_plugins() -> List[RoutePlugin]:
     """Get all registered route discovery plugins."""
     if not _PLUGINS:
         import importlib
-
         importlib.import_module("openapi_doc_generator.plugins")
+        
         for ep in metadata.entry_points(group="openapi_doc_generator.plugins"):
-            try:
-                plugin_cls = ep.load()
-                register_plugin(plugin_cls())
-            except (
-                ImportError,
-                ModuleNotFoundError,
-                AttributeError,
-            ) as e:  # pragma: no cover
-                logging.getLogger(__name__).warning(
-                    "Failed to import plugin %s: %s", ep.name, e
-                )
-            except (TypeError, ValueError) as e:  # pragma: no cover
-                logging.getLogger(__name__).warning(
-                    "Failed to instantiate plugin %s: %s", ep.name, e
-                )
-            except (ImportError, AttributeError, TypeError) as e:  # pragma: no cover
-                # Handle specific plugin loading errors
-                logging.getLogger(__name__).exception(
-                    "Plugin loading error %s: %s", ep.name, e
-                )
+            _load_single_plugin(ep)
+    
     return list(_PLUGINS)
+
+
+def _load_single_plugin(ep) -> None:
+    """Load a single plugin entry point with consolidated error handling."""
+    logger = logging.getLogger(__name__)
+    
+    try:
+        plugin_cls = ep.load()
+        register_plugin(plugin_cls())
+    except (ImportError, ModuleNotFoundError, AttributeError) as e:  # pragma: no cover
+        logger.warning("Failed to import plugin %s: %s", ep.name, e)
+    except (TypeError, ValueError) as e:  # pragma: no cover
+        logger.warning("Failed to instantiate plugin %s: %s", ep.name, e)
+    except Exception as e:  # pragma: no cover
+        # Catch-all for any other plugin loading errors
+        logger.exception("Unexpected plugin loading error %s: %s", ep.name, e)
 
 
 class RouteDiscoverer:
@@ -127,20 +125,31 @@ class RouteDiscoverer:
         """Extract import names from AST, return None if parsing fails."""
         try:
             from .utils import get_cached_ast
-
             tree = get_cached_ast(source, str(self.app_path))
         except SyntaxError:
             return None
 
         imports = set()
         for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                for alias in node.names:
-                    imports.add(alias.name)
-            elif isinstance(node, ast.ImportFrom):
-                if node.module:
-                    imports.add(node.module)
+            self._process_import_node(node, imports)
         return imports
+    
+    def _process_import_node(self, node: ast.AST, imports: set[str]) -> None:
+        """Process an AST node and extract import information."""
+        if isinstance(node, ast.Import):
+            self._handle_direct_import(node, imports)
+        elif isinstance(node, ast.ImportFrom):
+            self._handle_from_import(node, imports)
+    
+    def _handle_direct_import(self, node: ast.Import, imports: set[str]) -> None:
+        """Handle direct import statements (import module)."""
+        for alias in node.names:
+            imports.add(alias.name)
+    
+    def _handle_from_import(self, node: ast.ImportFrom, imports: set[str]) -> None:
+        """Handle from-import statements (from module import ...)."""
+        if node.module:
+            imports.add(node.module)
 
     def _detect_framework_from_imports(self, imports: set[str]) -> Optional[str]:
         """Detect framework from import names using priority order."""
@@ -176,15 +185,36 @@ class RouteDiscoverer:
     def _detect_framework_fallback(self, source: str) -> Optional[str]:
         """Fallback framework detection using string matching."""
         lowered = source.lower()
-        if "fastapi" in lowered or "from fastapi" in lowered:
-            return "fastapi"
-        elif "flask" in lowered or "from flask" in lowered:
-            return "flask"
-        elif "django" in lowered or "from django" in lowered:
-            return "django"
-        elif "express" in lowered or "require('express')" in lowered:
-            return "express"
+        
+        # Framework detection patterns - more maintainable and testable
+        framework_patterns = [
+            ("fastapi", self._detect_fastapi_patterns),
+            ("flask", self._detect_flask_patterns),
+            ("django", self._detect_django_patterns),
+            ("express", self._detect_express_patterns),
+        ]
+        
+        for framework, detector in framework_patterns:
+            if detector(lowered):
+                return framework
+        
         return None
+    
+    def _detect_fastapi_patterns(self, lowered_source: str) -> bool:
+        """Detect FastAPI framework patterns."""
+        return "fastapi" in lowered_source or "from fastapi" in lowered_source
+    
+    def _detect_flask_patterns(self, lowered_source: str) -> bool:
+        """Detect Flask framework patterns."""
+        return "flask" in lowered_source or "from flask" in lowered_source
+    
+    def _detect_django_patterns(self, lowered_source: str) -> bool:
+        """Detect Django framework patterns."""
+        return "django" in lowered_source or "from django" in lowered_source
+    
+    def _detect_express_patterns(self, lowered_source: str) -> bool:
+        """Detect Express.js framework patterns."""
+        return "express" in lowered_source or "require('express')" in lowered_source
 
     # --- Framework specific discovery methods ---------------------------------
     def _discover_fastapi(self, source: str) -> List[RouteInfo]:

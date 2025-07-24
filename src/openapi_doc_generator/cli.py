@@ -84,6 +84,29 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable detailed performance metrics collection and logging",
     )
+    
+    # Verbose/Quiet mode flags (mutually exclusive)
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose output with detailed progress information",
+    )
+    verbosity_group.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Suppress all non-error output",
+    )
+    
+    # Color output control
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored output",
+    )
+    
     return parser
 
 
@@ -154,18 +177,21 @@ def _generate_output(
     parser.error(f"Unknown format '{args.format}'")
 
 
-def _setup_logging(log_format: str = "standard") -> logging.Logger:
+def _setup_logging(log_format: str = "standard", level: int = logging.INFO, colored: bool = True) -> logging.Logger:
     """Configure logging and return logger instance."""
-    level_name = os.getenv("LOG_LEVEL", "INFO").upper()
-    level = getattr(logging, level_name, logging.INFO)
-
     if log_format == "json":
         from .utils import setup_json_logging
-
         return setup_json_logging(level)
     else:
-        # Standard logging format
-        logging.basicConfig(level=level, format="%(levelname)s:%(name)s:%(message)s")
+        # Standard logging format with optional color support
+        if colored and not os.getenv("NO_COLOR") and sys.stderr.isatty():
+            # Use colored logging format
+            format_str = "\033[36m%(levelname)s\033[0m:\033[32m%(name)s\033[0m:%(message)s"
+        else:
+            # Standard format without colors
+            format_str = "%(levelname)s:%(name)s:%(message)s"
+        
+        logging.basicConfig(level=level, format=format_str)
         return logging.getLogger(__name__)
 
 
@@ -224,26 +250,50 @@ def _write_output(
         sys.stdout.write(output)
 
 
+def _show_progress(message: str, verbose: bool = False) -> None:
+    """Show progress message if verbose mode is enabled."""
+    if verbose:
+        sys.stderr.write(f"🔄 {message}...\n")
+        sys.stderr.flush()
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    logger = _setup_logging(args.log_format)
+    
+    # Determine logging level based on verbose/quiet flags
+    if args.verbose:
+        log_level = logging.DEBUG
+    elif args.quiet:
+        log_level = logging.WARNING
+    else:
+        level_name = os.getenv("LOG_LEVEL", "INFO").upper()
+        log_level = getattr(logging, level_name, logging.INFO)
+    
+    # Setup logging with color control
+    use_colors = not args.no_color
+    logger = _setup_logging(args.log_format, level=log_level, colored=use_colors)
 
     # Configure performance metrics
     from .utils import set_performance_tracking, get_performance_summary
 
     set_performance_tracking(args.performance_metrics)
 
+    _show_progress("Validating application path", args.verbose)
     app_path = _validate_app_path(args.app, parser, logger)
 
     if args.format == "graphql":
+        _show_progress("Processing GraphQL schema", args.verbose)
         output = _process_graphql_format(app_path, parser, logger)
         result = None
     else:
+        _show_progress("Analyzing application structure", args.verbose)
         result = APIDocumentator().analyze_app(str(app_path))
+        _show_progress("Generating documentation", args.verbose)
         output = _generate_output(result, args, parser, logger)
 
     if result and args.tests:
+        _show_progress("Generating test suite", args.verbose)
         tests_path = _validate_file_target(
             args.tests, "--tests", parser, logger, ErrorCode.TESTS_PATH_INVALID
         )
@@ -251,6 +301,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             TestSuiteGenerator(result).generate_pytest(), encoding="utf-8"
         )
 
+    _show_progress("Writing output", args.verbose)
     _write_output(output, args.output, parser, logger)
 
     # Log performance summary if metrics are enabled
@@ -264,6 +315,9 @@ def main(argv: Optional[list[str]] = None) -> int:
                     "performance_stats": summary,
                 },
             )
+
+    if args.verbose:
+        sys.stderr.write("✅ Documentation generation completed successfully!\n")
 
     return 0
 

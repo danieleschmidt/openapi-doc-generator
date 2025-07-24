@@ -1,10 +1,7 @@
 """Tests for achieving 100% coverage of utils module error paths and edge cases."""
 
 import logging
-import tracemalloc
-import uuid
-from unittest.mock import Mock, patch, MagicMock
-import pytest
+from unittest.mock import Mock, patch
 
 from openapi_doc_generator.utils import (
     get_correlation_id,

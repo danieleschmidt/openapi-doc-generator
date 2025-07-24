@@ -1,8 +1,7 @@
 """Tests for refactored plugin loading methods in discovery.py."""
 
 import logging
-from unittest.mock import Mock, patch, MagicMock
-import pytest
+from unittest.mock import Mock, patch
 from openapi_doc_generator.discovery import get_plugins, _load_single_plugin, register_plugin, _PLUGINS
 
 
@@ -158,9 +157,10 @@ class TestPluginLoadingRefactoring:
             
             mock_entry_points.return_value = [mock_ep1, mock_ep2]
             
-            plugins = get_plugins()
+            result_plugins = get_plugins()
             
             # Verify _load_single_plugin was called for each entry point
+            assert result_plugins is not None  # Ensure plugins were loaded
             assert mock_load_single.call_count == 2
             mock_load_single.assert_any_call(mock_ep1)
             mock_load_single.assert_any_call(mock_ep2)

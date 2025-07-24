@@ -2,7 +2,7 @@
 
 import json
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from openapi_doc_generator.cli import main
 
 
@@ -37,9 +37,9 @@ def test_cli_with_performance_metrics_enabled(tmp_path, capsys, caplog):
     assert "paths" in spec
     
     # Check logs for performance metrics (if JSON logging is enabled)
-    log_text = caplog.text
     # Performance tracking should have been enabled
     # Note: The actual performance summary logging might not show up in caplog
+    assert caplog.text  # Ensure some logging occurred
     # due to how the logger is configured, but the functionality is exercised
 
 

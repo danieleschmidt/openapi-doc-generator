@@ -1,6 +1,5 @@
 """Experimental test to achieve 100% coverage of abstract method pass statements."""
 
-import pytest
 from openapi_doc_generator.discovery import RoutePlugin
 
 
@@ -86,13 +85,13 @@ def test_manual_abstract_method_invocation():
         if hasattr(abstract_detect, '__func__'):
             try:
                 abstract_detect.__func__(plugin, "test")
-            except:
+            except Exception:
                 pass  # Expected to fail
                 
         if hasattr(abstract_discover, '__func__'):
             try:
                 abstract_discover.__func__(plugin, "test")
-            except:
+            except Exception:
                 pass  # Expected to fail
                 
     except Exception:

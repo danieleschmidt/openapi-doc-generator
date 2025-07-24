@@ -1,6 +1,5 @@
 """Comprehensive tests to achieve 100% coverage for validator.py missing lines."""
 
-import pytest
 from openapi_doc_generator.validator import SpecValidator
 
 

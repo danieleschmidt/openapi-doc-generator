@@ -2,7 +2,6 @@
 
 import tempfile
 import os
-import pytest
 from openapi_doc_generator.discovery import RouteDiscoverer
 
 

@@ -1,11 +1,9 @@
 """Comprehensive tests to achieve 100% coverage for utils module."""
 
 import ast
-import hashlib
 import logging
-import tempfile
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from openapi_doc_generator.utils import (
     get_cached_ast, 
     setup_json_logging,
@@ -120,9 +118,10 @@ class TestStructuredLoggingCoverage:
                     mock_logging.StreamHandler.return_value = Mock()
                     
                     # This should trigger lines 146-160
-                    logger = setup_json_logging()
+                    result_logger = setup_json_logging()
                     
                     # Verify that logging was configured
+                    assert result_logger is not None  # Ensure logger was returned
                     mock_logging.basicConfig.assert_called_once()
                     mock_logging.StreamHandler.assert_called_once()
     
@@ -141,9 +140,10 @@ class TestStructuredLoggingCoverage:
             mock_logging.StreamHandler.return_value = Mock()
             
             # This should trigger handler removal logic
-            logger = setup_json_logging()
+            result_logger = setup_json_logging()
             
             # Verify handlers were removed
+            assert result_logger is not None  # Ensure logger was returned
             assert mock_root_logger.removeHandler.call_count == 2
             mock_root_logger.removeHandler.assert_any_call(mock_handler1)
             mock_root_logger.removeHandler.assert_any_call(mock_handler2)
@@ -159,9 +159,10 @@ class TestStructuredLoggingCoverage:
             mock_logging.StreamHandler.return_value = Mock()
             
             # Test with custom level
-            logger = setup_json_logging(level=logging.ERROR)
+            result_logger = setup_json_logging(level=logging.ERROR)
             
             # Verify basicConfig was called with custom level
+            assert result_logger is not None  # Ensure logger was returned
             mock_logging.basicConfig.assert_called_once()
             call_kwargs = mock_logging.basicConfig.call_args[1]
             assert call_kwargs['level'] == logging.ERROR

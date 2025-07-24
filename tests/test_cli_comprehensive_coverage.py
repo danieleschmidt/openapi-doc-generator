@@ -1,11 +1,9 @@
 """Comprehensive CLI test coverage to improve cli.py from 24% to >90%."""
 
 import pytest
-import tempfile
 import argparse
 import logging
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
 from openapi_doc_generator.cli import (
     build_parser,

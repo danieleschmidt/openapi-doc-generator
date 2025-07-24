@@ -1,9 +1,7 @@
 """Final tests to achieve 100% coverage for remaining utils lines."""
 
 import logging
-import tracemalloc
-from unittest.mock import Mock, patch, MagicMock
-import pytest
+from unittest.mock import Mock, patch
 
 from openapi_doc_generator.utils import (
     _clear_ast_cache,

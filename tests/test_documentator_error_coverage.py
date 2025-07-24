@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import patch, MagicMock
-from pathlib import Path
 
 from openapi_doc_generator.documentator import APIDocumentator
 

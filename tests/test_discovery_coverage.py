@@ -2,10 +2,8 @@
 
 import ast
 import pytest
-from unittest.mock import patch, MagicMock
 from openapi_doc_generator.discovery import (
-    RouteDiscoverer,
-    RouteInfo
+    RouteDiscoverer
 )
 
 

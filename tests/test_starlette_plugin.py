@@ -2,12 +2,9 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
 
 from openapi_doc_generator.plugins.starlette import StarlettePlugin
-from openapi_doc_generator.discovery import RouteInfo
 
 
 class TestStarlettePlugin:

@@ -32,6 +32,7 @@ packages = [
 
 [project.entry-points."openapi_doc_generator.plugins"]
 aiohttp = "openapi_doc_generator.plugins.aiohttp:AioHTTPPlugin"
+starlette = "openapi_doc_generator.plugins.starlette:StarlettePlugin"
 
 [project.scripts]
 "openapi-doc-generator" = "openapi_doc_generator.cli:main"

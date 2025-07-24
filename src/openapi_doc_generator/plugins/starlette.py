@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 import logging
 
 from ..discovery import RouteInfo, RoutePlugin, register_plugin
@@ -30,14 +30,22 @@ class StarlettePlugin(RoutePlugin):
             content = source_path.read_text(encoding='utf-8')
             tree = ast.parse(content)
             
-            routes = []
+            # Extract all route assignments and function docstrings
+            route_assignments = {}
             function_docs = self._extract_function_docstrings(tree)
             
-            # Find route definitions
+            # First pass: collect all route assignments
             for node in ast.walk(tree):
-                if self._is_route_assignment(node):
-                    extracted_routes = self._extract_routes_from_assignment(node, function_docs)
-                    routes.extend(extracted_routes)
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, ast.Name) and target.id.endswith('routes'):
+                            route_assignments[target.id] = node.value
+            
+            # Second pass: process main routes assignment
+            routes = []
+            main_routes = route_assignments.get('routes')
+            if main_routes:
+                routes.extend(self._process_route_list(main_routes, route_assignments, function_docs))
             
             return routes
             
@@ -49,36 +57,34 @@ class StarlettePlugin(RoutePlugin):
         """Extract docstrings from function definitions."""
         docs = {}
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef) and node.name:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name:
                 docstring = ast.get_docstring(node)
                 if docstring:
                     docs[node.name] = docstring
         return docs
 
-    def _is_route_assignment(self, node: ast.AST) -> bool:
-        """Check if an assignment node defines routes."""
-        if not isinstance(node, ast.Assign):
-            return False
-        
-        # Look for assignments to 'routes' variable
-        for target in node.targets:
-            if isinstance(target, ast.Name) and target.id == 'routes':
-                return True
-        return False
-
-    def _extract_routes_from_assignment(self, node: ast.Assign, function_docs: Dict[str, str]) -> List[RouteInfo]:
-        """Extract route information from a routes assignment."""
+    def _process_route_list(self, route_list_node: ast.AST, route_assignments: Dict[str, ast.AST], 
+                           function_docs: Dict[str, str], mount_prefix: str = "") -> List[RouteInfo]:
+        """Process a list of route definitions."""
         routes = []
         
-        if isinstance(node.value, ast.List):
-            for item in node.value.elts:
-                route_info = self._parse_route_item(item, function_docs)
-                if route_info:
+        if isinstance(route_list_node, ast.List):
+            for item in route_list_node.elts:
+                route_info = self._parse_route_item(item, route_assignments, function_docs, mount_prefix)
+                if isinstance(route_info, list):
+                    routes.extend(route_info)
+                elif route_info:
                     routes.append(route_info)
+        elif isinstance(route_list_node, ast.Name):
+            # Handle variable reference
+            referenced_list = route_assignments.get(route_list_node.id)
+            if referenced_list:
+                routes.extend(self._process_route_list(referenced_list, route_assignments, function_docs, mount_prefix))
         
         return routes
 
-    def _parse_route_item(self, item: ast.AST, function_docs: Dict[str, str], mount_prefix: str = "") -> Optional[RouteInfo]:
+    def _parse_route_item(self, item: ast.AST, route_assignments: Dict[str, ast.AST], 
+                         function_docs: Dict[str, str], mount_prefix: str = "") -> Optional[RouteInfo]:
         """Parse a single route item (Route, Mount, or WebSocketRoute)."""
         if not isinstance(item, ast.Call):
             return None
@@ -93,7 +99,7 @@ class StarlettePlugin(RoutePlugin):
         elif route_class == "WebSocketRoute":
             return self._parse_websocket_route_call(item, function_docs, mount_prefix)
         elif route_class == "Mount":
-            return self._parse_mount_call(item, function_docs, mount_prefix)
+            return self._parse_mount_call(item, route_assignments, function_docs, mount_prefix)
         
         return None
 
@@ -164,7 +170,8 @@ class StarlettePlugin(RoutePlugin):
             docstring=docstring
         )
 
-    def _parse_mount_call(self, call: ast.Call, function_docs: Dict[str, str], mount_prefix: str = "") -> List[RouteInfo]:
+    def _parse_mount_call(self, call: ast.Call, route_assignments: Dict[str, ast.AST], 
+                         function_docs: Dict[str, str], mount_prefix: str = "") -> List[RouteInfo]:
         """Parse a Mount() call and extract nested routes."""
         if len(call.args) < 1:
             return []
@@ -178,14 +185,8 @@ class StarlettePlugin(RoutePlugin):
         # Find routes keyword argument
         routes = []
         for keyword in call.keywords:
-            if keyword.arg == 'routes' and isinstance(keyword.value, ast.List):
-                for item in keyword.value.elts:
-                    route_info = self._parse_route_item(item, function_docs, mount_path)
-                    if route_info:
-                        if isinstance(route_info, list):
-                            routes.extend(route_info)
-                        else:
-                            routes.append(route_info)
+            if keyword.arg == 'routes':
+                routes.extend(self._process_route_list(keyword.value, route_assignments, function_docs, mount_path))
         
         return routes
 

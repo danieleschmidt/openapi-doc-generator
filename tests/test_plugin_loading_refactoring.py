@@ -13,6 +13,10 @@ class TestPluginLoadingRefactoring:
         """Clear plugins before each test."""
         _PLUGINS.clear()
     
+    def teardown_method(self):
+        """Clear plugins after each test to ensure test isolation."""
+        _PLUGINS.clear()
+    
     def test_load_single_plugin_success(self):
         """Test successful plugin loading."""
         # Create a mock entry point and plugin class

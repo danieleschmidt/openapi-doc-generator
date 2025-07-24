@@ -1,7 +1,16 @@
 import types
 from importlib import metadata
+import pytest
 
 from openapi_doc_generator.discovery import RoutePlugin, get_plugins, _PLUGINS
+
+
+@pytest.fixture(autouse=True)
+def clean_plugins():
+    """Ensure plugins are cleared before and after each test."""
+    _PLUGINS.clear()
+    yield
+    _PLUGINS.clear()
 
 
 class Dummy(RoutePlugin):
@@ -13,7 +22,6 @@ class Dummy(RoutePlugin):
 
 
 def test_entry_point_loading(monkeypatch):
-    _PLUGINS.clear()
 
     def fake_entry_points(*, group: str):
         assert group == "openapi_doc_generator.plugins"

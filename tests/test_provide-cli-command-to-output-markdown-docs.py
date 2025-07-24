@@ -1,6 +1,15 @@
 import logging
 import pytest
 from openapi_doc_generator.cli import main
+from openapi_doc_generator.discovery import _PLUGINS
+
+
+@pytest.fixture(autouse=True)
+def clean_plugins():
+    """Ensure plugins are cleared before and after each test."""
+    _PLUGINS.clear()
+    yield
+    _PLUGINS.clear()
 
 
 def test_success(tmp_path, capsys):

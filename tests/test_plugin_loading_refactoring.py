@@ -11,6 +11,7 @@ class TestPluginLoadingRefactoring:
     
     def setup_method(self):
         """Clear plugins before each test."""
+        self._original_plugins = _PLUGINS.copy()
         _PLUGINS.clear()
     
     def teardown_method(self):

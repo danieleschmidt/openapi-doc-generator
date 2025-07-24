@@ -22,7 +22,6 @@ class Dummy(RoutePlugin):
 
 
 def test_entry_point_loading(monkeypatch):
-
     def fake_entry_points(*, group: str):
         assert group == "openapi_doc_generator.plugins"
         return [types.SimpleNamespace(name="dummy", load=lambda: Dummy)]

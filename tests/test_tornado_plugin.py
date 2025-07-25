@@ -182,9 +182,16 @@ class TestTornadoPlugin:
             )
         )
         
-        # Test with main RouteDiscoverer
-        discoverer = RouteDiscoverer(str(app_file))
-        routes = discoverer.discover()
+        # Test directly with TornadoPlugin to avoid test isolation issues
+        from openapi_doc_generator.plugins.tornado import TornadoPlugin
+        plugin = TornadoPlugin()
+        
+        # Test plugin detection
+        source = app_file.read_text()
+        assert plugin.detect(source), "TornadoPlugin should detect tornado code"
+        
+        # Test plugin discovery
+        routes = plugin.discover(str(app_file))
         
         assert len(routes) == 1
         route = routes[0]

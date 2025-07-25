@@ -2,10 +2,10 @@
 
 ![CI](https://github.com/danieleschmidt/openapi-doc-generator/actions/workflows/ci.yml/badge.svg)
 
-Agent that parses FastAPI / Express routes and emits OpenAPI 3 spec plus markdown docs, using prompt-templated reflection.
+Advanced tool that automatically discovers routes from popular Python and JavaScript web frameworks and generates comprehensive API documentation including OpenAPI 3.0 specs, markdown docs, and interactive playgrounds.
 
 ## Features
-- Automatic route discovery and analysis for FastAPI, Express, Flask, and Django
+- Automatic route discovery and analysis for FastAPI, Express, Flask, Django, and Tornado
 - Intelligent schema inference from code annotations and examples for dataclasses and Pydantic models
 - Generates comprehensive OpenAPI 3.0 specifications
 - Creates human-readable markdown documentation with examples
@@ -31,6 +31,13 @@ openapi-doc-generator --app ./app.py --format html --output playground.html
 openapi-doc-generator --app ./schema.graphql --format graphql --output schema.json
 openapi-doc-generator --app ./app.py --tests tests/test_app.py
 openapi-doc-generator --app ./app.py --format guide --old-spec old.json --output MIGRATION.md
+
+# CLI options for better user experience
+openapi-doc-generator --app ./app.py --verbose --format openapi  # Detailed progress output
+openapi-doc-generator --app ./app.py --quiet --format markdown   # Minimal output
+openapi-doc-generator --app ./app.py --no-color --format openapi # Disable colored output
+openapi-doc-generator --app ./app.py --performance-metrics --log-format json  # Enable performance tracking
+
 openapi-doc-generator --version
 ```
 
@@ -154,11 +161,70 @@ with open("API.md", "w") as f:
     f.write(markdown)
 ```
 
+## Framework Examples
+
+### Flask Application
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/api/users", methods=["GET", "POST"])
+def users():
+    """User management endpoint."""
+    return {"users": []}
+
+@app.route("/health")
+def health():
+    """Health check endpoint."""
+    return {"status": "ok"}
+```
+
+### Tornado Application
+```python
+import tornado.web
+
+class MainHandler(tornado.web.RequestHandler):
+    """Main page handler."""
+    def get(self):
+        """Handle GET requests."""
+        self.write("Hello, world")
+
+class UserHandler(tornado.web.RequestHandler):
+    """User management handler."""
+    def get(self, user_id):
+        """Get user information."""
+        self.write(f"User {user_id}")
+
+application = tornado.web.Application([
+    (r"/", MainHandler),
+    (r"/user/([^/]+)", UserHandler),
+])
+```
+
+### Django Application
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('api/users/', views.users, name='users'),
+    path('api/users/<int:user_id>/', views.user_detail, name='user_detail'),
+    path('health/', views.health, name='health'),
+]
+```
+
+Generate documentation for any of these:
+```bash
+openapi-doc-generator --app ./your_app.py --format markdown --output API.md
+```
+
 ## Framework Support
 - **FastAPI**: Full type annotation support, automatic model extraction
 - **Express.js**: Route parsing, JSDoc integration, TypeScript support
 - **Flask**: Decorator analysis, Flask-RESTful integration
 - **Django REST Framework**: Serializer introspection, viewset analysis
+- **Tornado**: RequestHandler analysis, Application routing patterns
 
 ## Generated Documentation
 - Complete endpoint documentation with parameters, responses, examples

@@ -6,6 +6,24 @@ import pytest
 from pathlib import Path
 
 
+def is_docker_available():
+    """Check if Docker is available and running."""
+    try:
+        result = subprocess.run(
+            ["docker", "info"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+# Check Docker availability for conditional skipping
+docker_available = is_docker_available()
+
+
 class TestDockerImage:
     """Test suite for Docker image functionality."""
 
@@ -19,6 +37,7 @@ class TestDockerImage:
         dockerignore_path = Path(__file__).parent.parent / ".dockerignore"
         assert dockerignore_path.exists(), ".dockerignore should exist in project root"
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_builds_successfully(self):
         """Test that Docker image can be built without errors (via fixture)."""
         # Image is built by the setup_and_cleanup_test_image fixture
@@ -33,6 +52,7 @@ class TestDockerImage:
             f"Docker image not found or inspect failed: {result.stderr}"
         )
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_has_correct_entrypoint(self):
         """Test that Docker image has correct entrypoint and can run CLI."""
         # Run docker image with --help to verify entrypoint
@@ -45,6 +65,7 @@ class TestDockerImage:
         assert result.returncode == 0, f"Docker run failed: {result.stderr}"
         assert "Generate documentation in various formats" in result.stdout
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_can_process_example(self):
         """Test that Docker image can process the example application."""
         project_root = Path(__file__).parent.parent
@@ -75,6 +96,7 @@ class TestDockerImage:
             f"Docker run with example failed: {result.stderr}"
         )
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_supports_json_logging(self):
         """Test that Docker image supports JSON logging format."""
         project_root = Path(__file__).parent.parent
@@ -116,6 +138,7 @@ class TestDockerImage:
                 except json.JSONDecodeError:
                     pytest.fail(f"Invalid JSON log line: {line}")
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_size_reasonable(self):
         """Test that Docker image size is reasonable (< 500MB)."""
         result = subprocess.run(
@@ -141,6 +164,7 @@ class TestDockerImage:
             size_mb = float(size_line.replace("MB", "").strip())
             assert size_mb < 500, f"Docker image too large: {size_line}"
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_runs_as_non_root(self):
         """Test that Docker image runs as non-root user for security."""
         result = subprocess.run(
@@ -161,6 +185,7 @@ class TestDockerImage:
             "Docker container should not run as root"
         )
 
+    @pytest.mark.skipif(not docker_available, reason="Docker daemon not available")
     def test_docker_image_has_health_check(self):
         """Test that Docker image includes a health check."""
         result = subprocess.run(
@@ -182,6 +207,9 @@ class TestDockerImage:
     @pytest.fixture(autouse=True, scope="class")
     def setup_and_cleanup_test_image(self):
         """Setup and clean up test Docker image for tests."""
+        if not docker_available:
+            pytest.skip("Docker is not available, skipping image setup")
+            
         project_root = Path(__file__).parent.parent
 
         # Build test image before tests

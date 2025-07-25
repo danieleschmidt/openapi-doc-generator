@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-07-25T05:03:05.632969",
+  "benchmarks": {
+    "simple_discovery": {
+      "mean_time": 0.0011489530000062587,
+      "median_time": 0.001033270499988248,
+      "min_time": 0.00066557299987835,
+      "max_time": 0.001831105000064781,
+      "route_count": 2,
+      "iterations": 10
+    },
+    "complex_discovery": {
+      "mean_time": 0.036798592600007396,
+      "median_time": 0.029908987999988312,
+      "min_time": 0.029721397999992405,
+      "max_time": 0.06310960100017837,
+      "route_count": 150,
+      "iterations": 5
+    },
+    "full_pipeline": {
+      "mean_time": 0.012744644799977323,
+      "median_time": 0.01013145000001714,
+      "min_time": 0.009864350999805538,
+      "max_time": 0.023398913999926663,
+      "markdown_length": 467,
+      "openapi_paths": 3,
+      "iterations": 5
+    },
+    "tornado_plugin": {
+      "mean_time": 0.0019064381000134744,
+      "median_time": 0.0019087860000581713,
+      "min_time": 0.0017114550000769668,
+      "max_time": 0.002096110999900702,
+      "route_count": 3,
+      "iterations": 10
+    }
+  }
+}

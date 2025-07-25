@@ -157,6 +157,7 @@ class RouteDiscoverer:
             ("fastapi", "fastapi"),
             ("flask", "flask"),
             ("django", "django"),
+            ("tornado", "tornado"),
         ]
 
         for framework, pattern in framework_patterns:
@@ -191,6 +192,7 @@ class RouteDiscoverer:
             ("fastapi", self._detect_fastapi_patterns),
             ("flask", self._detect_flask_patterns),
             ("django", self._detect_django_patterns),
+            ("tornado", self._detect_tornado_patterns),
             ("express", self._detect_express_patterns),
         ]
         
@@ -211,6 +213,10 @@ class RouteDiscoverer:
     def _detect_django_patterns(self, lowered_source: str) -> bool:
         """Detect Django framework patterns."""
         return "django" in lowered_source or "from django" in lowered_source
+    
+    def _detect_tornado_patterns(self, lowered_source: str) -> bool:
+        """Detect Tornado framework patterns."""
+        return "tornado" in lowered_source or "from tornado" in lowered_source
     
     def _detect_express_patterns(self, lowered_source: str) -> bool:
         """Detect Express.js framework patterns."""

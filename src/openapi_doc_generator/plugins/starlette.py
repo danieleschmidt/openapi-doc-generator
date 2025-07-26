@@ -111,29 +111,38 @@ class StarlettePlugin(RoutePlugin):
             return call.func.attr
         return None
 
+    def _extract_route_path(self, path_arg: ast.expr, mount_prefix: str = "") -> Optional[str]:
+        """Extract path from route argument."""
+        if not isinstance(path_arg, ast.Constant) or not isinstance(path_arg.value, str):
+            return None
+        return mount_prefix + path_arg.value
+
+    def _extract_route_methods(self, keywords: List[ast.keyword]) -> List[str]:
+        """Extract HTTP methods from keyword arguments."""
+        methods = ['GET']  # Default method
+        for keyword in keywords:
+            if keyword.arg == 'methods' and isinstance(keyword.value, ast.List):
+                methods = []
+                for method_node in keyword.value.elts:
+                    if isinstance(method_node, ast.Constant) and isinstance(method_node.value, str):
+                        methods.append(method_node.value)
+        return methods
+
     def _parse_route_call(self, call: ast.Call, function_docs: Dict[str, str], mount_prefix: str = "") -> Optional[RouteInfo]:
         """Parse a Route() call."""
         if len(call.args) < 2:
             return None
         
         # Extract path
-        path_arg = call.args[0]
-        if not isinstance(path_arg, ast.Constant) or not isinstance(path_arg.value, str):
+        path = self._extract_route_path(call.args[0], mount_prefix)
+        if path is None:
             return None
-        path = mount_prefix + path_arg.value
         
         # Extract function name
-        func_arg = call.args[1]
-        func_name = self._get_function_name(func_arg)
+        func_name = self._get_function_name(call.args[1])
         
         # Extract methods from keyword arguments
-        methods = ['GET']  # Default method
-        for keyword in call.keywords:
-            if keyword.arg == 'methods' and isinstance(keyword.value, ast.List):
-                methods = []
-                for method_node in keyword.value.elts:
-                    if isinstance(method_node, ast.Constant) and isinstance(method_node.value, str):
-                        methods.append(method_node.value)
+        methods = self._extract_route_methods(call.keywords)
         
         # Get docstring if available
         docstring = function_docs.get(func_name) if func_name else None

@@ -3,7 +3,6 @@
 import textwrap
 
 
-from openapi_doc_generator.discovery import RouteDiscoverer
 from openapi_doc_generator.plugins.tornado import TornadoPlugin
 
 

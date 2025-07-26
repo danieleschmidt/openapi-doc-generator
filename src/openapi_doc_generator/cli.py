@@ -110,6 +110,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _check_path_traversal(path_str: str) -> bool:
+    """Check for path traversal patterns."""
+    return ".." in path_str or (path_str.startswith("/") and "/../" in path_str)
+
+
 def _validate_file_target(
     path_str: str,
     flag: str,
@@ -122,7 +127,7 @@ def _validate_file_target(
     path = Path(path_str).resolve()
 
     # Check for suspicious path patterns
-    if ".." in path_str or (path_str.startswith("/") and "/../" in path_str):
+    if _check_path_traversal(path_str):
         logger.error("Suspicious path detected: %s", path)
         parser.error(f"[{code}] Invalid path: path traversal attempts not allowed")
 
@@ -136,6 +141,35 @@ def _validate_file_target(
         parser.error(f"[{code}] directory '{parent}' does not exist")
 
     return path
+
+
+def _load_old_spec_data(old_spec_path: str, parser: argparse.ArgumentParser, logger: logging.Logger) -> dict:
+    """Load and validate old spec file."""
+    old_path = Path(old_spec_path)
+    if not old_path.exists():
+        logger.error("Old spec file '%s' not found", old_path)
+        parser.error(
+            f"[{ErrorCode.OLD_SPEC_REQUIRED}] Old spec file '{old_path}' not found"
+        )
+    try:
+        return json.loads(old_path.read_text())
+    except json.JSONDecodeError as exc:  # pragma: no cover - manual error path
+        logger.error("Invalid JSON in old spec: %s", exc)
+        parser.error(f"[{ErrorCode.OLD_SPEC_INVALID}] --old-spec is not valid JSON")
+
+
+def _generate_guide_output(result: DocumentationResult, args: argparse.Namespace, parser: argparse.ArgumentParser, logger: logging.Logger) -> str:
+    """Generate migration guide output."""
+    if not args.old_spec:
+        parser.error(
+            f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required "
+            f"for guide format"
+        )
+    old_data = _load_old_spec_data(args.old_spec, parser, logger)
+    new_spec = result.generate_openapi_spec(
+        title=args.title, version=args.api_version
+    )
+    return MigrationGuideGenerator(old_data, new_spec).generate_markdown()
 
 
 def _generate_output(
@@ -154,26 +188,7 @@ def _generate_output(
         spec = result.generate_openapi_spec(title=args.title, version=args.api_version)
         return PlaygroundGenerator().generate(spec)
     if args.format == "guide":
-        if not args.old_spec:
-            parser.error(
-                f"[{ErrorCode.OLD_SPEC_REQUIRED}] --old-spec is required "
-                f"for guide format"
-            )
-        old_path = Path(args.old_spec)
-        if not old_path.exists():
-            logger.error("Old spec file '%s' not found", old_path)
-            parser.error(
-                f"[{ErrorCode.OLD_SPEC_REQUIRED}] Old spec file '{old_path}' not found"
-            )
-        try:
-            old_data = json.loads(old_path.read_text())
-        except json.JSONDecodeError as exc:  # pragma: no cover - manual error path
-            logger.error("Invalid JSON in old spec: %s", exc)
-            parser.error(f"[{ErrorCode.OLD_SPEC_INVALID}] --old-spec is not valid JSON")
-        new_spec = result.generate_openapi_spec(
-            title=args.title, version=args.api_version
-        )
-        return MigrationGuideGenerator(old_data, new_spec).generate_markdown()
+        return _generate_guide_output(result, args, parser, logger)
     parser.error(f"Unknown format '{args.format}'")
 
 
@@ -195,25 +210,31 @@ def _setup_logging(log_format: str = "standard", level: int = logging.INFO, colo
         return logging.getLogger(__name__)
 
 
+def _validate_app_path_input(app_path_str: str) -> Path:
+    """Validate and normalize app path input."""
+    # Check for empty or whitespace-only paths
+    if not app_path_str or not app_path_str.strip():
+        raise ValueError("App path cannot be empty")
+    
+    app_path = Path(app_path_str).resolve()
+    
+    # Security check - prevent obvious directory traversal patterns
+    if _check_path_traversal(app_path_str):
+        raise ValueError("Path contains suspicious traversal patterns")
+    
+    return app_path
+
+
 def _validate_app_path(
     app_path_str: str, parser: argparse.ArgumentParser, logger: logging.Logger
 ) -> Path:
     """Validate and normalize app path with security checks."""
     try:
-        # Check for empty or whitespace-only paths
-        if not app_path_str or not app_path_str.strip():
-            raise ValueError("App path cannot be empty")
-        app_path = Path(app_path_str).resolve()
-        # Security check - prevent obvious directory traversal patterns
-        if (
-            ".." in app_path_str
-            or app_path_str.startswith("/")
-            and "/../" in app_path_str
-        ):
-            raise ValueError("Path contains suspicious traversal patterns")
+        app_path = _validate_app_path_input(app_path_str)
     except (ValueError, OSError) as e:
         logger.error("Invalid app path '%s': %s", app_path_str, e)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] Invalid app path: {e}")
+        return Path()  # This line will never be reached in real usage, but needed for testing
 
     if not app_path.exists():
         logger.error("App file '%s' not found", app_path)
@@ -257,41 +278,33 @@ def _show_progress(message: str, verbose: bool = False) -> None:
         sys.stderr.flush()
 
 
-def main(argv: Optional[list[str]] = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    
-    # Determine logging level based on verbose/quiet flags
+def _determine_log_level(args: argparse.Namespace) -> int:
+    """Determine logging level based on CLI flags."""
     if args.verbose:
-        log_level = logging.DEBUG
+        return logging.DEBUG
     elif args.quiet:
-        log_level = logging.WARNING
+        return logging.WARNING
     else:
         level_name = os.getenv("LOG_LEVEL", "INFO").upper()
-        log_level = getattr(logging, level_name, logging.INFO)
-    
-    # Setup logging with color control
-    use_colors = not args.no_color
-    logger = _setup_logging(args.log_format, level=log_level, colored=use_colors)
+        return getattr(logging, level_name, logging.INFO)
 
-    # Configure performance metrics
-    from .utils import set_performance_tracking, get_performance_summary
 
-    set_performance_tracking(args.performance_metrics)
-
-    _show_progress("Validating application path", args.verbose)
-    app_path = _validate_app_path(args.app, parser, logger)
-
+def _process_documentation_format(args: argparse.Namespace, app_path: Path, parser: argparse.ArgumentParser, logger: logging.Logger) -> tuple[str, Optional[DocumentationResult]]:
+    """Process documentation based on format type."""
     if args.format == "graphql":
         _show_progress("Processing GraphQL schema", args.verbose)
         output = _process_graphql_format(app_path, parser, logger)
-        result = None
+        return output, None
     else:
         _show_progress("Analyzing application structure", args.verbose)
         result = APIDocumentator().analyze_app(str(app_path))
         _show_progress("Generating documentation", args.verbose)
         output = _generate_output(result, args, parser, logger)
+        return output, result
 
+
+def _generate_test_suite(result: DocumentationResult, args: argparse.Namespace, parser: argparse.ArgumentParser, logger: logging.Logger) -> None:
+    """Generate test suite if requested."""
     if result and args.tests:
         _show_progress("Generating test suite", args.verbose)
         tests_path = _validate_file_target(
@@ -301,11 +314,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             TestSuiteGenerator(result).generate_pytest(), encoding="utf-8"
         )
 
-    _show_progress("Writing output", args.verbose)
-    _write_output(output, args.output, parser, logger)
 
-    # Log performance summary if metrics are enabled
+def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -> None:
+    """Log performance summary if metrics are enabled."""
     if args.performance_metrics:
+        from .utils import get_performance_summary
         summary = get_performance_summary()
         if summary:
             logger.info(
@@ -315,6 +328,32 @@ def main(argv: Optional[list[str]] = None) -> int:
                     "performance_stats": summary,
                 },
             )
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    
+    # Setup logging
+    log_level = _determine_log_level(args)
+    use_colors = not args.no_color
+    logger = _setup_logging(args.log_format, level=log_level, colored=use_colors)
+
+    # Configure performance metrics
+    from .utils import set_performance_tracking
+    set_performance_tracking(args.performance_metrics)
+
+    # Validate and process
+    _show_progress("Validating application path", args.verbose)
+    app_path = _validate_app_path(args.app, parser, logger)
+
+    output, result = _process_documentation_format(args, app_path, parser, logger)
+    _generate_test_suite(result, args, parser, logger)
+
+    _show_progress("Writing output", args.verbose)
+    _write_output(output, args.output, parser, logger)
+
+    _log_performance_summary(args, logger)
 
     if args.verbose:
         sys.stderr.write("✅ Documentation generation completed successfully!\n")

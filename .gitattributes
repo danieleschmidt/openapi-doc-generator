@@ -1,0 +1,25 @@
+# Autonomous Merge Conflict Resolution
+# File-aware merge drivers for automated conflict handling
+
+# Lock files - prefer incoming changes
+package-lock.json merge=theirs
+poetry.lock      merge=theirs
+*.lock           merge=theirs
+
+# Snapshots - prefer incoming changes  
+*.snap           merge=theirs
+
+# Documentation - use union merge (combine both versions)
+*.md             merge=union
+CHANGELOG.md     merge=union
+AUTONOMOUS_*.md  merge=union
+
+# Binary files - lock to prevent conflicts
+*.svg *.png *.jpg *.jpeg *.gif *.ico merge=lock
+*.zip *.tar.gz *.tar.bz2 *.rar merge=lock
+*.pdf *.doc *.docx *.xls *.xlsx merge=lock
+
+# Configuration files - prefer manual resolution
+*.env.* merge=manual
+*.secrets.* merge=manual
+.secrets.* merge=manual

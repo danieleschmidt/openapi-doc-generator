@@ -1,0 +1,71 @@
+---
+# Autonomous Backlog Management - Scope Configuration
+# Defines what operations are permitted for autonomous execution
+
+metadata:
+  version: "1.0"
+  description: "Scope configuration for autonomous backlog management"
+  
+scope:
+  # Repository operations
+  repository_only: true
+  allowed_paths:
+    - "./src/**"
+    - "./tests/**"
+    - "./docs/**"
+    - "./examples/**"
+    - "./*.py"
+    - "./*.md"
+    - "./*.yml"
+    - "./*.yaml"
+    - "./*.json"
+    - "./*.toml"
+    - "./*.ini"
+  
+  # Forbidden operations
+  forbidden_paths:
+    - "./.git/**"
+    - "./.github/workflows/**"  # Cannot modify GitHub Actions
+    - "./venv/**"
+    - "./**/__pycache__/**"
+  
+  # External operations (disabled by default)
+  external_operations:
+    github_api: true  # Allow GitHub API calls for issue management
+    package_install: false  # No package installation
+    system_commands: false  # No system-level commands
+    network_access: false  # No external network access
+  
+  # Quality gates
+  quality_gates:
+    mandatory:
+      - "tests_pass"
+      - "security_scan_clean"
+      - "lint_clean"
+    optional:
+      - "type_check_clean"
+      - "coverage_maintained"
+  
+  # PR and commit settings
+  git_operations:
+    max_prs_per_day: 5
+    branch_prefix: "autonomous/"
+    require_linear_history: true
+    auto_merge_conditions:
+      - "all_quality_gates_pass"
+      - "small_change_size"  # < 200 LOC
+      - "age_less_than_24h"
+  
+  # Security constraints
+  security:
+    block_secret_patterns: true
+    require_code_review_for_security: true
+    block_external_api_calls: true
+    scan_dependencies: true
+  
+  # Metrics and monitoring
+  monitoring:
+    enable_metrics: true
+    prometheus_port: 9014
+    conflict_metrics: true
+    performance_tracking: true

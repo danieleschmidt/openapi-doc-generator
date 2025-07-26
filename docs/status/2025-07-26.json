@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-07-26T18:05:21.260964+00:00",
+  "backlog_size_by_status": {},
+  "total_backlog_size": 0,
+  "ready_items": 0,
+  "system_status": "operational",
+  "last_execution": "2025-07-26T18:05:21.260964+00:00",
+  "autonomous_engine_version": "1.0",
+  "scope_restricted": true,
+  "quality_gates_enabled": true
+}

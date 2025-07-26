@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import ast
 from pathlib import Path
 import logging
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -36,21 +36,21 @@ class SchemaInferer:
             raise FileNotFoundError(file_path)
 
     # Public API
-    def infer(self) -> List[SchemaInfo]:
-        """Return all discovered models in the file."""
-        self._logger.debug("Inferring models from %s", self.file_path)
+    def _load_ast_tree(self) -> Optional[ast.AST]:
+        """Load and parse the AST tree from the file."""
         try:
             from .utils import get_cached_ast
-
             source_code = self.file_path.read_text()
-            tree = get_cached_ast(source_code, str(self.file_path))
+            return get_cached_ast(source_code, str(self.file_path))
         except (OSError, UnicodeDecodeError) as e:
             self._logger.warning("Failed to read file %s: %s", self.file_path, e)
-            return []
+            return None
         except SyntaxError as e:
             self._logger.warning("Syntax error in %s: %s", self.file_path, e)
-            return []
+            return None
 
+    def _extract_models_from_tree(self, tree: ast.AST) -> List[SchemaInfo]:
+        """Extract model classes from the AST tree."""
         models: List[SchemaInfo] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef) and self._is_model(node):
@@ -61,6 +61,15 @@ class SchemaInferer:
                     self._logger.warning("Failed to process class %s: %s", node.name, e)
                     continue
         return models
+
+    def infer(self) -> List[SchemaInfo]:
+        """Return all discovered models in the file."""
+        self._logger.debug("Inferring models from %s", self.file_path)
+        tree = self._load_ast_tree()
+        if tree is None:
+            return []
+        
+        return self._extract_models_from_tree(tree)
 
     # Internal helpers -------------------------------------------------
     def _is_model(self, node: ast.ClassDef) -> bool:

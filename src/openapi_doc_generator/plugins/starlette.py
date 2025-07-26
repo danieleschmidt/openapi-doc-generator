@@ -19,29 +19,38 @@ class StarlettePlugin(RoutePlugin):
         """Return True if the source contains Starlette imports."""
         return "starlette" in source.lower()
 
+    def _load_and_parse_source(self, app_path: str) -> Optional[ast.AST]:
+        """Load and parse the source file."""
+        source_path = Path(app_path)
+        if not source_path.exists():
+            logger.warning(f"File not found: {app_path}")
+            return None
+        
+        content = source_path.read_text(encoding='utf-8')
+        return ast.parse(content)
+
+    def _collect_route_assignments(self, tree: ast.AST) -> Dict[str, ast.AST]:
+        """Collect all route assignments from the AST."""
+        route_assignments = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id.endswith('routes'):
+                        route_assignments[target.id] = node.value
+        return route_assignments
+
     def discover(self, app_path: str) -> List[RouteInfo]:
         """Discover routes from a Starlette application file."""
         try:
-            source_path = Path(app_path)
-            if not source_path.exists():
-                logger.warning(f"File not found: {app_path}")
+            tree = self._load_and_parse_source(app_path)
+            if tree is None:
                 return []
             
-            content = source_path.read_text(encoding='utf-8')
-            tree = ast.parse(content)
-            
             # Extract all route assignments and function docstrings
-            route_assignments = {}
+            route_assignments = self._collect_route_assignments(tree)
             function_docs = self._extract_function_docstrings(tree)
             
-            # First pass: collect all route assignments
-            for node in ast.walk(tree):
-                if isinstance(node, ast.Assign):
-                    for target in node.targets:
-                        if isinstance(target, ast.Name) and target.id.endswith('routes'):
-                            route_assignments[target.id] = node.value
-            
-            # Second pass: process main routes assignment
+            # Process main routes assignment
             routes = []
             main_routes = route_assignments.get('routes')
             if main_routes:

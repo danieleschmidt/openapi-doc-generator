@@ -314,15 +314,26 @@ class RouteDiscoverer:
         
     def _extract_flask_methods(self, keywords: List[ast.keyword]) -> List[str]:
         """Extract HTTP methods from Flask route keyword arguments."""
-        methods: List[str] = ["GET"]  # Default Flask method
+        methods_keyword = self._find_methods_keyword(keywords)
+        if methods_keyword is None:
+            return ["GET"]  # Default Flask method
         
+        return self._parse_methods_from_ast(methods_keyword.value)
+    
+    def _find_methods_keyword(self, keywords: List[ast.keyword]) -> Optional[ast.keyword]:
+        """Find the 'methods' keyword in Flask route arguments."""
         for kw in keywords:
             if kw.arg == "methods" and isinstance(kw.value, (ast.List, ast.Tuple)):
-                methods = []
-                for elt in kw.value.elts:
-                    if isinstance(elt, ast.Constant):
-                        methods.append(str(elt.value).upper())
-                        
+                return kw
+        return None
+    
+    def _parse_methods_from_ast(self, methods_node: ast.expr) -> List[str]:
+        """Parse HTTP methods from AST list/tuple node."""
+        methods = []
+        if isinstance(methods_node, (ast.List, ast.Tuple)):
+            for elt in methods_node.elts:
+                if isinstance(elt, ast.Constant):
+                    methods.append(str(elt.value).upper())
         return methods
 
     def _discover_django(self, source: str) -> List[RouteInfo]:

@@ -26,24 +26,36 @@ class MarkdownGenerator:
             raise TypeError("spec must be a dict")
 
         template = Template(load_template(self.template_name))
+        routes = self._extract_routes_from_spec(spec)
+        context = self._build_template_context(spec, routes)
+        
+        self._logger.debug("Rendering markdown for %d routes", len(routes))
+        return template.render(context)
+
+    def _extract_routes_from_spec(self, spec: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Extract route information from OpenAPI specification."""
         routes: List[Dict[str, Any]] = []
         paths = spec.get("paths", {})
+        
         for path, methods in paths.items():
             for method, operation in methods.items():
-                name = (
-                    operation.get("summary") or operation.get("operationId") or method
-                )
-                routes.append(
-                    {
-                        "path": path,
-                        "methods": [method.upper()],
-                        "name": name,
-                    }
-                )
+                route_info = self._create_route_info(path, method, operation)
+                routes.append(route_info)
+        
+        return routes
 
-        context = {
+    def _create_route_info(self, path: str, method: str, operation: Dict[str, Any]) -> Dict[str, Any]:
+        """Create route information dictionary for a single operation."""
+        name = operation.get("summary") or operation.get("operationId") or method
+        return {
+            "path": path,
+            "methods": [method.upper()],
+            "name": name,
+        }
+
+    def _build_template_context(self, spec: Dict[str, Any], routes: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Build context dictionary for template rendering."""
+        return {
             "title": spec.get("info", {}).get("title", "API"),
             "routes": routes,
         }
-        self._logger.debug("Rendering markdown for %d routes", len(routes))
-        return template.render(context)

@@ -1,0 +1,119 @@
+---
+# Autonomous Backlog Management - WSJF Prioritized
+# Generated from backlog_analysis.md and continuous discovery
+# Last Updated: 2025-07-26T17:57:00Z
+
+metadata:
+  version: "1.0"
+  methodology: "WSJF (Weighted Shortest Job First)"
+  scoring_scale: "1-2-3-5-8-13 (Fibonacci)"
+  last_discovery: "2025-07-26T17:57:00Z"
+  
+items:
+  - id: "BL001"
+    title: "Fix Lint Violations"
+    type: "code_quality"
+    description: "Fix 24 lint violations - unused imports, bare excepts, unused variables"
+    acceptance_criteria:
+      - "All ruff lint violations resolved"
+      - "Tests still pass after cleanup"
+      - "No regression in functionality"
+    effort: 1
+    value: 3
+    time_criticality: 1
+    risk_reduction: 1
+    wsjf_score: 5.0
+    status: "READY"
+    risk_tier: "LOW"
+    created_at: "2025-07-24T11:40:00Z"
+    links:
+      - "lint_results.json"
+    
+  - id: "BL002"
+    title: "Enhance CLI User Experience"
+    type: "user_experience"
+    description: "Add verbose/quiet modes, colored output, progress indicators"
+    acceptance_criteria:
+      - "Add --verbose and --quiet flags"
+      - "Implement colored output for better UX"
+      - "Add progress indicators for long operations"
+    effort: 2
+    value: 5
+    time_criticality: 0
+    risk_reduction: 0
+    wsjf_score: 2.5
+    status: "READY"
+    risk_tier: "LOW"
+    created_at: "2025-07-24T11:40:00Z"
+    links: []
+    
+  - id: "BL003"
+    title: "Add Advanced Framework Support"
+    type: "feature_enhancement"
+    description: "Add support for Starlette, Tornado, or other frameworks"
+    acceptance_criteria:
+      - "Create new plugin for selected framework"
+      - "Add detection logic"
+      - "Comprehensive testing"
+    effort: 3
+    value: 6
+    time_criticality: 0
+    risk_reduction: 0
+    wsjf_score: 2.0
+    status: "READY"
+    risk_tier: "MEDIUM"
+    created_at: "2025-07-24T11:40:00Z"
+    links: []
+    
+  - id: "BL004"
+    title: "Performance Benchmarking Suite"
+    type: "infrastructure"
+    description: "Add comprehensive performance benchmarks and regression testing"
+    acceptance_criteria:
+      - "Create benchmark test suite"
+      - "Add performance regression detection"
+      - "Integrate with CI pipeline"
+    effort: 2.5
+    value: 4
+    time_criticality: 0
+    risk_reduction: 0
+    wsjf_score: 1.6
+    status: "BACKLOG"
+    risk_tier: "LOW"
+    created_at: "2025-07-24T11:40:00Z"
+    links: []
+    
+  - id: "BL005"
+    title: "Documentation Enhancement"
+    type: "documentation"
+    description: "Expand README with advanced examples, contribute guidelines"
+    acceptance_criteria:
+      - "Add advanced usage examples"
+      - "Improve contribution guidelines"
+      - "Add API reference documentation"
+    effort: 2
+    value: 3
+    time_criticality: 0
+    risk_reduction: 0
+    wsjf_score: 1.5
+    status: "BACKLOG"
+    risk_tier: "LOW"
+    created_at: "2025-07-24T11:40:00Z"
+    links: []
+
+# Continuous Discovery Sources
+discovery_sources:
+  - type: "static_analysis"
+    patterns: ["TODO", "FIXME", "HACK", "BUG"]
+    last_scan: "2025-07-26T17:57:00Z"
+  - type: "github_issues"
+    last_sync: "2025-07-26T17:57:00Z"
+  - type: "security_scan"
+    tools: ["bandit", "safety"]
+    last_scan: "2025-07-26T17:57:00Z"
+  - type: "dependency_scan"
+    tools: ["pip-audit"]
+    last_scan: "2025-07-26T17:57:00Z"
+  - type: "lint_analysis"
+    tools: ["ruff"]
+    last_scan: "2025-07-26T17:57:00Z"

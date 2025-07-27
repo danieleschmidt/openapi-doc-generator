@@ -85,13 +85,13 @@ def test_manual_abstract_method_invocation():
         if hasattr(abstract_detect, '__func__'):
             try:
                 abstract_detect.__func__(plugin, "test")
-            except Exception:
+            except Exception as e:
                 pass  # Expected to fail
                 
         if hasattr(abstract_discover, '__func__'):
             try:
                 abstract_discover.__func__(plugin, "test")
-            except Exception:
+            except Exception as e:
                 pass  # Expected to fail
                 
     except Exception:

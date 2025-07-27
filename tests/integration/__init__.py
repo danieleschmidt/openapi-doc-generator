@@ -1,0 +1,1 @@
+"""Integration tests for OpenAPI Doc Generator."""

@@ -1,0 +1,220 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! 
+        Feature requests help us understand what users need and prioritize development.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify you have completed these steps
+      options:
+        - label: I have searched existing issues to see if this feature has already been requested
+          required: true
+        - label: I have checked the [roadmap](../blob/main/docs/ROADMAP.md) to see if this is already planned
+          required: true
+        - label: I have read the [contributing guidelines](../blob/main/CONTRIBUTING.md)
+          required: true
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - New framework support
+        - New output format
+        - CLI enhancement
+        - Performance improvement
+        - Developer experience
+        - Documentation improvement
+        - Integration/Plugin
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What pain point are you experiencing?
+      placeholder: |
+        Describe the problem you're trying to solve...
+        - As a [user type], I want [goal] so that [benefit]
+        - Currently, I have to [current workaround] which is [why it's problematic]
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution to this problem
+      placeholder: |
+        Describe what you'd like to see happen...
+        - The tool should [specific behavior]
+        - Users would be able to [specific capability]
+        - This would work by [brief implementation idea]
+    validations:
+      required: true
+
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: Detailed Description
+      description: Provide a detailed description of the feature
+      placeholder: |
+        Please provide details such as:
+        - Specific use cases
+        - Expected behavior
+        - Input/output examples
+        - Configuration options needed
+        - Any constraints or limitations
+
+  - type: textarea
+    id: user-stories
+    attributes:
+      label: User Stories
+      description: Describe how different users would benefit from this feature
+      placeholder: |
+        Example format:
+        - As a Flask developer, I want to generate API docs with custom themes so that the docs match my company branding
+        - As a DevOps engineer, I want to export metrics in Prometheus format so that I can monitor documentation generation
+      render: text
+
+  - type: textarea
+    id: example-usage
+    attributes:
+      label: Example Usage
+      description: Show how you envision using this feature
+      placeholder: |
+        ```bash
+        # Command line example
+        openapi-doc-generator --app app.py --new-feature option
+        ```
+        
+        ```python
+        # Programmatic API example
+        from openapi_doc_generator import APIDocumentator
+        
+        documentator = APIDocumentator()
+        result = documentator.new_feature_method()
+        ```
+      render: bash
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What alternatives have you considered? Why isn't this already solved?
+      placeholder: |
+        - Alternative 1: [description and why it's not ideal]
+        - Alternative 2: [description and why it's not ideal]
+        - Current workarounds: [what you're doing now and why it's insufficient]
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical - Blocks my current work
+        - High - Significantly improves my workflow
+        - Medium - Nice to have improvement
+        - Low - Minor enhancement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Implementation Complexity (Your Assessment)
+      description: Based on your understanding, how complex do you think this feature is?
+      options:
+        - Simple - Small addition or configuration option
+        - Medium - New functionality but uses existing patterns
+        - Complex - Requires significant new architecture
+        - Unknown - I'm not sure about the technical complexity
+
+  - type: textarea
+    id: frameworks-affected
+    attributes:
+      label: Frameworks/Technologies Affected
+      description: Which frameworks or technologies would this feature affect?
+      placeholder: |
+        Check all that apply:
+        - Flask
+        - FastAPI
+        - Django
+        - Express.js
+        - Tornado
+        - All frameworks
+        - Framework-agnostic
+        - Other: [specify]
+
+  - type: checkboxes
+    id: backward-compatibility
+    attributes:
+      label: Backward Compatibility
+      description: Considerations for existing users
+      options:
+        - label: This feature should be backward compatible
+        - label: This feature can break backward compatibility (major version)
+        - label: This feature is purely additive (no breaking changes)
+        - label: I'm not sure about backward compatibility implications
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What conditions must be met for this feature to be considered complete?
+      placeholder: |
+        - [ ] Feature works with [specific frameworks]
+        - [ ] Documentation is updated
+        - [ ] Tests are added
+        - [ ] Performance impact is acceptable
+        - [ ] Backward compatibility is maintained
+        - [ ] CLI help is updated
+      render: text
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help implement this feature?
+      options:
+        - label: I am willing to submit a pull request to implement this feature
+        - label: I can help with testing and feedback
+        - label: I can help with documentation
+        - label: I can provide domain expertise/guidance
+        - label: I prefer to leave implementation to maintainers
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples
+      placeholder: |
+        - Related issues or discussions
+        - Screenshots or mockups
+        - Links to similar features in other tools
+        - Any other relevant information
+
+  - type: checkboxes
+    id: research
+    attributes:
+      label: Research Done
+      description: What research have you done on this feature?
+      options:
+        - label: I have looked at how other similar tools handle this
+        - label: I have checked if this is technically feasible
+        - label: I have considered the impact on performance
+        - label: I have thought about the user experience implications

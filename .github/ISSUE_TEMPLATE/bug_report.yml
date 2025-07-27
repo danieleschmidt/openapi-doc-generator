@@ -1,0 +1,157 @@
+name: 🐛 Bug Report
+description: Report a bug to help us improve
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! 
+        Please provide as much detail as possible to help us reproduce and fix the issue.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify you have completed these steps
+      options:
+        - label: I have searched existing issues to see if this bug has already been reported
+          required: true
+        - label: I have read the [troubleshooting guide](../blob/main/docs/runbooks/TROUBLESHOOTING.md)
+          required: true
+        - label: I have tested with the latest version
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of OpenAPI Doc Generator are you using?
+      placeholder: "e.g., 1.2.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation-method
+    attributes:
+      label: Installation Method
+      description: How did you install OpenAPI Doc Generator?
+      options:
+        - pip install
+        - Docker
+        - Source (git clone)
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Information
+      description: Please provide details about your environment
+      placeholder: |
+        - OS: [e.g., Ubuntu 20.04, macOS 12.0, Windows 11]
+        - Python version: [e.g., 3.9.0]
+        - Framework: [e.g., Flask 2.0.1, FastAPI 0.68.0]
+        - Docker version (if applicable): [e.g., 20.10.8]
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Create a Flask app with...
+        2. Run the command...
+        3. See error...
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: minimal-example
+    attributes:
+      label: Minimal Reproducible Example
+      description: Please provide the smallest possible code example that reproduces the issue
+      placeholder: |
+        ```python
+        from flask import Flask
+        app = Flask(__name__)
+        
+        @app.route("/test")
+        def test():
+            return "test"
+        ```
+      render: python
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Output
+      description: Please provide the full error message or stack trace
+      placeholder: |
+        Paste the complete error output here...
+      render: text
+
+  - type: textarea
+    id: command-used
+    attributes:
+      label: Command Used
+      description: What command did you run that caused the error?
+      placeholder: |
+        openapi-doc-generator --app app.py --format openapi --output spec.json
+      render: bash
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - Does this happen consistently or intermittently?
+        - Are there any workarounds you've found?
+        - Any other relevant information...
+
+  - type: checkboxes
+    id: severity
+    attributes:
+      label: Impact Assessment
+      description: How is this bug affecting you?
+      options:
+        - label: This blocks me from using the tool entirely
+        - label: This prevents a specific feature from working
+        - label: This causes incorrect output but has workarounds
+        - label: This is a minor inconvenience
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help fix this issue?
+      options:
+        - label: I am willing to submit a pull request to fix this bug
+        - label: I can help test a fix
+        - label: I can provide additional information if needed

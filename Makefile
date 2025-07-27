@@ -20,8 +20,29 @@ test: ## Run all tests with coverage
 test-fast: ## Run tests without coverage for faster feedback
 	pytest -v -x
 
+test-unit: ## Run only unit tests
+	pytest -v -m "unit"
+
+test-integration: ## Run only integration tests
+	pytest -v -m "integration"
+
+test-e2e: ## Run end-to-end tests
+	pytest -v -m "e2e"
+
+test-performance: ## Run performance tests
+	pytest -v -m "performance"
+
 test-security: ## Run security tests
-	pytest -v -m security
+	pytest -v -m "security"
+
+test-contract: ## Run contract tests
+	pytest -v -m "contract"
+
+test-mutation: ## Run mutation testing
+	mutmut run
+
+test-parallel: ## Run tests in parallel
+	pytest -v -n auto
 
 lint: ## Run all linting checks
 	ruff check .

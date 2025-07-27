@@ -37,6 +37,7 @@ tornado = "openapi_doc_generator.plugins.tornado:TornadoPlugin"
 
 [project.scripts]
 "openapi-doc-generator" = "openapi_doc_generator.cli:main"
+"github-hygiene-bot" = "openapi_doc_generator.github_hygiene:main"
 
 [tool.setuptools.package-data]
 "openapi_doc_generator.templates" = ["*.jinja"]

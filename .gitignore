@@ -192,3 +192,40 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Project-specific
+debug_output.json
+security_results.json
+performance_results.json
+lint_results.json
+docs/generated/
+.secrets.baseline
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Security scanning results
+security_scan*.json
+bandit-report.*
+safety-report.*
+
+# Development
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Coverage and test reports
+junit.xml
+test-results.xml
+
+# Build artifacts
+*.whl
+*.tar.gz

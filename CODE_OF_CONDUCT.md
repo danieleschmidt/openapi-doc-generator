@@ -2,20 +2,14 @@
 
 ## Our Pledge
 
-We pledge to make participation in our project a harassment-free experience for everyone.
+We follow the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/) 
+to ensure a welcoming environment for all contributors.
 
-## Standards
+## Quick Summary
 
-Examples of behavior that contributes to a positive environment:
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the community
+- Be respectful and inclusive
+- Welcome newcomers and help them get started
+- Focus on constructive criticism
+- Report violations to: conduct@terragonlabs.com
 
-## Enforcement
-
-Instances of abusive behavior may be reported to the project maintainers.
-
-## Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/).
+For full details, see the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md).

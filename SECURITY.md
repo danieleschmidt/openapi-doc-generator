@@ -1,22 +1,22 @@
 # Security Policy
 
+## Reporting Security Vulnerabilities
+
+**Contact**: security@terragonlabs.com  
+**Response Time**: Within 48 hours  
+**Process**: Responsible disclosure
+
 ## Supported Versions
 
-We provide security updates for the latest major version.
+| Version | Supported          |
+| ------- | ------------------ |
+| Latest  | :white_check_mark: |
+| < 1.0   | :x:                |
 
-## Reporting a Vulnerability
+## Security Resources
 
-To report security vulnerabilities:
+- [Security Guidelines](docs/security/SECURITY_GUIDELINES.md)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [Python Security](https://python.readthedocs.io/en/latest/library/security_warnings.html)
 
-- **Email**: security@terragonlabs.com
-- **Response Time**: Within 48 hours
-- **Process**: We follow responsible disclosure practices
-
-## Security Best Practices
-
-- Keep dependencies updated
-- Use the latest stable version
-- Review configuration before deployment
-- Monitor for security advisories
-
-For detailed security guidelines, see [docs/security/SECURITY_GUIDELINES.md](docs/security/SECURITY_GUIDELINES.md).
+Please DO NOT open public issues for security vulnerabilities.

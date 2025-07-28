@@ -1,18 +1,19 @@
 ---
-name: Bug Report
-about: Report a bug to help us improve
-title: '[BUG] '
+name: Bug report  
+about: Create a report to help us improve
+title: ""
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 ## Bug Description
-A clear description of the bug.
+A clear description of what the bug is.
 
-## Steps to Reproduce
-1. Step one
-2. Step two
-3. See error
+## Steps to Reproduce  
+1. Go to "..."
+2. Click on "...."
+3. Run command "...." 
+4. See error
 
 ## Expected Behavior
 What you expected to happen.
@@ -21,13 +22,9 @@ What you expected to happen.
 What actually happened.
 
 ## Environment
-- Python version:
-- Framework version:  
-- Operating system:
+- OS: [e.g. Windows, macOS, Linux]
+- Python version: [e.g. 3.9] 
+- Package version: [e.g. 0.1.0]
 
 ## Additional Context
-Add any other context or screenshots about the problem.
-
-## Related Documentation
-- [Contributing Guide](../../CONTRIBUTING.md)
-- [Development Setup](../../docs/DEVELOPMENT.md)
+Add any other context, screenshots, or logs here.

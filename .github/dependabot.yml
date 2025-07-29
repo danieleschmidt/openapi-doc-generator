@@ -1,0 +1,90 @@
+# Automated Dependency Management Configuration
+# Advanced configuration for high-maturity repository
+
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "@danieleschmidt"  # Adjust based on CODEOWNERS
+    assignees:
+      - "@danieleschmidt"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "automated"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # Ignore major version updates for critical dependencies
+      - dependency-name: "jinja2"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "graphql-core"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group test dependencies together
+      test-dependencies:
+        patterns:
+          - "pytest*"
+          - "coverage*"
+          - "mock*"
+          - "factory-boy*"
+          - "faker*"
+      # Group linting/formatting tools
+      code-quality:
+        patterns:
+          - "ruff*"
+          - "black*"
+          - "isort*"
+          - "mypy*"
+          - "pre-commit*"
+      # Group security tools
+      security-tools:
+        patterns:
+          - "bandit*"
+          - "safety*"
+          - "pip-audit*"
+          - "detect-secrets*"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "03:00"
+      timezone: "UTC"
+    reviewers:
+      - "@danieleschmidt"
+    commit-message:
+      prefix: "docker"
+    labels:
+      - "docker"
+      - "dependencies"
+
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: ".github/workflows"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "03:00"
+      timezone: "UTC"
+    reviewers:
+      - "@danieleschmidt"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "github-actions"
+      - "ci-cd"

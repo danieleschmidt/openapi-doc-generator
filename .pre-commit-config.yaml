@@ -12,8 +12,8 @@ repos:
       - id: debug-statements
       - id: check-case-conflict
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.6
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.2
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -52,4 +52,10 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        args: [tests/, -x, -v]
+        args: [tests/, -x, -v, --tb=short]
+
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+  autofix_prs: true
+  autoupdate_schedule: weekly

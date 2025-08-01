@@ -1,0 +1,64 @@
+{
+  "repository": {
+    "name": "openapi-doc-generator",
+    "maturityLevel": "advanced",
+    "lastAssessment": "2025-08-01T00:32:00Z",
+    "maturityScore": 78
+  },
+  "executionHistory": [
+    {
+      "timestamp": "2025-08-01T00:40:42.807038+00:00",
+      "itemId": "dep-setuptools",
+      "title": "Update setuptools dependency",
+      "category": "dependency-update",
+      "predicted_effort": 0.5,
+      "actual_effort": 1.1944444444444445e-07,
+      "predicted_score": 61.04,
+      "success": true,
+      "execution_method": "documentation_generation"
+    }
+  ],
+  "backlogMetrics": {
+    "totalItems": 36,
+    "averageAge": 0,
+    "debtRatio": 0.25,
+    "velocityTrend": "baseline",
+    "priorityDistribution": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "lastDiscovery": "2025-08-01T00:36:12.998425+00:00",
+    "averageScore": 41.55694444444444,
+    "categoryBreakdown": {
+      "dependency-update": 18,
+      "performance": 13,
+      "technical-debt": 5
+    }
+  },
+  "valueDelivered": {
+    "totalScore": 61.04,
+    "completedTasks": 1,
+    "averageCycleTime": 0,
+    "estimatedBenefits": "$0"
+  },
+  "technicalMetrics": {
+    "codeQuality": 85,
+    "testCoverage": 80,
+    "securityPosture": 75,
+    "documentationQuality": 95,
+    "maintainabilityIndex": 82
+  },
+  "continuousMetrics": {
+    "issuesDiscovered": 0,
+    "vulnerabilitiesFound": 0,
+    "performanceIssues": 0,
+    "technicalDebtItems": 0
+  },
+  "learning": {
+    "estimationAccuracy": 1.0,
+    "valuePredictionAccuracy": 1.0,
+    "falsePositiveRate": 0.0,
+    "adaptationCycles": 0
+  }
+}

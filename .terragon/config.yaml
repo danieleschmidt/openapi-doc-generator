@@ -1,0 +1,62 @@
+# Terragon Autonomous SDLC Configuration
+# Repository: openapi-doc-generator
+# Maturity Level: ADVANCED (75%+ SDLC maturity)
+
+scoring:
+  weights:
+    advanced:
+      wsjf: 0.5          # Weighted Shortest Job First
+      ice: 0.1           # Impact-Confidence-Ease
+      technicalDebt: 0.3 # Technical debt reduction value
+      security: 0.1      # Security improvement boost
+  
+  thresholds:
+    minScore: 15         # Minimum score for task execution
+    maxRisk: 0.7         # Maximum acceptable risk level
+    securityBoost: 2.0   # Security vulnerability priority boost
+    complianceBoost: 1.8 # Compliance requirement boost
+
+discovery:
+  sources:
+    - gitHistory         # Mine TODO/FIXME from commits
+    - staticAnalysis     # Code quality and complexity
+    - issueTrackers      # GitHub issues and PRs
+    - vulnerabilityDatabases # CVE and security advisories
+    - performanceMonitoring  # Runtime performance data
+    - dependencyUpdates  # Package update opportunities
+  
+  tools:
+    staticAnalysis:
+      - ruff             # Python linting and formatting
+      - mypy             # Type checking
+      - bandit           # Security scanning
+      - radon            # Complexity analysis
+    security:
+      - safety           # Python vulnerability scanning
+      - pip-audit        # PyPI package auditing
+      - trivy            # Container security scanning
+    performance:
+      - pytest-benchmark # Performance regression testing
+      - memory-profiler  # Memory usage analysis
+
+execution:
+  maxConcurrentTasks: 1
+  testRequirements:
+    minCoverage: 80
+    performanceRegression: 5  # Max 5% performance degradation
+  rollbackTriggers:
+    - testFailure
+    - buildFailure
+    - securityViolation
+    - coverageDecrease
+
+repository:
+  maturityLevel: "advanced"
+  primaryLanguage: "python"
+  frameworks: ["pytest", "jinja2", "setuptools"]
+  hasCI: false  # Templates exist but no active workflows
+  hasDocker: true
+  hasTests: true 
+  testCoverage: 80  # Estimated from configuration
+  documentationQuality: "excellent"
+  securityPosture: "good"

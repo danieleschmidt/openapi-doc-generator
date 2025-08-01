@@ -1,0 +1,667 @@
+[
+  {
+    "id": "dep-jinja2",
+    "title": "Update jinja2 dependency",
+    "description": "Consider updating jinja2 from 3.1 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995955+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-graphql-core",
+    "title": "Update graphql-core dependency",
+    "description": "Consider updating graphql-core from 3.2 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995962+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pytest",
+    "title": "Update pytest dependency",
+    "description": "Consider updating pytest from 7.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995967+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pytest-cov",
+    "title": "Update pytest-cov dependency",
+    "description": "Consider updating pytest-cov from 4.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995973+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pytest-xdist",
+    "title": "Update pytest-xdist dependency",
+    "description": "Consider updating pytest-xdist from 3.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995978+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pytest-asyncio",
+    "title": "Update pytest-asyncio dependency",
+    "description": "Consider updating pytest-asyncio from 0.21 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995983+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pytest-mock",
+    "title": "Update pytest-mock dependency",
+    "description": "Consider updating pytest-mock from 3.10 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995987+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-ruff",
+    "title": "Update ruff dependency",
+    "description": "Consider updating ruff from 0.1.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995993+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-bandit[toml]",
+    "title": "Update bandit[toml] dependency",
+    "description": "Consider updating bandit[toml] from 1.7 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.995998+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-coverage[toml]",
+    "title": "Update coverage[toml] dependency",
+    "description": "Consider updating coverage[toml] from 7.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996003+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-radon",
+    "title": "Update radon dependency",
+    "description": "Consider updating radon from 6.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996008+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-mypy",
+    "title": "Update mypy dependency",
+    "description": "Consider updating mypy from 1.5 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996012+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pre-commit",
+    "title": "Update pre-commit dependency",
+    "description": "Consider updating pre-commit from 3.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996017+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-black",
+    "title": "Update black dependency",
+    "description": "Consider updating black from 23.0 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996022+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-isort",
+    "title": "Update isort dependency",
+    "description": "Consider updating isort from 5.12 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996026+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-safety",
+    "title": "Update safety dependency",
+    "description": "Consider updating safety from 2.3 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996038+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "dep-pip-audit",
+    "title": "Update pip-audit dependency",
+    "description": "Consider updating pip-audit from 2.6 to latest version",
+    "category": "dependency-update",
+    "source": "dependency-scan",
+    "file_path": "/root/repo/pyproject.toml",
+    "line_number": null,
+    "effort_estimate": 0.5,
+    "wsjf_score": 20.0,
+    "ice_score": 504.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 61.04,
+    "discovered_at": "2025-08-01T00:36:12.996043+00:00",
+    "tags": [
+      "dependency",
+      "maintenance"
+    ]
+  },
+  {
+    "id": "code-autonomous_engine-96",
+    "title": "TODO: /FIXME discovery...",
+    "description": "/FIXME discovery",
+    "category": "technical-debt",
+    "source": "code-comments",
+    "file_path": "/root/repo/autonomous_engine.py",
+    "line_number": 96,
+    "effort_estimate": 1.5,
+    "wsjf_score": 7.333333333333333,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 27.69333333333333,
+    "discovered_at": "2025-08-01T00:36:12.963888+00:00",
+    "tags": [
+      "todo",
+      "code-comment"
+    ]
+  },
+  {
+    "id": "code-autonomous_run-14",
+    "title": "Note: This is a simplified version that works without ex...",
+    "description": "This is a simplified version that works without external dependencies",
+    "category": "technical-debt",
+    "source": "code-comments",
+    "file_path": "/root/repo/autonomous_run.py",
+    "line_number": 14,
+    "effort_estimate": 1.5,
+    "wsjf_score": 7.333333333333333,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 27.69333333333333,
+    "discovered_at": "2025-08-01T00:36:12.964446+00:00",
+    "tags": [
+      "note",
+      "code-comment"
+    ]
+  },
+  {
+    "id": "code-test_cli_coverage-41",
+    "title": "Note: The actual performance summary logging might not s...",
+    "description": "The actual performance summary logging might not show up in caplog",
+    "category": "technical-debt",
+    "source": "code-comments",
+    "file_path": "/root/repo/tests/test_cli_coverage.py",
+    "line_number": 41,
+    "effort_estimate": 1.5,
+    "wsjf_score": 7.333333333333333,
+    "ice_score": 336.0,
+    "technical_debt_score": 7.0,
+    "composite_score": 25.89333333333333,
+    "discovered_at": "2025-08-01T00:36:12.965724+00:00",
+    "tags": [
+      "note",
+      "code-comment"
+    ]
+  },
+  {
+    "id": "code-test_import_extraction_refactoring-232",
+    "title": "Note: \"from ..parent import module\" actually has module=...",
+    "description": "\"from ..parent import module\" actually has module=\"parent\" with level=2",
+    "category": "technical-debt",
+    "source": "code-comments",
+    "file_path": "/root/repo/tests/test_import_extraction_refactoring.py",
+    "line_number": 232,
+    "effort_estimate": 1.5,
+    "wsjf_score": 7.333333333333333,
+    "ice_score": 336.0,
+    "technical_debt_score": 7.0,
+    "composite_score": 25.89333333333333,
+    "discovered_at": "2025-08-01T00:36:12.967879+00:00",
+    "tags": [
+      "note",
+      "code-comment"
+    ]
+  },
+  {
+    "id": "code-test_benchmarks-178",
+    "title": "Note: This might not always be true due to Python GIL, b...",
+    "description": "This might not always be true due to Python GIL, but worth measuring",
+    "category": "technical-debt",
+    "source": "code-comments",
+    "file_path": "/root/repo/tests/performance/test_benchmarks.py",
+    "line_number": 178,
+    "effort_estimate": 1.5,
+    "wsjf_score": 7.333333333333333,
+    "ice_score": 336.0,
+    "technical_debt_score": 7.0,
+    "composite_score": 25.89333333333333,
+    "discovered_at": "2025-08-01T00:36:12.973236+00:00",
+    "tags": [
+      "note",
+      "code-comment"
+    ]
+  },
+  {
+    "id": "perf-github_hygiene-140",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/src/openapi_doc_generator/github_hygiene.py",
+    "line_number": 140,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 15.0,
+    "composite_score": 21.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.994255+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-github_hygiene-150",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/src/openapi_doc_generator/github_hygiene.py",
+    "line_number": 150,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 15.0,
+    "composite_score": 21.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.994280+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-github_hygiene-185",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/src/openapi_doc_generator/github_hygiene.py",
+    "line_number": 185,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 15.0,
+    "composite_score": 21.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.994300+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-github_hygiene-211",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/src/openapi_doc_generator/github_hygiene.py",
+    "line_number": 211,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 15.0,
+    "composite_score": 21.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.994319+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-github_hygiene-236",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/src/openapi_doc_generator/github_hygiene.py",
+    "line_number": 236,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 15.0,
+    "composite_score": 21.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.994339+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-github_hygiene-267",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/src/openapi_doc_generator/github_hygiene.py",
+    "line_number": 267,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 15.0,
+    "composite_score": 21.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.994361+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-autonomous_executor-165",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/autonomous_executor.py",
+    "line_number": 165,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.991264+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-autonomous_executor-360",
+    "title": "Performance: Consider list comprehension",
+    "description": "Performance optimization opportunity: Consider list comprehension",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/autonomous_executor.py",
+    "line_number": 360,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.991321+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-security_scan-150",
+    "title": "Performance: Potential string concatenation in loop",
+    "description": "Performance optimization opportunity: Potential string concatenation in loop",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/scripts/security_scan.py",
+    "line_number": 150,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.991908+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-security_scan-152",
+    "title": "Performance: Potential string concatenation in loop",
+    "description": "Performance optimization opportunity: Potential string concatenation in loop",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/scripts/security_scan.py",
+    "line_number": 152,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.991926+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-security_scan-154",
+    "title": "Performance: Potential string concatenation in loop",
+    "description": "Performance optimization opportunity: Potential string concatenation in loop",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/scripts/security_scan.py",
+    "line_number": 154,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.991945+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-security_scan-159",
+    "title": "Performance: Potential string concatenation in loop",
+    "description": "Performance optimization opportunity: Potential string concatenation in loop",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/scripts/security_scan.py",
+    "line_number": 159,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.991957+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  },
+  {
+    "id": "perf-backlog-discovery-374",
+    "title": "Performance: Potential string concatenation in loop",
+    "description": "Performance optimization opportunity: Potential string concatenation in loop",
+    "category": "performance",
+    "source": "performance-scan",
+    "file_path": "/root/repo/.terragon/backlog-discovery.py",
+    "line_number": 374,
+    "effort_estimate": 3.0,
+    "wsjf_score": 3.8333333333333335,
+    "ice_score": 336.0,
+    "technical_debt_score": 10.0,
+    "composite_score": 18.943333333333335,
+    "discovered_at": "2025-08-01T00:36:12.992474+00:00",
+    "tags": [
+      "performance",
+      "optimization"
+    ]
+  }
+]

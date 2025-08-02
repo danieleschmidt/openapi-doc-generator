@@ -1,0 +1,191 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "./venv/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.ruffEnabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.formatting.provider": "black",
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": [
+            "tests",
+            "-v"
+        ],
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.autoImportCompletions": true,
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/*.pyc": true,
+            ".pytest_cache": true,
+            ".coverage": true,
+            "htmlcov": true,
+            "*.egg-info": true,
+            ".mypy_cache": true,
+            ".ruff_cache": true,
+            "dist": true,
+            "build": true
+        },
+        "files.watcherExclude": {
+            "**/__pycache__/**": true,
+            "**/.pytest_cache/**": true,
+            "**/htmlcov/**": true,
+            "**/*.egg-info/**": true
+        },
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll.ruff": "explicit"
+        },
+        "editor.rulers": [88],
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.env.linux": {
+            "PYTHONPATH": "${workspaceFolder}/src"
+        },
+        "yaml.schemas": {
+            "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml",
+            "https://json.schemastore.org/pyproject.json": "pyproject.toml"
+        },
+        "json.schemas": [
+            {
+                "fileMatch": ["openapi.json", "**/openapi/*.json"],
+                "url": "https://spec.openapis.org/oas/v3.0.3/schema/2021-09-28"
+            }
+        ],
+        "markdownlint.config": {
+            "MD013": false,
+            "MD033": false
+        },
+        "git.ignoreLimitWarning": true,
+        "search.exclude": {
+            "**/node_modules": true,
+            "**/bower_components": true,
+            "**/*.code-search": true,
+            "**/__pycache__": true,
+            "**/.pytest_cache": true,
+            "**/htmlcov": true
+        }
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "dev: test",
+                "type": "shell",
+                "command": "python",
+                "args": ["scripts/dev.py", "test", "-v"],
+                "group": "test",
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new"
+                }
+            },
+            {
+                "label": "dev: lint",
+                "type": "shell",
+                "command": "python",
+                "args": ["scripts/dev.py", "lint"],
+                "group": "build",
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new"
+                }
+            },
+            {
+                "label": "dev: format",
+                "type": "shell",
+                "command": "python",
+                "args": ["scripts/dev.py", "format"],
+                "group": "build",
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new"
+                }
+            },
+            {
+                "label": "dev: build",
+                "type": "shell",
+                "command": "python",
+                "args": ["scripts/dev.py", "build"],
+                "group": "build",
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new"
+                }
+            },
+            {
+                "label": "dev: security",
+                "type": "shell",
+                "command": "python",
+                "args": ["scripts/dev.py", "security"],
+                "group": "build",
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new"
+                }
+            }
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Debug CLI",
+                "type": "python",
+                "request": "launch",
+                "program": "${workspaceFolder}/src/openapi_doc_generator/cli.py",
+                "args": [
+                    "--app",
+                    "${workspaceFolder}/examples/app.py",
+                    "--format",
+                    "openapi",
+                    "--output",
+                    "${workspaceFolder}/debug_output.json",
+                    "--verbose"
+                ],
+                "console": "integratedTerminal",
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src",
+                    "LOG_LEVEL": "DEBUG"
+                }
+            },
+            {
+                "name": "Debug Tests",
+                "type": "python",
+                "request": "launch",
+                "module": "pytest",
+                "args": [
+                    "${workspaceFolder}/tests",
+                    "-v",
+                    "--tb=short"
+                ],
+                "console": "integratedTerminal",
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PYTHONPATH": "${workspaceFolder}/src"
+                }
+            }
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.vscode-pylance",
+            "ms-python.black-formatter",
+            "charliermarsh.ruff",
+            "ms-vscode.vscode-json",
+            "redhat.vscode-yaml",
+            "ms-python.pytest",
+            "ms-vscode.vscode-github-actions",
+            "ms-azuretools.vscode-docker",
+            "ms-vscode.makefile-tools",
+            "bierner.markdown-mermaid",
+            "DavidAnson.vscode-markdownlint"
+        ]
+    }
+}

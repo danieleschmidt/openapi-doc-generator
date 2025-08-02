@@ -1,0 +1,36 @@
+# Global ownership
+* @danieleschmidt
+
+# Core application code
+/src/ @danieleschmidt
+/tests/ @danieleschmidt
+
+# Infrastructure and CI/CD
+/Dockerfile @danieleschmidt
+/docker-compose.yml @danieleschmidt
+/Makefile @danieleschmidt
+/.github/ @danieleschmidt
+/scripts/ @danieleschmidt
+
+# Documentation
+/docs/ @danieleschmidt
+/README.md @danieleschmidt
+/CONTRIBUTING.md @danieleschmidt
+
+# Security and compliance
+/SECURITY.md @danieleschmidt
+/docs/security/ @danieleschmidt
+/docs/compliance/ @danieleschmidt
+
+# Architecture decisions
+/docs/adr/ @danieleschmidt
+
+# Project management
+/PROJECT_CHARTER.md @danieleschmidt
+/CHANGELOG.md @danieleschmidt
+/docs/ROADMAP.md @danieleschmidt
+
+# Configuration files
+/pyproject.toml @danieleschmidt
+/pytest.ini @danieleschmidt
+/.pre-commit-config.yaml @danieleschmidt

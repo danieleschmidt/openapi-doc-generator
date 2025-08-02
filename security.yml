@@ -1,0 +1,205 @@
+# Security Configuration for OpenAPI Doc Generator
+#
+# This file defines security policies and configurations
+# for the OpenAPI Documentation Generator tool.
+
+version: "1.0"
+
+security:
+  # Input validation and sanitization
+  input_validation:
+    max_file_size_mb: 50
+    max_files_per_scan: 1000
+    allowed_file_extensions:
+      - .py
+      - .js
+      - .ts
+      - .jsx
+      - .tsx
+      - .graphql
+      - .json
+      - .yml
+      - .yaml
+    blocked_file_patterns:
+      - "**/.git/**"
+      - "**/node_modules/**"
+      - "**/__pycache__/**"
+      - "**/*.pyc"
+      - "**/venv/**"
+      - "**/env/**"
+    max_ast_depth: 100
+    timeout_seconds: 300
+
+  # Code execution prevention
+  code_execution:
+    allow_imports: false
+    allow_eval: false
+    allow_exec: false
+    safe_ast_only: true
+    sandbox_mode: true
+
+  # Output sanitization
+  output_sanitization:
+    remove_file_paths: true
+    remove_secrets: true
+    remove_credentials: true
+    sanitize_comments: true
+    max_output_size_mb: 100
+    
+  # Secret detection patterns
+  secret_patterns:
+    - name: "API Key"
+      pattern: '(?i)(api[_-]?key|apikey)["\s]*[:=]["\s]*([a-zA-Z0-9]{20,})'
+      severity: "high"
+    - name: "Database URL"
+      pattern: '(mysql|postgresql|mongodb)://[^\s"'']*'
+      severity: "high"
+    - name: "Private Key"
+      pattern: '-----BEGIN [A-Z ]+ PRIVATE KEY-----'
+      severity: "critical"
+    - name: "AWS Access Key"
+      pattern: 'AKIA[0-9A-Z]{16}'
+      severity: "critical"
+    - name: "JWT Token"
+      pattern: 'eyJ[A-Za-z0-9_/+-]*\.eyJ[A-Za-z0-9_/+-]*\.[A-Za-z0-9_/+-]*'
+      severity: "medium"
+    - name: "Password"
+      pattern: '(?i)(password|passwd|pwd)["\s]*[:=]["\s]*[^\s"'';]{8,}'
+      severity: "high"
+
+  # Container security
+  container:
+    run_as_non_root: true
+    drop_all_capabilities: true
+    read_only_filesystem: true
+    no_new_privileges: true
+    resource_limits:
+      memory_mb: 512
+      cpu_cores: 1.0
+      disk_mb: 1024
+    security_context:
+      user_id: 1000
+      group_id: 1000
+      fs_group: 1000
+
+  # Network security
+  network:
+    disable_network_access: false
+    allowed_domains:
+      - "api.github.com"
+      - "pypi.org"
+      - "files.pythonhosted.org"
+    blocked_domains:
+      - "*.ads.*"
+      - "*.tracking.*"
+      - "*.analytics.*"
+    max_connections: 10
+    connection_timeout: 30
+
+  # Logging and monitoring
+  logging:
+    log_level: "INFO"
+    audit_log: true
+    security_events: true
+    performance_metrics: true
+    sanitize_logs: true
+    log_retention_days: 90
+    
+  # Vulnerability management
+  vulnerability_management:
+    dependency_scanning: true
+    container_scanning: true
+    static_analysis: true
+    dynamic_analysis: false
+    penetration_testing: false
+    security_advisory_checks: true
+    
+  # Compliance requirements
+  compliance:
+    standards:
+      - "OWASP Top 10"
+      - "CWE Top 25"
+      - "NIST Cybersecurity Framework"
+    data_classification: "public"
+    retention_policy: "30 days"
+    encryption_in_transit: true
+    encryption_at_rest: false
+
+  # Incident response
+  incident_response:
+    enable_monitoring: true
+    alert_thresholds:
+      failed_authentications: 5
+      resource_exhaustion: 90
+      security_events: 1
+    notification_channels:
+      - "email"
+      - "webhook"
+    escalation_matrix:
+      - level: "low"
+        response_time: "24h"
+      - level: "medium" 
+        response_time: "4h"
+      - level: "high"
+        response_time: "1h"
+      - level: "critical"
+        response_time: "15m"
+
+# Environment-specific overrides
+environments:
+  development:
+    security:
+      input_validation:
+        timeout_seconds: 600
+      logging:
+        log_level: "DEBUG"
+      
+  staging:
+    security:
+      vulnerability_management:
+        dynamic_analysis: true
+      logging:
+        audit_log: true
+        
+  production:
+    security:
+      container:
+        resource_limits:
+          memory_mb: 256
+          cpu_cores: 0.5
+      vulnerability_management:
+        penetration_testing: true
+      incident_response:
+        enable_monitoring: true
+        
+# Security policies
+policies:
+  - name: "Input Validation Policy"
+    description: "All user inputs must be validated and sanitized"
+    rules:
+      - "Validate file paths and prevent directory traversal"
+      - "Limit file sizes and processing time"
+      - "Sanitize output to prevent information disclosure"
+      
+  - name: "Dependency Security Policy"  
+    description: "All dependencies must be scanned and approved"
+    rules:
+      - "No known critical vulnerabilities"
+      - "Regular updates within 30 days of release"
+      - "License compatibility verification"
+      
+  - name: "Container Security Policy"
+    description: "Containers must follow security best practices"
+    rules:
+      - "Run as non-root user"
+      - "Use minimal base images"
+      - "Regular vulnerability scanning"
+      - "Resource limits enforced"
+
+  - name: "Data Protection Policy"
+    description: "Protect sensitive data and user privacy"
+    rules:
+      - "No collection of sensitive data"
+      - "Secure cleanup of temporary files"
+      - "Minimal data retention"
+      - "No transmission of user data"

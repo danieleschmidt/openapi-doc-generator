@@ -1,0 +1,1 @@
+"""Test fixtures for OpenAPI Doc Generator tests."""

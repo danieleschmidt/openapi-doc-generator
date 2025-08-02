@@ -1,0 +1,335 @@
+# Performance Monitoring and Benchmarking Workflow
+# File: .github/workflows/performance-monitoring.yml
+
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      benchmark_type:
+        description: 'Type of benchmark to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - route-discovery
+          - schema-inference
+          - documentation-generation
+          - memory-usage
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  performance-benchmarks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+        test-size: ['small', 'medium', 'large']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for performance comparison
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install pytest-benchmark memory-profiler psutil
+
+      - name: Generate test applications
+        run: |
+          python scripts/generate_test_apps.py --size ${{ matrix.test-size }}
+
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/performance/ \
+            --benchmark-only \
+            --benchmark-json=benchmark-results-${{ matrix.python-version }}-${{ matrix.test-size }}.json \
+            --benchmark-warmup=on \
+            --benchmark-warmup-iterations=3 \
+            --benchmark-min-rounds=5
+
+      - name: Memory usage benchmarks
+        run: |
+          python -m memory_profiler tests/performance/test_memory_usage.py > memory-report-${{ matrix.python-version }}-${{ matrix.test-size }}.txt
+
+      - name: Profile CPU usage
+        run: |
+          python -m cProfile -o profile-${{ matrix.python-version }}-${{ matrix.test-size }}.prof \
+            -m openapi_doc_generator.cli \
+            --app test_apps/${{ matrix.test-size }}_app.py \
+            --format openapi \
+            --performance-metrics
+
+      - name: Generate performance report
+        run: |
+          python scripts/generate_performance_report.py \
+            --benchmark-file benchmark-results-${{ matrix.python-version }}-${{ matrix.test-size }}.json \
+            --memory-file memory-report-${{ matrix.python-version }}-${{ matrix.test-size }}.txt \
+            --profile-file profile-${{ matrix.python-version }}-${{ matrix.test-size }}.prof \
+            --output performance-report-${{ matrix.python-version }}-${{ matrix.test-size }}.html
+
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results-${{ matrix.python-version }}-${{ matrix.test-size }}
+          path: |
+            benchmark-results-*.json
+            memory-report-*.txt
+            profile-*.prof
+            performance-report-*.html
+          retention-days: 30
+
+      - name: Store benchmark result
+        if: github.ref == 'refs/heads/main'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'pytest'
+          output-file-path: benchmark-results-${{ matrix.python-version }}-${{ matrix.test-size }}.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '200%'
+          fail-on-alert: true
+
+  performance-regression-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install pytest-benchmark
+
+      - name: Run baseline benchmarks
+        run: |
+          cd base
+          pip install -e .[dev]
+          pytest tests/performance/ \
+            --benchmark-only \
+            --benchmark-json=../baseline-benchmarks.json \
+            --benchmark-min-rounds=3
+
+      - name: Run current benchmarks
+        run: |
+          pytest tests/performance/ \
+            --benchmark-only \
+            --benchmark-json=current-benchmarks.json \
+            --benchmark-min-rounds=3
+
+      - name: Compare performance
+        run: |
+          python scripts/compare_benchmarks.py \
+            --baseline baseline-benchmarks.json \
+            --current current-benchmarks.json \
+            --output performance-comparison.md \
+            --threshold 10  # 10% performance degradation threshold
+
+      - name: Comment PR with performance results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'performance-comparison.md';
+            
+            if (fs.existsSync(path)) {
+              const comparison = fs.readFileSync(path, 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## Performance Comparison Report\n\n${comparison}`
+              });
+            }
+
+      - name: Fail on significant regression
+        run: |
+          python scripts/check_performance_regression.py \
+            --comparison performance-comparison.md \
+            --threshold 20  # Fail if >20% regression
+
+  memory-leak-detection:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install memory-profiler tracemalloc-tools
+
+      - name: Run memory leak tests
+        run: |
+          python tests/performance/test_memory_leaks.py
+
+      - name: Generate memory usage graph
+        run: |
+          python scripts/plot_memory_usage.py \
+            --input memory_trace.log \
+            --output memory-usage-graph.png
+
+      - name: Upload memory analysis
+        uses: actions/upload-artifact@v3
+        with:
+          name: memory-analysis
+          path: |
+            memory_trace.log
+            memory-usage-graph.png
+          retention-days: 7
+
+  load-testing:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.benchmark_type == 'all'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install locust
+
+      - name: Start application server
+        run: |
+          python src/openapi_doc_generator/health_server.py &
+          sleep 5
+
+      - name: Run load tests
+        run: |
+          locust -f tests/performance/load_tests.py \
+            --headless \
+            --users 100 \
+            --spawn-rate 10 \
+            --run-time 5m \
+            --host http://localhost:8080 \
+            --csv=load-test-results
+
+      - name: Generate load test report
+        run: |
+          python scripts/generate_load_test_report.py \
+            --results load-test-results_stats.csv \
+            --output load-test-report.html
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results
+          path: |
+            load-test-results*.csv
+            load-test-report.html
+          retention-days: 30
+
+  performance-dashboard-update:
+    runs-on: ubuntu-latest
+    needs: [performance-benchmarks, memory-leak-detection]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Update performance dashboard
+        run: |
+          python scripts/update_performance_dashboard.py \
+            --artifacts-dir . \
+            --dashboard-file docs/status/performance-dashboard.json
+
+      - name: Commit dashboard updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/status/performance-dashboard.json
+          git commit -m "chore: update performance dashboard [skip ci]" || exit 0
+          git push
+
+      - name: Send performance alerts
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Performance Regression Detected',
+              body: `
+                ## Performance Alert
+                
+                A performance regression has been detected in the latest benchmarks.
+                
+                **Details:**
+                - Workflow: ${context.workflow}
+                - Run: ${context.runNumber}
+                - Commit: ${context.sha}
+                
+                Please review the performance results and investigate potential causes.
+                
+                **Action Required:**
+                1. Review benchmark results in workflow artifacts
+                2. Identify performance bottlenecks
+                3. Implement optimizations if needed
+                4. Re-run benchmarks to verify improvements
+              `,
+              labels: ['performance', 'investigation-required']
+            });

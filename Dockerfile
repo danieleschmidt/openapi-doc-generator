@@ -1,5 +1,5 @@
 # Multi-stage build for optimized image size
-FROM python:3.11-slim AS builder
+FROM python:3.13-slim AS builder
 
 # Set build arguments
 ARG BUILD_DATE
@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir .
 
 # Production stage
-FROM python:3.11-slim AS production
+FROM python:3.13-slim AS production
 
 # Set labels for metadata
 LABEL maintainer="Terragon Labs" \

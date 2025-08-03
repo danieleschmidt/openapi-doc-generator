@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from openapi_doc_generator.discovery import RouteDiscovery
+from openapi_doc_generator.discovery import RouteDiscoverer
 from openapi_doc_generator.documentator import APIDocumentator
 
 

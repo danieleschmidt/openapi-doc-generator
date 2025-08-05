@@ -16,6 +16,7 @@ from .graphql import GraphQLSchema
 from .testsuite import TestSuiteGenerator
 from .migration import MigrationGuideGenerator
 from .config import config
+from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
 from . import __version__
 
 
@@ -51,9 +52,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-f",
         "--format",
-        choices=["markdown", "openapi", "html", "graphql", "guide"],
-        default="markdown",
-        help=("Output format: markdown (default), openapi, html, graphql, or guide"),
+        choices=["markdown", "openapi", "html", "graphql", "guide", "quantum-plan"],
+        default="markdown", 
+        help=("Output format: markdown (default), openapi, html, graphql, guide, or quantum-plan"),
     )
     parser.add_argument(
         "--old-spec",
@@ -83,6 +84,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--performance-metrics",
         action="store_true",
         help="Enable detailed performance metrics collection and logging",
+    )
+    parser.add_argument(
+        "--quantum-temperature",
+        type=float,
+        default=2.0,
+        help="Initial temperature for quantum annealing (default: 2.0)",
+    )
+    parser.add_argument(
+        "--quantum-resources",
+        type=int,
+        default=4,
+        help="Number of quantum resources for allocation (default: 4)",
     )
     
     # Verbose/Quiet mode flags (mutually exclusive)
@@ -295,6 +308,10 @@ def _process_documentation_format(args: argparse.Namespace, app_path: Path, pars
         _show_progress("Processing GraphQL schema", args.verbose)
         output = _process_graphql_format(app_path, parser, logger)
         return output, None
+    elif args.format == "quantum-plan":
+        _show_progress("Creating quantum-inspired task plan", args.verbose)
+        output = _process_quantum_plan_format(args, parser, logger)
+        return output, None
     else:
         _show_progress("Analyzing application structure", args.verbose)
         result = APIDocumentator().analyze_app(str(app_path))
@@ -313,6 +330,73 @@ def _generate_test_suite(result: DocumentationResult, args: argparse.Namespace, 
         tests_path.write_text(
             TestSuiteGenerator(result).generate_pytest(), encoding="utf-8"
         )
+
+
+def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.ArgumentParser, logger: logging.Logger) -> str:
+    """Process quantum-inspired task planning format."""
+    # Initialize quantum planner with CLI parameters
+    planner = QuantumTaskPlanner(
+        temperature=args.quantum_temperature,
+        num_resources=args.quantum_resources
+    )
+    
+    # Integrate with existing SDLC tasks
+    integrate_with_existing_sdlc(planner)
+    
+    # Create quantum plan
+    result = planner.create_quantum_plan()
+    
+    # Generate detailed output
+    output_lines = [
+        "# Quantum-Inspired Task Planning Results",
+        "",
+        f"**Quantum Fidelity**: {result.quantum_fidelity:.3f}",
+        f"**Total Value**: {result.total_value:.2f}",
+        f"**Execution Time**: {result.execution_time:.3f}s",
+        f"**Convergence Iterations**: {result.convergence_iterations}",
+        "",
+        "## Optimized Task Schedule",
+        ""
+    ]
+    
+    for i, task in enumerate(result.optimized_tasks, 1):
+        resource_id = getattr(task, 'allocated_resource', 0)
+        output_lines.extend([
+            f"### {i}. {task.name}",
+            f"- **ID**: {task.id}",
+            f"- **Priority**: {task.priority:.2f}",
+            f"- **Effort**: {task.effort:.1f}",
+            f"- **Value**: {task.value:.1f}",
+            f"- **Quantum Weight**: {task.quantum_weight:.3f}",
+            f"- **Allocated Resource**: Resource-{resource_id}",
+            f"- **Dependencies**: {', '.join(task.dependencies) if task.dependencies else 'None'}",
+            f"- **Entangled Tasks**: {len(task.entangled_tasks)}",
+            ""
+        ])
+    
+    # Add quantum metrics
+    output_lines.extend([
+        "## Quantum Effects Summary",
+        f"- **Superposition States Created**: {len([t for t in result.optimized_tasks if 'super' in t.id])}",
+        f"- **Task Entanglements**: {sum(len(t.entangled_tasks) for t in result.optimized_tasks) // 2}",
+        f"- **Measurement Collapses**: {sum(t.measurement_count for t in result.optimized_tasks)}",
+        ""
+    ])
+    
+    # Add simulation results
+    simulation = planner.simulate_execution(result)
+    output_lines.extend([
+        "## Execution Simulation",
+        f"- **Estimated Completion Time**: {simulation['estimated_completion_time']:.2f} time units",
+        f"- **Total Tasks**: {simulation['total_tasks']}",
+        f"- **Quantum Effects**:",
+        f"  - Superposition Collapses: {simulation['quantum_effects']['superposition_collapses']}",
+        f"  - Entanglement Breaks: {simulation['quantum_effects']['entanglement_breaks']}",
+        f"  - Coherence Loss Events: {simulation['quantum_effects']['coherence_loss']:.0f}",
+        ""
+    ])
+    
+    return "\n".join(output_lines)
 
 
 def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -> None:

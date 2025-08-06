@@ -32,6 +32,11 @@ from .quantum_optimizer import (
     AdaptiveQuantumScheduler,
     ParallelQuantumProcessor
 )
+from .quantum_security import (
+    QuantumSecurityValidator,
+    SecurityLevel,
+    get_security_validator
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +50,19 @@ class QuantumTaskPlanner:
                  num_resources: int = 4,
                  validation_level: ValidationLevel = ValidationLevel.MODERATE,
                  enable_monitoring: bool = True,
-                 enable_optimization: bool = True):
-        """Initialize quantum task planner."""
+                 enable_optimization: bool = True,
+                 security_level: SecurityLevel = SecurityLevel.MEDIUM):
+        """Initialize quantum task planner with security validation."""
         self.scheduler = QuantumInspiredScheduler(temperature, cooling_rate)
         self.allocator = QuantumResourceAllocator(num_resources)
         self.task_registry: Dict[str, QuantumTask] = {}
         self.validation_level = validation_level
         self.enable_monitoring = enable_monitoring
         self.validator = QuantumTaskValidator(validation_level)
+        
+        # Security validation
+        self.security_validator = get_security_validator(security_level)
+        self.security_level = security_level
         
         # Optimization configuration
         if enable_optimization:
@@ -79,8 +89,13 @@ class QuantumTaskPlanner:
                  value: float = 1.0,
                  dependencies: Optional[List[str]] = None,
                  coherence_time: float = 10.0) -> QuantumTask:
-        """Add a task to the quantum planning system."""
+        """Add a task to the quantum planning system with security validation."""
         dependencies = dependencies or []
+        
+        # Sanitize inputs for security
+        task_id = self.security_validator.sanitize_input(task_id)
+        name = self.security_validator.sanitize_input(name)
+        dependencies = self.security_validator.sanitize_input(dependencies)
         
         task = QuantumTask(
             id=task_id,
@@ -92,7 +107,20 @@ class QuantumTaskPlanner:
             coherence_time=coherence_time
         )
         
-        # Validate task before adding
+        # Security validation
+        security_issues = self.security_validator.validate_task_security(task)
+        critical_security = [i for i in security_issues if i.severity.name in ["CRITICAL", "HIGH"]]
+        if critical_security:
+            error_msg = f"Security validation failed: {'; '.join(i.message for i in critical_security)}"
+            logger.error(error_msg)
+            self.security_validator.audit_log_security_event("task_rejected", {
+                "task_id": task_id,
+                "reason": "security_validation_failed",
+                "issues": [i.message for i in critical_security]
+            })
+            raise ValueError(error_msg)
+        
+        # Standard validation
         validation_issues = self.validator.validate_tasks([task])
         if validation_issues:
             error_issues = [i for i in validation_issues if i.issue_type.value == "error"]
@@ -105,13 +133,26 @@ class QuantumTaskPlanner:
                 for issue in validation_issues:
                     logger.warning(f"Task validation warning: {issue.message}")
         
+        # Log security warnings
+        for issue in security_issues:
+            if issue.severity.name not in ["CRITICAL", "HIGH"]:
+                logger.warning(f"Security warning for task {task_id}: {issue.message}")
+        
         self.task_registry[task_id] = task
         logger.info(f"Added quantum task: {task_id} - {name}")
+        
+        # Audit log for task addition
+        self.security_validator.audit_log_security_event("task_added", {
+            "task_id": task_id,
+            "name": name,
+            "security_issues": len(security_issues)
+        })
+        
         return task
     
     @monitor_operation("create_quantum_plan")
     def create_quantum_plan(self) -> QuantumScheduleResult:
-        """Create optimized quantum-inspired execution plan."""
+        """Create optimized quantum-inspired execution plan with security validation."""
         if not self.task_registry:
             logger.warning("No tasks registered for quantum planning")
             return QuantumScheduleResult([], 0.0, 0.0, 1.0, 0)
@@ -119,7 +160,25 @@ class QuantumTaskPlanner:
         tasks = list(self.task_registry.values())
         logger.info(f"Creating quantum plan for {len(tasks)} tasks")
         
-        # Validate task plan before optimization
+        # Comprehensive security validation
+        security_issues = self.security_validator.validate_plan_security(tasks)
+        critical_security = [i for i in security_issues if i.severity.name in ["CRITICAL", "HIGH"]]
+        if critical_security:
+            error_msg = f"Security validation failed: {'; '.join(i.message for i in critical_security)}"
+            logger.error(error_msg)
+            self.security_validator.audit_log_security_event("plan_rejected", {
+                "task_count": len(tasks),
+                "reason": "security_validation_failed",
+                "critical_issues": len(critical_security)
+            })
+            raise ValueError(error_msg)
+        
+        # Log security warnings
+        for issue in security_issues:
+            if issue.severity.name not in ["CRITICAL", "HIGH"]:
+                logger.warning(f"Security warning: {issue.message}")
+        
+        # Standard task plan validation
         validation_issues, is_valid = validate_quantum_plan(
             tasks, 
             self.validation_level, 
@@ -311,10 +370,11 @@ class QuantumTaskPlanner:
         return simulation_results
     
     def get_performance_statistics(self) -> Dict[str, Any]:
-        """Get comprehensive performance statistics."""
+        """Get comprehensive performance statistics including security metrics."""
         stats = {
             "configuration": {
                 "validation_level": self.validation_level.value,
+                "security_level": self.security_level.value,
                 "monitoring_enabled": self.enable_monitoring,
                 "optimization_enabled": self.optimized_planner is not None
             },
@@ -323,6 +383,17 @@ class QuantumTaskPlanner:
                 "task_types": self._analyze_task_types()
             }
         }
+        
+        # Security statistics
+        if self.task_registry:
+            security_report = self.security_validator.generate_security_report(list(self.task_registry.values()))
+            stats["security"] = {
+                "security_score": security_report["security_score"],
+                "compliance_status": security_report["compliance_status"],
+                "total_security_issues": security_report["total_issues"],
+                "issues_by_severity": security_report["issues_by_severity"],
+                "recommendations": security_report["recommendations"][:3]  # Top 3 recommendations
+            }
         
         # Monitoring statistics
         if self.monitor:
@@ -340,6 +411,17 @@ class QuantumTaskPlanner:
             stats["optimization"] = self.optimized_planner.get_performance_stats()
         
         return stats
+    
+    def get_security_report(self) -> Dict[str, Any]:
+        """Get detailed security validation report."""
+        if not self.task_registry:
+            return {
+                "status": "no_tasks",
+                "message": "No tasks to validate"
+            }
+        
+        tasks = list(self.task_registry.values())
+        return self.security_validator.generate_security_report(tasks)
     
     def _analyze_task_types(self) -> Dict[str, Any]:
         """Analyze task registry for insights."""

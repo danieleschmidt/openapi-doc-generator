@@ -97,6 +97,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=4,
         help="Number of quantum resources for allocation (default: 4)",
     )
+    parser.add_argument(
+        "--quantum-cooling-rate",
+        type=float,
+        default=0.95,
+        help="Cooling rate for quantum annealing (default: 0.95)",
+    )
+    parser.add_argument(
+        "--quantum-validation",
+        choices=["strict", "moderate", "lenient"],
+        default="moderate",
+        help="Quantum task validation level (default: moderate)",
+    )
     
     # Verbose/Quiet mode flags (mutually exclusive)
     verbosity_group = parser.add_mutually_exclusive_group()
@@ -333,70 +345,150 @@ def _generate_test_suite(result: DocumentationResult, args: argparse.Namespace, 
 
 
 def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.ArgumentParser, logger: logging.Logger) -> str:
-    """Process quantum-inspired task planning format."""
-    # Initialize quantum planner with CLI parameters
-    planner = QuantumTaskPlanner(
-        temperature=args.quantum_temperature,
-        num_resources=args.quantum_resources
-    )
-    
-    # Integrate with existing SDLC tasks
-    integrate_with_existing_sdlc(planner)
-    
-    # Create quantum plan
-    result = planner.create_quantum_plan()
-    
-    # Generate detailed output
-    output_lines = [
-        "# Quantum-Inspired Task Planning Results",
-        "",
-        f"**Quantum Fidelity**: {result.quantum_fidelity:.3f}",
-        f"**Total Value**: {result.total_value:.2f}",
-        f"**Execution Time**: {result.execution_time:.3f}s",
-        f"**Convergence Iterations**: {result.convergence_iterations}",
-        "",
-        "## Optimized Task Schedule",
-        ""
-    ]
-    
-    for i, task in enumerate(result.optimized_tasks, 1):
-        resource_id = getattr(task, 'allocated_resource', 0)
+    """Process quantum-inspired task planning format with enhanced features."""
+    try:
+        # Map validation level string to enum
+        from .quantum_validator import ValidationLevel
+        validation_map = {
+            "strict": ValidationLevel.STRICT,
+            "moderate": ValidationLevel.MODERATE,
+            "lenient": ValidationLevel.LENIENT
+        }
+        
+        # Initialize quantum planner with CLI parameters
+        planner = QuantumTaskPlanner(
+            temperature=args.quantum_temperature,
+            cooling_rate=args.quantum_cooling_rate,
+            num_resources=args.quantum_resources,
+            validation_level=validation_map[args.quantum_validation],
+            enable_monitoring=args.performance_metrics,
+            enable_optimization=True
+        )
+        
+        # Integrate with existing SDLC tasks
+        integrate_with_existing_sdlc(planner)
+        
+        logger.info(f"Quantum planner initialized with temperature={args.quantum_temperature}, resources={args.quantum_resources}")
+        
+        # Create quantum plan
+        result = planner.create_quantum_plan()
+        
+        # Get performance statistics if monitoring enabled
+        perf_stats = planner.get_performance_statistics() if args.performance_metrics else None
+        
+        # Generate detailed output
+        output_lines = [
+            "# Quantum-Inspired Task Planning Results",
+            "",
+            f"**Generated**: {result.execution_time:.3f}s",
+            f"**Quantum Fidelity**: {result.quantum_fidelity:.3f}",
+            f"**Total Business Value**: {result.total_value:.2f}",
+            f"**Convergence Iterations**: {result.convergence_iterations}",
+            "",
+            "## Configuration",
+            f"- **Temperature**: {args.quantum_temperature}",
+            f"- **Resources**: {args.quantum_resources}",
+            f"- **Monitoring**: {'Enabled' if args.performance_metrics else 'Disabled'}",
+            f"- **Optimization**: Enabled",
+            "",
+            "## Optimized Task Schedule",
+            ""
+        ]
+        
+        # Add task details with enhanced information
+        for i, task in enumerate(result.optimized_tasks, 1):
+            resource_id = getattr(task, 'allocated_resource', 0)
+            quantum_metrics = planner.get_task_quantum_metrics(task.id)
+            
+            output_lines.extend([
+                f"### {i}. {task.name}",
+                f"- **ID**: `{task.id}`",
+                f"- **Priority**: {task.priority:.2f}",
+                f"- **Effort**: {task.effort:.1f} story points",
+                f"- **Business Value**: {task.value:.1f}",
+                f"- **Quantum Weight**: {task.quantum_weight:.3f}",
+                f"- **Coherence Time**: {task.coherence_time:.1f}s",
+                f"- **Allocated Resource**: Resource-{resource_id}",
+                f"- **Dependencies**: {', '.join(f'`{dep}`' for dep in task.dependencies) if task.dependencies else 'None'}",
+                f"- **State**: {task.state.value}",
+                f"- **Entangled Tasks**: {len(task.entangled_tasks)} connections",
+                ""
+            ])
+        
+        # Add enhanced quantum metrics
+        superposition_tasks = [t for t in result.optimized_tasks if 'superposition' in t.state.value.lower()]
+        total_entanglements = sum(len(t.entangled_tasks) for t in result.optimized_tasks) // 2
+        total_measurements = sum(t.measurement_count for t in result.optimized_tasks)
+        
         output_lines.extend([
-            f"### {i}. {task.name}",
-            f"- **ID**: {task.id}",
-            f"- **Priority**: {task.priority:.2f}",
-            f"- **Effort**: {task.effort:.1f}",
-            f"- **Value**: {task.value:.1f}",
-            f"- **Quantum Weight**: {task.quantum_weight:.3f}",
-            f"- **Allocated Resource**: Resource-{resource_id}",
-            f"- **Dependencies**: {', '.join(task.dependencies) if task.dependencies else 'None'}",
-            f"- **Entangled Tasks**: {len(task.entangled_tasks)}",
+            "## Quantum Effects Analysis",
+            f"- **Tasks in Superposition**: {len(superposition_tasks)}",
+            f"- **Total Task Entanglements**: {total_entanglements}",
+            f"- **Quantum Measurements**: {total_measurements}",
+            f"- **Average Coherence Time**: {sum(t.coherence_time for t in result.optimized_tasks) / len(result.optimized_tasks):.1f}s",
             ""
         ])
-    
-    # Add quantum metrics
-    output_lines.extend([
-        "## Quantum Effects Summary",
-        f"- **Superposition States Created**: {len([t for t in result.optimized_tasks if 'super' in t.id])}",
-        f"- **Task Entanglements**: {sum(len(t.entangled_tasks) for t in result.optimized_tasks) // 2}",
-        f"- **Measurement Collapses**: {sum(t.measurement_count for t in result.optimized_tasks)}",
-        ""
-    ])
-    
-    # Add simulation results
-    simulation = planner.simulate_execution(result)
-    output_lines.extend([
-        "## Execution Simulation",
-        f"- **Estimated Completion Time**: {simulation['estimated_completion_time']:.2f} time units",
-        f"- **Total Tasks**: {simulation['total_tasks']}",
-        f"- **Quantum Effects**:",
-        f"  - Superposition Collapses: {simulation['quantum_effects']['superposition_collapses']}",
-        f"  - Entanglement Breaks: {simulation['quantum_effects']['entanglement_breaks']}",
-        f"  - Coherence Loss Events: {simulation['quantum_effects']['coherence_loss']:.0f}",
-        ""
-    ])
-    
-    return "\n".join(output_lines)
+        
+        # Add simulation results with detailed resource utilization
+        simulation = planner.simulate_execution(result)
+        output_lines.extend([
+            "## Execution Simulation",
+            f"- **Estimated Completion**: {simulation['estimated_completion_time']:.2f} time units",
+            f"- **Total Tasks**: {simulation['total_tasks']}",
+            "",
+            "### Resource Utilization",
+        ])
+        
+        for resource, utilization in simulation['resource_utilization'].items():
+            output_lines.append(f"- **{resource}**: {utilization:.1f} time units")
+        
+        output_lines.extend([
+            "",
+            "### Quantum Effects During Execution",
+            f"- **Superposition Collapses**: {simulation['quantum_effects']['superposition_collapses']}",
+            f"- **Entanglement Breaks**: {simulation['quantum_effects']['entanglement_breaks']}",
+            f"- **Coherence Loss Events**: {simulation['quantum_effects']['coherence_loss']:.0f}",
+            ""
+        ])
+        
+        # Add performance statistics if enabled
+        if perf_stats and args.performance_metrics:
+            output_lines.extend([
+                "## Performance Metrics",
+                f"- **Total Tasks Registered**: {perf_stats['task_registry']['total_tasks']}",
+                f"- **Validation Level**: {perf_stats['configuration']['validation_level']}",
+                f"- **Monitoring Status**: {'Active' if perf_stats['configuration']['monitoring_enabled'] else 'Inactive'}",
+                ""
+            ])
+            
+            if 'monitoring' in perf_stats:
+                output_lines.extend([
+                    "### System Health",
+                    f"- **Status**: {perf_stats['health']['system_status']}",
+                ])
+                for check in perf_stats['health']['health_checks']:
+                    status_icon = "✅" if check['status'] == 'healthy' else "❌"
+                    output_lines.append(f"- **{check['component']}**: {status_icon} {check['message']}")
+                output_lines.append("")
+        
+        # Add recommendations
+        output_lines.extend([
+            "## Optimization Recommendations",
+            "- Monitor task execution against quantum fidelity metrics",
+            "- Adjust temperature parameter if convergence is slow",
+            "- Consider increasing resources for parallel task execution",
+            "- Review dependencies to minimize entanglement complexity",
+            "",
+            "---",
+            f"*Generated by Quantum Task Planner v{planner.scheduler.temperature} at {result.execution_time:.3f}s*"
+        ])
+        
+        logger.info(f"Quantum plan generated successfully: {len(result.optimized_tasks)} tasks, fidelity={result.quantum_fidelity:.3f}")
+        return "\n".join(output_lines)
+        
+    except Exception as e:
+        logger.error(f"Quantum plan generation failed: {str(e)}")
+        return f"# Quantum Plan Generation Failed\n\nError: {str(e)}\n\nPlease check your configuration and try again."
 
 
 def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -> None:

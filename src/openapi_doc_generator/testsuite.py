@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
 
-from .documentator import DocumentationResult
 from .config import config
+from .documentator import DocumentationResult
 
 
 @dataclass

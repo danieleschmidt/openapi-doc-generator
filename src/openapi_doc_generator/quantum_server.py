@@ -2,28 +2,34 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, List, Optional
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
+from prometheus_client import Counter, Gauge, Histogram, generate_latest
 from pydantic import BaseModel, Field
-import prometheus_client
-from prometheus_client import Counter, Histogram, Gauge, generate_latest
 
 from .quantum_api import QuantumPlannerAPI, get_quantum_api
-from .quantum_compliance import QuantumComplianceManager, ComplianceStandard, get_compliance_manager
-from .quantum_security import QuantumSecurityValidator, SecurityLevel, get_security_validator
-from .quantum_scaler import QuantumTaskScaler, ScalingConfig, get_quantum_scaler
+from .quantum_compliance import (
+    ComplianceStandard,
+    QuantumComplianceManager,
+    get_compliance_manager,
+)
 from .quantum_recovery import get_recovery_manager
+from .quantum_scaler import QuantumTaskScaler, ScalingConfig, get_quantum_scaler
+from .quantum_security import (
+    QuantumSecurityValidator,
+    SecurityLevel,
+    get_security_validator,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -90,10 +96,10 @@ scaler: Optional[QuantumTaskScaler] = None
 async def lifespan(app: FastAPI):
     """Application lifespan management."""
     global api_instance, compliance_manager, security_validator, scaler
-    
+
     # Startup
     logger.info("Starting Quantum Task Planner server...")
-    
+
     # Initialize components
     api_instance = get_quantum_api()
     compliance_manager = get_compliance_manager([
@@ -106,30 +112,30 @@ async def lifespan(app: FastAPI):
         min_workers=int(os.getenv('MIN_WORKERS', '4')),
         max_workers=int(os.getenv('MAX_WORKERS', '16'))
     ))
-    
+
     # Log compliance event
     compliance_manager.log_compliance_event(
         event_type="system_startup",
         metadata={"server_version": "1.0.0"}
     )
-    
+
     logger.info("Quantum Task Planner server started successfully")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Quantum Task Planner server...")
-    
+
     # Log compliance event
     compliance_manager.log_compliance_event(
         event_type="system_shutdown",
         metadata={"shutdown_time": time.time()}
     )
-    
+
     # Cleanup resources
     if scaler:
         scaler.shutdown()
-    
+
     logger.info("Quantum Task Planner server shutdown complete")
 
 
@@ -187,7 +193,7 @@ async def rate_limit_check(request: Request, security: QuantumSecurityValidator 
     """Rate limiting middleware."""
     if os.getenv('ENABLE_RATE_LIMITING', 'true').lower() != 'true':
         return
-    
+
     client_ip = request.client.host
     if not security.check_rate_limit(client_ip, max_requests=100, window_seconds=3600):
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
@@ -200,16 +206,16 @@ async def metrics_middleware(request: Request, call_next):
     start_time = time.time()
     method = request.method
     path = request.url.path
-    
+
     response = await call_next(request)
-    
+
     duration = time.time() - start_time
     status = response.status_code
-    
+
     # Record metrics
     REQUEST_COUNT.labels(method=method, endpoint=path, status=status).inc()
     REQUEST_DURATION.labels(method=method, endpoint=path).observe(duration)
-    
+
     return response
 
 
@@ -235,7 +241,7 @@ async def readiness_check():
     """Readiness check for Kubernetes."""
     if not all([api_instance, compliance_manager, security_validator, scaler]):
         raise HTTPException(status_code=503, detail="Service not ready")
-    
+
     return {"status": "ready", "timestamp": time.time()}
 
 
@@ -253,11 +259,11 @@ async def metrics():
     if api_instance:
         sessions = api_instance.list_sessions()
         ACTIVE_SESSIONS.set(sessions.get("total_sessions", 0))
-    
+
     if security_validator:
         # Mock security score - in production would be calculated
         SECURITY_SCORE.set(85.0)
-    
+
     return Response(generate_latest(), media_type="text/plain")
 
 
@@ -279,16 +285,16 @@ async def create_session(
             validation_level=request.validation_level,
             enable_monitoring=request.enable_monitoring
         )
-        
+
         # Log compliance event
         compliance.log_compliance_event(
             event_type="session_created",
             session_id=request.session_id,
             metadata={"temperature": request.temperature, "resources": request.num_resources}
         )
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Failed to create session: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -322,13 +328,13 @@ async def delete_session(
 ):
     """Delete a session."""
     response = api.delete_session(session_id)
-    
+
     # Log compliance event
     compliance.log_compliance_event(
         event_type="session_deleted",
         session_id=session_id
     )
-    
+
     return response
 
 
@@ -345,16 +351,16 @@ async def add_task(
     try:
         task_data = request.dict()
         response = api.add_task(session_id, task_data)
-        
+
         # Log compliance event
         compliance.log_compliance_event(
             event_type="task_added",
             session_id=session_id,
             metadata={"task_id": request.id, "task_name": request.name}
         )
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Failed to add task: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -369,14 +375,14 @@ async def add_sdlc_tasks(
 ):
     """Add standard SDLC tasks to a session."""
     response = api.add_sdlc_tasks(session_id)
-    
+
     # Log compliance event
     compliance.log_compliance_event(
         event_type="sdlc_tasks_added",
         session_id=session_id,
         metadata={"tasks_added": response.get("tasks_added", 0)}
     )
-    
+
     return response
 
 
@@ -392,7 +398,7 @@ async def create_plan(
     """Create a quantum-optimized execution plan."""
     try:
         response = api.create_plan(session_id)
-        
+
         # Log compliance event in background
         background_tasks.add_task(
             compliance.log_compliance_event,
@@ -404,9 +410,9 @@ async def create_plan(
                 "quantum_fidelity": response.get("quantum_plan", {}).get("quantum_fidelity", 0.0)
             }
         )
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Failed to create plan: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -427,16 +433,16 @@ async def export_plan(
             format=request.format,
             output_path=request.output_path
         )
-        
+
         # Log compliance event
         compliance.log_compliance_event(
             event_type="plan_exported",
             session_id=session_id,
             metadata={"format": request.format}
         )
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Failed to export plan: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -458,9 +464,9 @@ async def record_consent(
             data_types=request.data_types,
             retention_period=request.retention_period
         )
-        
+
         return {"status": "success", "consent_id": consent_id}
-        
+
     except Exception as e:
         logger.error(f"Failed to record consent: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -475,7 +481,7 @@ async def withdraw_consent(
 ):
     """Withdraw user consent."""
     success = compliance.withdraw_consent(user_id, consent_id)
-    
+
     if success:
         return {"status": "success", "message": "Consent withdrawn successfully"}
     else:
@@ -535,10 +541,10 @@ async def get_security_report(
 ):
     """Get security report for a session."""
     session_status = api.get_session_status(session_id)
-    
+
     if session_status["status"] != "success":
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     # Get security report from the planner
     planner = api.planners.get(session_id)
     if planner:
@@ -586,7 +592,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle general exceptions."""
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-    
+
     return JSONResponse(
         status_code=500,
         content={

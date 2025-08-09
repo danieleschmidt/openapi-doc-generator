@@ -1,13 +1,12 @@
 """Monitoring and observability features for OpenAPI Doc Generator."""
 
 import json
-import time
-from dataclasses import dataclass, asdict
-from typing import Dict, Any, Optional, List
-from pathlib import Path
 import logging
+import time
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, List, Optional
+
 import psutil
-import os
 
 
 @dataclass
@@ -18,7 +17,7 @@ class HealthCheck:
     timestamp: float
     response_time_ms: float
     details: Optional[Dict[str, Any]] = None
-    
+
 
 @dataclass
 class SystemMetrics:
@@ -46,14 +45,14 @@ class PerformanceMetrics:
 
 class MetricsCollector:
     """Collects and manages application metrics."""
-    
+
     def __init__(self):
         self.metrics: List[PerformanceMetrics] = []
         self.health_checks: List[HealthCheck] = []
         self.logger = logging.getLogger(__name__)
-        
-    def record_performance(self, 
-                          operation: str, 
+
+    def record_performance(self,
+                          operation: str,
                           duration_ms: float,
                           memory_usage_mb: float = 0,
                           cpu_time_ms: float = 0,
@@ -70,7 +69,7 @@ class MetricsCollector:
             metadata=metadata or {}
         )
         self.metrics.append(metric)
-        
+
         # Log performance metric
         self.logger.info(
             f"Performance: {operation} completed in {duration_ms:.2f}ms",
@@ -81,14 +80,14 @@ class MetricsCollector:
                 "correlation_id": correlation_id
             }
         )
-    
+
     def get_system_metrics(self) -> SystemMetrics:
         """Get current system metrics."""
         process = psutil.Process()
         memory_info = process.memory_info()
         system_memory = psutil.virtual_memory()
         disk_usage = psutil.disk_usage('/')
-        
+
         return SystemMetrics(
             cpu_percent=process.cpu_percent(),
             memory_percent=system_memory.percent,
@@ -98,22 +97,22 @@ class MetricsCollector:
             process_count=len(psutil.pids()),
             timestamp=time.time()
         )
-    
+
     def check_health(self) -> Dict[str, HealthCheck]:
         """Perform comprehensive health checks."""
         checks = {}
-        
+
         # System health
         start_time = time.time()
         try:
             metrics = self.get_system_metrics()
-            
+
             status = "healthy"
             if metrics.memory_percent > 90:
                 status = "degraded"
             if metrics.memory_percent > 95 or metrics.disk_usage_percent > 95:
                 status = "unhealthy"
-                
+
             checks["system"] = HealthCheck(
                 service="system",
                 status=status,
@@ -129,15 +128,15 @@ class MetricsCollector:
                 response_time_ms=(time.time() - start_time) * 1000,
                 details={"error": str(e)}
             )
-        
+
         # Application health
         start_time = time.time()
         try:
             from openapi_doc_generator.documentator import APIDocumentator
-            
+
             # Quick functional test
             documentator = APIDocumentator()
-            
+
             status = "healthy"
             checks["application"] = HealthCheck(
                 service="application",
@@ -154,13 +153,13 @@ class MetricsCollector:
                 response_time_ms=(time.time() - start_time) * 1000,
                 details={"error": str(e)}
             )
-        
+
         # Dependencies health
         start_time = time.time()
         try:
-            import jinja2
             import graphql
-            
+            import jinja2
+
             checks["dependencies"] = HealthCheck(
                 service="dependencies",
                 status="healthy",
@@ -179,21 +178,21 @@ class MetricsCollector:
                 response_time_ms=(time.time() - start_time) * 1000,
                 details={"error": str(e)}
             )
-        
+
         return checks
-    
+
     def get_metrics_summary(self) -> Dict[str, Any]:
         """Get summary of collected metrics."""
         if not self.metrics:
             return {"total_operations": 0}
-        
+
         durations = [m.duration_ms for m in self.metrics]
         memory_usages = [m.memory_usage_mb for m in self.metrics if m.memory_usage_mb > 0]
-        
+
         operations_count = {}
         for metric in self.metrics:
             operations_count[metric.operation] = operations_count.get(metric.operation, 0) + 1
-        
+
         summary = {
             "total_operations": len(self.metrics),
             "operations_by_type": operations_count,
@@ -205,15 +204,15 @@ class MetricsCollector:
                 "p99_duration_ms": sorted(durations)[int(0.99 * len(durations))] if durations else 0
             }
         }
-        
+
         if memory_usages:
             summary["memory"] = {
                 "avg_usage_mb": sum(memory_usages) / len(memory_usages),
                 "peak_usage_mb": max(memory_usages)
             }
-        
+
         return summary
-    
+
     def export_metrics(self, format: str = "json") -> str:
         """Export metrics in specified format."""
         if format == "json":
@@ -226,21 +225,21 @@ class MetricsCollector:
             return self._export_prometheus_format()
         else:
             raise ValueError(f"Unsupported format: {format}")
-    
+
     def _export_prometheus_format(self) -> str:
         """Export metrics in Prometheus format."""
         lines = []
-        
+
         # Performance metrics
         lines.append("# HELP openapi_doc_generator_operation_duration_seconds Duration of operations")
         lines.append("# TYPE openapi_doc_generator_operation_duration_seconds histogram")
-        
+
         for metric in self.metrics:
             duration_seconds = metric.duration_ms / 1000
             lines.append(
                 f'openapi_doc_generator_operation_duration_seconds{{operation="{metric.operation}"}} {duration_seconds}'
             )
-        
+
         # System metrics
         system_metrics = self.get_system_metrics()
         lines.extend([
@@ -248,13 +247,13 @@ class MetricsCollector:
             "# TYPE openapi_doc_generator_memory_usage_percent gauge",
             f"openapi_doc_generator_memory_usage_percent {system_metrics.memory_percent}",
             "",
-            "# HELP openapi_doc_generator_cpu_usage_percent CPU usage percentage", 
+            "# HELP openapi_doc_generator_cpu_usage_percent CPU usage percentage",
             "# TYPE openapi_doc_generator_cpu_usage_percent gauge",
             f"openapi_doc_generator_cpu_usage_percent {system_metrics.cpu_percent}"
         ])
-        
+
         return "\n".join(lines)
-    
+
     def clear_metrics(self) -> None:
         """Clear collected metrics."""
         self.metrics.clear()
@@ -271,16 +270,16 @@ def performance_timer(operation: str, correlation_id: Optional[str] = None):
         def wrapper(*args, **kwargs):
             start_time = time.time()
             start_memory = psutil.Process().memory_info().rss / 1024 / 1024
-            
+
             try:
                 result = func(*args, **kwargs)
-                
+
                 end_time = time.time()
                 end_memory = psutil.Process().memory_info().rss / 1024 / 1024
-                
+
                 duration_ms = (end_time - start_time) * 1000
                 memory_delta = end_memory - start_memory
-                
+
                 metrics_collector.record_performance(
                     operation=operation,
                     duration_ms=duration_ms,
@@ -288,22 +287,22 @@ def performance_timer(operation: str, correlation_id: Optional[str] = None):
                     correlation_id=correlation_id,
                     metadata={"success": True}
                 )
-                
+
                 return result
-                
+
             except Exception as e:
                 end_time = time.time()
                 duration_ms = (end_time - start_time) * 1000
-                
+
                 metrics_collector.record_performance(
                     operation=operation,
                     duration_ms=duration_ms,
                     correlation_id=correlation_id,
                     metadata={"success": False, "error": str(e)}
                 )
-                
+
                 raise
-        
+
         return wrapper
     return decorator
 
@@ -311,13 +310,13 @@ def performance_timer(operation: str, correlation_id: Optional[str] = None):
 def get_health_status() -> Dict[str, Any]:
     """Get overall health status."""
     checks = metrics_collector.check_health()
-    
+
     overall_status = "healthy"
     if any(check.status == "unhealthy" for check in checks.values()):
         overall_status = "unhealthy"
     elif any(check.status == "degraded" for check in checks.values()):
         overall_status = "degraded"
-    
+
     return {
         "status": overall_status,
         "timestamp": time.time(),
@@ -329,10 +328,10 @@ def get_health_status() -> Dict[str, Any]:
 def get_readiness_status() -> Dict[str, Any]:
     """Get readiness status for deployment."""
     checks = metrics_collector.check_health()
-    
+
     # Readiness is more strict - all checks must be healthy
     is_ready = all(check.status == "healthy" for check in checks.values())
-    
+
     return {
         "ready": is_ready,
         "timestamp": time.time(),

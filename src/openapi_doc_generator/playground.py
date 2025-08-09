@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict
 import html
 import json
+from dataclasses import dataclass
+from typing import Any, Dict
 
 from jinja2 import Template
-
 
 DEFAULT_TEMPLATE = """
 <!DOCTYPE html>

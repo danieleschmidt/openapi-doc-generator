@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import ast
-from pathlib import Path
 import logging
+from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Optional
 
 
@@ -68,7 +68,7 @@ class SchemaInferer:
         tree = self._load_ast_tree()
         if tree is None:
             return []
-        
+
         return self._extract_models_from_tree(tree)
 
     # Internal helpers -------------------------------------------------

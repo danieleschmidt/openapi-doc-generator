@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import ast
+import concurrent.futures
 import hashlib
 import json
 import logging
+import threading
 import time
-import uuid
 import tracemalloc
+import uuid
+from collections import deque
+from dataclasses import dataclass
 from functools import lru_cache, wraps
-from typing import Any, Dict, Optional, Callable, TypeVar
+from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+import psutil
 
 from .config import config
 
@@ -18,6 +24,129 @@ from .config import config
 def echo(value: object | None = None) -> object | None:
     """Return the provided value unchanged."""
     return value
+
+
+@dataclass
+class PerformanceMetrics:
+    """Advanced performance metrics for scaling optimization."""
+    operation_name: str
+    duration_ms: float
+    memory_usage_mb: float
+    cpu_percent: float
+    timestamp: float
+    thread_count: int = 1
+    cache_hit_rate: float = 0.0
+    processing_rate: float = 0.0  # items per second
+
+
+class AdvancedPerformanceTracker:
+    """Advanced performance tracker with scaling optimization."""
+
+    def __init__(self, max_history: int = 1000):
+        self.metrics_history: deque = deque(maxlen=max_history)
+        self.operation_stats: Dict[str, List[PerformanceMetrics]] = {}
+        self.lock = threading.RLock()
+        self.start_time = time.time()
+
+    def record_metric(self, metric: PerformanceMetrics):
+        """Record a performance metric with thread safety."""
+        with self.lock:
+            self.metrics_history.append(metric)
+            if metric.operation_name not in self.operation_stats:
+                self.operation_stats[metric.operation_name] = []
+            self.operation_stats[metric.operation_name].append(metric)
+
+    def get_operation_stats(self, operation_name: str) -> Dict[str, float]:
+        """Get aggregated statistics for a specific operation."""
+        with self.lock:
+            if operation_name not in self.operation_stats:
+                return {}
+
+            metrics = self.operation_stats[operation_name]
+            if not metrics:
+                return {}
+
+            durations = [m.duration_ms for m in metrics]
+            memory_usage = [m.memory_usage_mb for m in metrics]
+
+            return {
+                'count': len(metrics),
+                'avg_duration_ms': sum(durations) / len(durations),
+                'max_duration_ms': max(durations),
+                'min_duration_ms': min(durations),
+                'avg_memory_mb': sum(memory_usage) / len(memory_usage) if memory_usage else 0,
+                'total_duration_ms': sum(durations),
+                'operations_per_second': len(metrics) / (time.time() - self.start_time)
+            }
+
+    def get_system_health(self) -> Dict[str, Any]:
+        """Get current system health metrics."""
+        try:
+            cpu_percent = psutil.cpu_percent(interval=0.1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+
+            return {
+                'cpu_percent': cpu_percent,
+                'memory_percent': memory.percent,
+                'memory_available_gb': memory.available / (1024**3),
+                'disk_percent': disk.percent,
+                'disk_free_gb': disk.free / (1024**3),
+                'healthy': cpu_percent < 80 and memory.percent < 85 and disk.percent < 90
+            }
+        except Exception:
+            return {'healthy': True, 'error': 'Unable to get system metrics'}
+
+
+# Global performance tracker instance
+_performance_tracker = AdvancedPerformanceTracker()
+
+
+class ConcurrentProcessingPool:
+    """Thread pool for concurrent processing with intelligent scaling."""
+
+    def __init__(self, max_workers: Optional[int] = None):
+        self.max_workers = max_workers or min(32, (psutil.cpu_count() or 1) + 4)
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers)
+        self.active_tasks = 0
+        self.lock = threading.Lock()
+
+    def submit_task(self, func: Callable, *args, **kwargs) -> concurrent.futures.Future:
+        """Submit a task for concurrent execution."""
+        with self.lock:
+            self.active_tasks += 1
+
+        future = self.executor.submit(func, *args, **kwargs)
+        future.add_done_callback(lambda f: self._task_completed())
+        return future
+
+    def _task_completed(self):
+        """Callback when task is completed."""
+        with self.lock:
+            self.active_tasks = max(0, self.active_tasks - 1)
+
+    def get_load_factor(self) -> float:
+        """Get current load factor (0.0 to 1.0)."""
+        with self.lock:
+            return self.active_tasks / self.max_workers
+
+    def shutdown(self, wait: bool = True):
+        """Shutdown the thread pool."""
+        self.executor.shutdown(wait=wait)
+
+
+# Global concurrent processing pool
+_processing_pool = ConcurrentProcessingPool()
+
+
+def get_processing_pool() -> ConcurrentProcessingPool:
+    """Get the global processing pool."""
+    return _processing_pool
+
+
+def get_performance_tracker() -> AdvancedPerformanceTracker:
+    """Get the global performance tracker."""
+    return _performance_tracker
 
 
 # LRU cache for parsed AST trees to avoid repeated parsing

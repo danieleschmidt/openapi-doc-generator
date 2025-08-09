@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Tuple
 
 
@@ -26,20 +26,20 @@ class MigrationGuideGenerator:
         """Calculate added and removed endpoints."""
         old_endpoints = set(self._endpoints(self.old_spec))
         new_endpoints = set(self._endpoints(self.new_spec))
-        
+
         removed = old_endpoints - new_endpoints
         added = new_endpoints - old_endpoints
-        
+
         self._logger.debug("%d endpoints removed", len(removed))
         self._logger.debug("%d endpoints added", len(added))
-        
+
         return removed, added
 
     def _format_endpoint_section(self, title: str, endpoints: set) -> list[str]:
         """Format a section for added or removed endpoints."""
         if not endpoints:
             return []
-        
+
         lines = [f"## {title}"]
         lines.extend(f"- {m} {p}" for m, p in sorted(endpoints))
         lines.append("")
@@ -52,7 +52,7 @@ class MigrationGuideGenerator:
         lines = ["# API Migration Guide", ""]
         lines.extend(self._format_endpoint_section("Removed Endpoints", removed))
         lines.extend(self._format_endpoint_section("New Endpoints", added))
-        
+
         if not added and not removed:
             lines.append("No changes detected.")
 

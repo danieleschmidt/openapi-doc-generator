@@ -109,7 +109,7 @@ class SpecValidator:
     def _validate_path_operations(self, path: str, operations: Any) -> List[str]:
         """Validate operations for a single path."""
         suggestions = []
-        
+
         if not isinstance(operations, dict):
             suggestions.append(
                 f"Path '{path}' must contain an object with operations"
@@ -130,7 +130,7 @@ class SpecValidator:
     ) -> List[str]:
         """Validate a single operation."""
         suggestions = []
-        
+
         # Validate HTTP method
         if method.lower() not in self.VALID_HTTP_METHODS:
             suggestions.append(
@@ -158,7 +158,7 @@ class SpecValidator:
     ) -> List[str]:
         """Validate responses section of an operation."""
         suggestions = []
-        
+
         if "responses" not in operation:
             suggestions.append(
                 f"Operation '{method} {path}' is missing responses"
@@ -171,7 +171,7 @@ class SpecValidator:
             suggestions.append(
                 f"Operation '{method} {path}' has no response definitions"
             )
-            
+
         return suggestions
 
     def _validate_components_section(self, spec: Dict[str, Any]) -> List[str]:
@@ -195,7 +195,7 @@ class SpecValidator:
         """Validate schemas section within components."""
         suggestions = []
         schemas = components.get("schemas", {})
-        
+
         if not schemas or not isinstance(schemas, dict):
             return suggestions
 
@@ -207,7 +207,7 @@ class SpecValidator:
     def _validate_single_schema(self, schema_name: str, schema_def: Any) -> List[str]:
         """Validate a single schema definition."""
         suggestions = []
-        
+
         if not isinstance(schema_def, dict):
             suggestions.append(f"Schema '{schema_name}' must be an object")
             return suggestions
@@ -277,10 +277,10 @@ class SpecValidator:
         """Extract security scheme names from a single operation."""
         schemes = set()
         security = operation.get("security", [])
-        
+
         if isinstance(security, list):
             for security_req in security:
                 if isinstance(security_req, dict):
                     schemes.update(security_req.keys())
-                    
+
         return schemes

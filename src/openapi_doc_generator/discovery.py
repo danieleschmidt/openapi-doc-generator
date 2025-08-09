@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import ast
+import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from importlib import metadata
 from pathlib import Path
-import logging
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from .plugins import RoutePlugin
@@ -51,17 +51,17 @@ def get_plugins() -> List[RoutePlugin]:
     if not _PLUGINS:
         import importlib
         importlib.import_module("openapi_doc_generator.plugins")
-        
+
         for ep in metadata.entry_points(group="openapi_doc_generator.plugins"):
             _load_single_plugin(ep)
-    
+
     return list(_PLUGINS)
 
 
 def _load_single_plugin(ep) -> None:
     """Load a single plugin entry point with consolidated error handling."""
     logger = logging.getLogger(__name__)
-    
+
     try:
         plugin_cls = ep.load()
         register_plugin(plugin_cls())
@@ -133,19 +133,19 @@ class RouteDiscoverer:
         for node in ast.walk(tree):
             self._process_import_node(node, imports)
         return imports
-    
+
     def _process_import_node(self, node: ast.AST, imports: set[str]) -> None:
         """Process an AST node and extract import information."""
         if isinstance(node, ast.Import):
             self._handle_direct_import(node, imports)
         elif isinstance(node, ast.ImportFrom):
             self._handle_from_import(node, imports)
-    
+
     def _handle_direct_import(self, node: ast.Import, imports: set[str]) -> None:
         """Handle direct import statements (import module)."""
         for alias in node.names:
             imports.add(alias.name)
-    
+
     def _handle_from_import(self, node: ast.ImportFrom, imports: set[str]) -> None:
         """Handle from-import statements (from module import ...)."""
         if node.module:
@@ -186,7 +186,7 @@ class RouteDiscoverer:
     def _detect_framework_fallback(self, source: str) -> Optional[str]:
         """Fallback framework detection using string matching."""
         lowered = source.lower()
-        
+
         # Framework detection patterns - more maintainable and testable
         framework_patterns = [
             ("fastapi", self._detect_fastapi_patterns),
@@ -195,29 +195,29 @@ class RouteDiscoverer:
             ("tornado", self._detect_tornado_patterns),
             ("express", self._detect_express_patterns),
         ]
-        
+
         for framework, detector in framework_patterns:
             if detector(lowered):
                 return framework
-        
+
         return None
-    
+
     def _detect_fastapi_patterns(self, lowered_source: str) -> bool:
         """Detect FastAPI framework patterns."""
         return "fastapi" in lowered_source or "from fastapi" in lowered_source
-    
+
     def _detect_flask_patterns(self, lowered_source: str) -> bool:
         """Detect Flask framework patterns."""
         return "flask" in lowered_source or "from flask" in lowered_source
-    
+
     def _detect_django_patterns(self, lowered_source: str) -> bool:
         """Detect Django framework patterns."""
         return "django" in lowered_source or "from django" in lowered_source
-    
+
     def _detect_tornado_patterns(self, lowered_source: str) -> bool:
         """Detect Tornado framework patterns."""
         return "tornado" in lowered_source or "from tornado" in lowered_source
-    
+
     def _detect_express_patterns(self, lowered_source: str) -> bool:
         """Detect Express.js framework patterns."""
         return "express" in lowered_source or "require('express')" in lowered_source
@@ -247,17 +247,17 @@ class RouteDiscoverer:
         """Extract FastAPI route information from decorator and function node."""
         if not (isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute)):
             return None
-            
+
         method = deco.func.attr
         if method not in {"get", "post", "put", "patch", "delete"}:
             return None
-            
+
         if not self._is_app_decorator(deco.func):
             return None
-            
+
         path = self._extract_path_from_args(deco.args)
         doc = ast.get_docstring(node)
-        
+
         return RouteInfo(
             path=path,
             methods=[method.upper()],
@@ -289,40 +289,40 @@ class RouteDiscoverer:
         """Extract Flask route information from decorator and function node."""
         if not self._is_flask_route_decorator(deco):
             return None
-            
+
         path = self._extract_path_from_args(deco.args)
         methods = self._extract_flask_methods(deco.keywords)
         doc = ast.get_docstring(node)
-        
+
         return RouteInfo(
             path=path,
             methods=methods,
             name=node.name,
             docstring=doc,
         )
-        
+
     def _is_flask_route_decorator(self, deco: ast.expr) -> bool:
         """Check if decorator is a Flask route decorator."""
         if not (isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute)):
             return False
-            
+
         return (
             isinstance(deco.func.value, ast.Name)
             and deco.func.value.id == "app"
             and deco.func.attr == "route"
         )
-        
+
     def _extract_flask_methods(self, keywords: List[ast.keyword]) -> List[str]:
         """Extract HTTP methods from Flask route keyword arguments."""
         methods: List[str] = ["GET"]  # Default Flask method
-        
+
         for kw in keywords:
             if kw.arg == "methods" and isinstance(kw.value, (ast.List, ast.Tuple)):
                 methods = []
                 for elt in kw.value.elts:
                     if isinstance(elt, ast.Constant):
                         methods.append(str(elt.value).upper())
-                        
+
         return methods
 
     def _discover_django(self, source: str) -> List[RouteInfo]:
@@ -341,27 +341,27 @@ class RouteDiscoverer:
 
         Visitor().visit(tree)
         return routes
-        
+
     def _extract_django_route(self, node: ast.Call) -> Optional[RouteInfo]:
         """Extract Django route information from Call node."""
         if not self._is_django_path_call(node):
             return None
-            
+
         if not (node.args and isinstance(node.args[0], ast.Constant)):
             return None
-            
+
         path_value = str(node.args[0].value)
         name = self._extract_django_view_name(node.args)
-        
+
         return RouteInfo(path=path_value, methods=["GET"], name=name)
-        
+
     def _is_django_path_call(self, node: ast.Call) -> bool:
         """Check if Call node is a Django path or re_path call."""
         return (
-            isinstance(node.func, ast.Name) 
+            isinstance(node.func, ast.Name)
             and node.func.id in {"path", "re_path"}
         )
-        
+
     def _extract_django_view_name(self, args: List[ast.expr]) -> str:
         """Extract view name from Django path arguments."""
         if len(args) > 1:
@@ -371,14 +371,14 @@ class RouteDiscoverer:
             elif isinstance(target, ast.Name):
                 return target.id
         return ""
-        
+
     def _is_app_decorator(self, func: ast.Attribute) -> bool:
         """Check if decorator function is an app decorator."""
         return (
             isinstance(func.value, ast.Name)
             and func.value.id == "app"
         )
-        
+
     def _extract_path_from_args(self, args: List[ast.expr]) -> str:
         """Extract path string from function arguments."""
         if args and isinstance(args[0], ast.Constant):

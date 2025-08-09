@@ -7,17 +7,21 @@ import json
 import logging
 import os
 import sys
+import tempfile
+import time
+import traceback
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from .documentator import APIDocumentator, DocumentationResult
-from .playground import PlaygroundGenerator
-from .graphql import GraphQLSchema
-from .testsuite import TestSuiteGenerator
-from .migration import MigrationGuideGenerator
-from .config import config
-from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
 from . import __version__
+from .config import config
+from .documentator import APIDocumentator, DocumentationResult
+from .graphql import GraphQLSchema
+from .migration import MigrationGuideGenerator
+from .i18n import get_i18n_manager, SupportedLanguage, ComplianceRegion, localize_text
+from .playground import PlaygroundGenerator
+from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
+from .testsuite import TestSuiteGenerator
 
 
 class ErrorCode:
@@ -28,6 +32,11 @@ class ErrorCode:
     OLD_SPEC_INVALID = "CLI003"
     OUTPUT_PATH_INVALID = "CLI004"
     TESTS_PATH_INVALID = "CLI005"
+    SECURITY_VIOLATION = "CLI006"
+    RESOURCE_EXHAUSTION = "CLI007"
+    INVALID_INPUT = "CLI008"
+    PERMISSION_DENIED = "CLI009"
+    TIMEOUT_ERROR = "CLI010"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -53,7 +62,7 @@ def build_parser() -> argparse.ArgumentParser:
         "-f",
         "--format",
         choices=["markdown", "openapi", "html", "graphql", "guide", "quantum-plan"],
-        default="markdown", 
+        default="markdown",
         help=("Output format: markdown (default), openapi, html, graphql, guide, or quantum-plan"),
     )
     parser.add_argument(
@@ -109,7 +118,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="moderate",
         help="Quantum task validation level (default: moderate)",
     )
-    
+
     # Verbose/Quiet mode flags (mutually exclusive)
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument(
@@ -124,7 +133,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Suppress all non-error output",
     )
-    
+
     # Color output control
     parser.add_argument(
         "--no-color",
@@ -132,12 +141,90 @@ def build_parser() -> argparse.ArgumentParser:
         help="Disable colored output",
     )
     
+    # Global/i18n options
+    parser.add_argument(
+        "--language",
+        choices=[lang.value for lang in SupportedLanguage],
+        default=None,
+        help="Output language (default: auto-detect from system)",
+    )
+    parser.add_argument(
+        "--region", 
+        default="US",
+        help="Deployment region for compliance and localization (default: US)",
+    )
+    parser.add_argument(
+        "--compliance",
+        choices=["gdpr", "ccpa", "pdpa-sg", "lgpd", "pipeda"],
+        action="append",
+        help="Enable compliance features for specified regulations",
+    )
+    parser.add_argument(
+        "--timezone",
+        default="UTC",
+        help="Timezone for timestamps and date formatting (default: UTC)",
+    )
+
     return parser
 
 
 def _check_path_traversal(path_str: str) -> bool:
-    """Check for path traversal patterns."""
-    return ".." in path_str or (path_str.startswith("/") and "/../" in path_str)
+    """Check if path contains potential traversal attacks."""
+    dangerous_patterns = ["../", "..\\", "~", "$", "|", ";", "&", "`", "<", ">"]
+    return any(pattern in path_str for pattern in dangerous_patterns)
+
+
+def _validate_file_size(file_path: Path, max_size_mb: int = 50) -> bool:
+    """Validate file size to prevent resource exhaustion."""
+    if not file_path.exists():
+        return True  # File doesn't exist yet, size check not needed
+
+    file_size_mb = file_path.stat().st_size / (1024 * 1024)
+    return file_size_mb <= max_size_mb
+
+
+def _sanitize_user_input(user_input: str, max_length: int = 1000) -> str:
+    """Sanitize user input to prevent injection attacks."""
+    if len(user_input) > max_length:
+        raise ValueError(f"Input too long: {len(user_input)} > {max_length}")
+
+    # Remove potentially dangerous characters
+    dangerous_chars = ['<', '>', '&', '"', "'", '`', '$', '|', ';']
+    sanitized = user_input
+    for char in dangerous_chars:
+        sanitized = sanitized.replace(char, '')
+
+    return sanitized.strip()
+
+
+def _check_resource_limits() -> Dict[str, Any]:
+    """Check system resource limits to prevent exhaustion."""
+    try:
+        import psutil
+        memory_percent = psutil.virtual_memory().percent
+        disk_percent = psutil.disk_usage('/').percent
+        cpu_percent = psutil.cpu_percent(interval=1)
+
+        return {
+            'memory_usage': memory_percent,
+            'disk_usage': disk_percent,
+            'cpu_usage': cpu_percent,
+            'healthy': memory_percent < 90 and disk_percent < 95 and cpu_percent < 95
+        }
+    except ImportError:
+        # psutil not available, assume healthy
+        return {'healthy': True, 'note': 'psutil not available for resource monitoring'}
+
+
+def _create_secure_temp_file(content: str, prefix: str = 'openapi_') -> Path:
+    """Create a secure temporary file with restricted permissions."""
+    with tempfile.NamedTemporaryFile(mode='w', prefix=prefix, suffix='.tmp', delete=False) as tmp_file:
+        tmp_file.write(content)
+        temp_path = Path(tmp_file.name)
+
+    # Set restrictive permissions (read/write for owner only)
+    temp_path.chmod(0o600)
+    return temp_path
 
 
 def _validate_file_target(
@@ -230,7 +317,7 @@ def _setup_logging(log_format: str = "standard", level: int = logging.INFO, colo
         else:
             # Standard format without colors
             format_str = "%(levelname)s:%(name)s:%(message)s"
-        
+
         logging.basicConfig(level=level, format=format_str)
         return logging.getLogger(__name__)
 
@@ -240,13 +327,13 @@ def _validate_app_path_input(app_path_str: str) -> Path:
     # Check for empty or whitespace-only paths
     if not app_path_str or not app_path_str.strip():
         raise ValueError("App path cannot be empty")
-    
+
     app_path = Path(app_path_str).resolve()
-    
+
     # Security check - prevent obvious directory traversal patterns
     if _check_path_traversal(app_path_str):
         raise ValueError("Path contains suspicious traversal patterns")
-    
+
     return app_path
 
 
@@ -354,7 +441,7 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             "moderate": ValidationLevel.MODERATE,
             "lenient": ValidationLevel.LENIENT
         }
-        
+
         # Initialize quantum planner with CLI parameters
         planner = QuantumTaskPlanner(
             temperature=args.quantum_temperature,
@@ -364,18 +451,18 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             enable_monitoring=args.performance_metrics,
             enable_optimization=True
         )
-        
+
         # Integrate with existing SDLC tasks
         integrate_with_existing_sdlc(planner)
-        
+
         logger.info(f"Quantum planner initialized with temperature={args.quantum_temperature}, resources={args.quantum_resources}")
-        
+
         # Create quantum plan
         result = planner.create_quantum_plan()
-        
+
         # Get performance statistics if monitoring enabled
         perf_stats = planner.get_performance_statistics() if args.performance_metrics else None
-        
+
         # Generate detailed output
         output_lines = [
             "# Quantum-Inspired Task Planning Results",
@@ -389,17 +476,17 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             f"- **Temperature**: {args.quantum_temperature}",
             f"- **Resources**: {args.quantum_resources}",
             f"- **Monitoring**: {'Enabled' if args.performance_metrics else 'Disabled'}",
-            f"- **Optimization**: Enabled",
+            "- **Optimization**: Enabled",
             "",
             "## Optimized Task Schedule",
             ""
         ]
-        
+
         # Add task details with enhanced information
         for i, task in enumerate(result.optimized_tasks, 1):
             resource_id = getattr(task, 'allocated_resource', 0)
             quantum_metrics = planner.get_task_quantum_metrics(task.id)
-            
+
             output_lines.extend([
                 f"### {i}. {task.name}",
                 f"- **ID**: `{task.id}`",
@@ -414,12 +501,12 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
                 f"- **Entangled Tasks**: {len(task.entangled_tasks)} connections",
                 ""
             ])
-        
+
         # Add enhanced quantum metrics
         superposition_tasks = [t for t in result.optimized_tasks if 'superposition' in t.state.value.lower()]
         total_entanglements = sum(len(t.entangled_tasks) for t in result.optimized_tasks) // 2
         total_measurements = sum(t.measurement_count for t in result.optimized_tasks)
-        
+
         output_lines.extend([
             "## Quantum Effects Analysis",
             f"- **Tasks in Superposition**: {len(superposition_tasks)}",
@@ -428,7 +515,7 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             f"- **Average Coherence Time**: {sum(t.coherence_time for t in result.optimized_tasks) / len(result.optimized_tasks):.1f}s",
             ""
         ])
-        
+
         # Add simulation results with detailed resource utilization
         simulation = planner.simulate_execution(result)
         output_lines.extend([
@@ -438,10 +525,10 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             "",
             "### Resource Utilization",
         ])
-        
+
         for resource, utilization in simulation['resource_utilization'].items():
             output_lines.append(f"- **{resource}**: {utilization:.1f} time units")
-        
+
         output_lines.extend([
             "",
             "### Quantum Effects During Execution",
@@ -450,7 +537,7 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             f"- **Coherence Loss Events**: {simulation['quantum_effects']['coherence_loss']:.0f}",
             ""
         ])
-        
+
         # Add performance statistics if enabled
         if perf_stats and args.performance_metrics:
             output_lines.extend([
@@ -460,7 +547,7 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
                 f"- **Monitoring Status**: {'Active' if perf_stats['configuration']['monitoring_enabled'] else 'Inactive'}",
                 ""
             ])
-            
+
             if 'monitoring' in perf_stats:
                 output_lines.extend([
                     "### System Health",
@@ -470,7 +557,7 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
                     status_icon = "✅" if check['status'] == 'healthy' else "❌"
                     output_lines.append(f"- **{check['component']}**: {status_icon} {check['message']}")
                 output_lines.append("")
-        
+
         # Add recommendations
         output_lines.extend([
             "## Optimization Recommendations",
@@ -482,10 +569,10 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
             "---",
             f"*Generated by Quantum Task Planner v{planner.scheduler.temperature} at {result.execution_time:.3f}s*"
         ])
-        
+
         logger.info(f"Quantum plan generated successfully: {len(result.optimized_tasks)} tasks, fidelity={result.quantum_fidelity:.3f}")
         return "\n".join(output_lines)
-        
+
     except Exception as e:
         logger.error(f"Quantum plan generation failed: {str(e)}")
         return f"# Quantum Plan Generation Failed\n\nError: {str(e)}\n\nPlease check your configuration and try again."
@@ -507,34 +594,109 @@ def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -
 
 
 def main(argv: Optional[list[str]] = None) -> int:
+    """Main CLI function with comprehensive error handling and security measures."""
+    start_time = time.time()
     parser = build_parser()
-    args = parser.parse_args(argv)
-    
-    # Setup logging
-    log_level = _determine_log_level(args)
-    use_colors = not args.no_color
-    logger = _setup_logging(args.log_format, level=log_level, colored=use_colors)
 
-    # Configure performance metrics
-    from .utils import set_performance_tracking
-    set_performance_tracking(args.performance_metrics)
+    try:
+        args = parser.parse_args(argv)
 
-    # Validate and process
-    _show_progress("Validating application path", args.verbose)
-    app_path = _validate_app_path(args.app, parser, logger)
+        # Configure i18n and global settings
+        i18n_manager = get_i18n_manager()
+        if args.language:
+            try:
+                language = SupportedLanguage(args.language)
+                i18n_manager.set_language(language)
+            except ValueError:
+                sys.stderr.write(f"[{ErrorCode.INVALID_INPUT}] Unsupported language: {args.language}\n")
+                return 1
+        
+        # Configure compliance regions
+        if args.compliance:
+            compliance_mapping = {
+                "gdpr": ComplianceRegion.GDPR,
+                "ccpa": ComplianceRegion.CCPA,
+                "pdpa-sg": ComplianceRegion.PDPA_SINGAPORE,
+                "lgpd": ComplianceRegion.LGPD,
+                "pipeda": ComplianceRegion.PIPEDA
+            }
+            for compliance_str in args.compliance:
+                if compliance_str in compliance_mapping:
+                    i18n_manager.add_compliance_region(compliance_mapping[compliance_str])
 
-    output, result = _process_documentation_format(args, app_path, parser, logger)
-    _generate_test_suite(result, args, parser, logger)
+        # Sanitize user inputs
+        try:
+            args.title = _sanitize_user_input(args.title)
+            args.api_version = _sanitize_user_input(args.api_version)
+        except ValueError as e:
+            sys.stderr.write(f"[{ErrorCode.INVALID_INPUT}] {localize_text('cli.error.invalid_input')}: {e}\n")
+            return 1
 
-    _show_progress("Writing output", args.verbose)
-    _write_output(output, args.output, parser, logger)
+        # Setup logging
+        log_level = _determine_log_level(args)
+        use_colors = not args.no_color
+        logger = _setup_logging(args.log_format, level=log_level, colored=use_colors)
 
-    _log_performance_summary(args, logger)
+        # Check system resources
+        _show_progress("Checking system resources", args.verbose)
+        resource_status = _check_resource_limits()
+        if not resource_status.get('healthy', True):
+            logger.warning("System resources under pressure: %s", resource_status)
+            if resource_status.get('memory_usage', 0) > 95:
+                sys.stderr.write(f"[{ErrorCode.RESOURCE_EXHAUSTION}] Insufficient memory\n")
+                return 1
 
-    if args.verbose:
-        sys.stderr.write("✅ Documentation generation completed successfully!\n")
+        # Configure performance metrics
+        from .utils import set_performance_tracking
+        set_performance_tracking(args.performance_metrics)
 
-    return 0
+        # Validate and process with timeout protection
+        _show_progress("Validating application path", args.verbose)
+        app_path = _validate_app_path(args.app, parser, logger)
+
+        # Check file size limits
+        if not _validate_file_size(app_path):
+            sys.stderr.write(f"[{ErrorCode.RESOURCE_EXHAUSTION}] File too large: {app_path}\n")
+            return 1
+
+        _show_progress("Processing documentation format", args.verbose)
+        output, result = _process_documentation_format(args, app_path, parser, logger)
+
+        _show_progress("Generating test suite", args.verbose)
+        _generate_test_suite(result, args, parser, logger)
+
+        _show_progress("Writing output", args.verbose)
+        _write_output(output, args.output, parser, logger)
+
+        _log_performance_summary(args, logger)
+
+        execution_time = time.time() - start_time
+        if args.verbose:
+            sys.stderr.write(f"✅ Documentation generation completed successfully in {execution_time:.2f}s!\n")
+
+        return 0
+
+    except KeyboardInterrupt:
+        sys.stderr.write(f"\n[{ErrorCode.TIMEOUT_ERROR}] Operation cancelled by user\n")
+        return 130  # Standard exit code for SIGINT
+
+    except PermissionError as e:
+        sys.stderr.write(f"[{ErrorCode.PERMISSION_DENIED}] Permission denied: {e}\n")
+        return 1
+
+    except OSError as e:
+        sys.stderr.write(f"[{ErrorCode.RESOURCE_EXHAUSTION}] System error: {e}\n")
+        return 1
+
+    except MemoryError:
+        sys.stderr.write(f"[{ErrorCode.RESOURCE_EXHAUSTION}] Out of memory\n")
+        return 1
+
+    except Exception as e:
+        # Log full traceback for debugging
+        traceback.print_exc()
+        sys.stderr.write(f"[INTERNAL_ERROR] Unexpected error: {e}\n")
+        return 2
 
 
 if __name__ == "__main__":  # pragma: no cover

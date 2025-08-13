@@ -15,9 +15,21 @@ CHANGELOG.md     merge=union
 AUTONOMOUS_*.md  merge=union
 
 # Binary files - lock to prevent conflicts
-*.svg *.png *.jpg *.jpeg *.gif *.ico merge=lock
-*.zip *.tar.gz *.tar.bz2 *.rar merge=lock
-*.pdf *.doc *.docx *.xls *.xlsx merge=lock
+*.svg merge=lock
+*.png merge=lock
+*.jpg merge=lock
+*.jpeg merge=lock
+*.gif merge=lock
+*.ico merge=lock
+*.zip merge=lock
+*.tar.gz merge=lock
+*.tar.bz2 merge=lock
+*.rar merge=lock
+*.pdf merge=lock
+*.doc merge=lock
+*.docx merge=lock
+*.xls merge=lock
+*.xlsx merge=lock
 
 # Configuration files - prefer manual resolution
 *.env.* merge=manual

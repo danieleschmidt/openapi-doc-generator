@@ -1,5 +1,7 @@
 # 🚀 Production Deployment Guide
 
+> **Note**: The GitHub Actions workflow template is available in `docs/workflows/production-deploy.yml`. Copy this to `.github/workflows/` to enable automated deployment (requires `workflows` permission).
+
 ## Quick Start Production Deployment
 
 ### Using Docker Compose (Recommended)

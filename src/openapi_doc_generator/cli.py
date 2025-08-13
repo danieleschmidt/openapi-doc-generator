@@ -11,14 +11,14 @@ import tempfile
 import time
 import traceback
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from . import __version__
 from .config import config
 from .documentator import APIDocumentator, DocumentationResult
 from .graphql import GraphQLSchema
+from .i18n import ComplianceRegion, SupportedLanguage, get_i18n_manager, localize_text
 from .migration import MigrationGuideGenerator
-from .i18n import get_i18n_manager, SupportedLanguage, ComplianceRegion, localize_text
 from .playground import PlaygroundGenerator
 from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
 from .testsuite import TestSuiteGenerator
@@ -63,7 +63,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--format",
         choices=["markdown", "openapi", "html", "graphql", "guide", "quantum-plan"],
         default="markdown",
-        help=("Output format: markdown (default), openapi, html, graphql, guide, or quantum-plan"),
+        help=(
+            "Output format: markdown (default), openapi, html, "
+            "graphql, guide, or quantum-plan"
+        ),
     )
     parser.add_argument(
         "--old-spec",
@@ -140,7 +143,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Disable colored output",
     )
-    
+
     # Global/i18n options
     parser.add_argument(
         "--language",
@@ -149,7 +152,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output language (default: auto-detect from system)",
     )
     parser.add_argument(
-        "--region", 
+        "--region",
         default="US",
         help="Deployment region for compliance and localization (default: US)",
     )
@@ -197,7 +200,7 @@ def _sanitize_user_input(user_input: str, max_length: int = 1000) -> str:
     return sanitized.strip()
 
 
-def _check_resource_limits() -> Dict[str, Any]:
+def _check_resource_limits() -> dict[str, Any]:
     """Check system resource limits to prevent exhaustion."""
     try:
         import psutil
@@ -369,7 +372,7 @@ def _process_graphql_format(
 
 def _write_output(
     output: str,
-    output_path: Optional[str],
+    output_path: str | None,
     parser: argparse.ArgumentParser,
     logger: logging.Logger,
 ) -> None:
@@ -401,7 +404,7 @@ def _determine_log_level(args: argparse.Namespace) -> int:
         return getattr(logging, level_name, logging.INFO)
 
 
-def _process_documentation_format(args: argparse.Namespace, app_path: Path, parser: argparse.ArgumentParser, logger: logging.Logger) -> tuple[str, Optional[DocumentationResult]]:
+def _process_documentation_format(args: argparse.Namespace, app_path: Path, parser: argparse.ArgumentParser, logger: logging.Logger) -> tuple[str, DocumentationResult | None]:
     """Process documentation based on format type."""
     if args.format == "graphql":
         _show_progress("Processing GraphQL schema", args.verbose)
@@ -485,7 +488,7 @@ def _process_quantum_plan_format(args: argparse.Namespace, parser: argparse.Argu
         # Add task details with enhanced information
         for i, task in enumerate(result.optimized_tasks, 1):
             resource_id = getattr(task, 'allocated_resource', 0)
-            quantum_metrics = planner.get_task_quantum_metrics(task.id)
+            planner.get_task_quantum_metrics(task.id)
 
             output_lines.extend([
                 f"### {i}. {task.name}",
@@ -593,7 +596,7 @@ def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -
             )
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """Main CLI function with comprehensive error handling and security measures."""
     start_time = time.time()
     parser = build_parser()
@@ -610,7 +613,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             except ValueError:
                 sys.stderr.write(f"[{ErrorCode.INVALID_INPUT}] Unsupported language: {args.language}\n")
                 return 1
-        
+
         # Configure compliance regions
         if args.compliance:
             compliance_mapping = {

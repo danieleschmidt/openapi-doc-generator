@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  openapi-doc-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: "${BUILD_DATE:-unknown}"
+        VERSION: "${VERSION:-0.1.0}"
+        VCS_REF: "${VCS_REF:-unknown}"
+    image: ghcr.io/danieleschmidt/openapi-doc-generator:${VERSION:-latest}
+    container_name: openapi-doc-generator-prod
+    environment:
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./workspace:/workspace:ro
+      - ./output:/output
+    working_dir: /workspace
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE  # For file operations
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import openapi_doc_generator; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+    command: ["--help"]  # Override in production
+
+  # Health monitoring service
+  health-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/danieleschmidt/openapi-doc-generator:${VERSION:-latest}
+    container_name: openapi-health-monitor
+    environment:
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+      - MONITORING_ENABLED=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./metrics:/metrics
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    command: ["python", "-m", "openapi_doc_generator.health_server"]
+    depends_on:
+      - openapi-doc-generator
+    
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: openapi-network
+
+volumes:
+  workspace:
+    driver: local
+  output:
+    driver: local
+  metrics:
+    driver: local

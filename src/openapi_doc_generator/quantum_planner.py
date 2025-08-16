@@ -27,7 +27,6 @@ from .quantum_security import (
 from .quantum_validator import (
     QuantumTaskValidator,
     ValidationLevel,
-    validate_quantum_plan,
 )
 
 logger = logging.getLogger(__name__)

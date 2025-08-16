@@ -13,9 +13,7 @@ import logging
 import os
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Dict, Any, Optional, List
-from pathlib import Path
-import json
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +21,7 @@ logger = logging.getLogger(__name__)
 class SupportedLanguage(Enum):
     """Supported languages for internationalization."""
     ENGLISH = "en"
-    SPANISH = "es" 
+    SPANISH = "es"
     FRENCH = "fr"
     GERMAN = "de"
     JAPANESE = "ja"
@@ -53,7 +51,7 @@ class LocalizationConfig:
     currency: str = "USD"
     date_format: str = "YYYY-MM-DD"
     compliance_regions: List[ComplianceRegion] = None
-    
+
     def __post_init__(self):
         if self.compliance_regions is None:
             self.compliance_regions = []
@@ -61,14 +59,14 @@ class LocalizationConfig:
 
 class InternationalizationManager:
     """Manages internationalization and localization for the application."""
-    
+
     def __init__(self, config: Optional[LocalizationConfig] = None):
         self.config = config or LocalizationConfig()
         self.translations: Dict[str, Dict[str, str]] = {}
         self.compliance_messages: Dict[ComplianceRegion, Dict[str, str]] = {}
         self._load_translations()
         self._load_compliance_messages()
-    
+
     def _load_translations(self) -> None:
         """Load translation strings for supported languages."""
         # Base translations - in production would load from external files
@@ -170,10 +168,10 @@ class InternationalizationManager:
                 "security.scan_complete": "安全扫描完成",
             }
         }
-        
+
         self.translations.update(base_translations)
         logger.info(f"Loaded translations for {len(base_translations)} languages")
-    
+
     def _load_compliance_messages(self) -> None:
         """Load compliance-specific messages and notices."""
         compliance_messages = {
@@ -202,45 +200,45 @@ class InternationalizationManager:
                 "contact_dpo": "Contate nosso Encarregado de Dados em privacidade@empresa.com",
             }
         }
-        
+
         self.compliance_messages.update(compliance_messages)
         logger.info(f"Loaded compliance messages for {len(compliance_messages)} regions")
-    
+
     def get_text(self, key: str, language: Optional[SupportedLanguage] = None, **kwargs) -> str:
         """Get localized text for a given key."""
         lang = (language or self.config.language).value
-        
+
         if lang not in self.translations:
             lang = SupportedLanguage.ENGLISH.value
-        
+
         text = self.translations[lang].get(key, key)
-        
+
         # Apply string formatting if kwargs provided
         if kwargs:
             try:
                 text = text.format(**kwargs)
             except (KeyError, ValueError) as e:
                 logger.warning(f"Failed to format localized text '{key}': {e}")
-        
+
         return text
-    
+
     def get_compliance_notice(self, region: ComplianceRegion, notice_type: str) -> str:
         """Get compliance-specific notice text."""
         if region not in self.compliance_messages:
             return ""
-        
+
         return self.compliance_messages[region].get(notice_type, "")
-    
+
     def localize_documentation(self, doc_content: Dict[str, Any]) -> Dict[str, Any]:
         """Localize documentation content based on current language settings."""
         localized_doc = doc_content.copy()
-        
+
         # Localize OpenAPI info section
         if "info" in localized_doc:
             info = localized_doc["info"]
             if "title" not in info or info["title"] == "API":
                 info["title"] = self.get_text("docs.api_title")
-        
+
         # Add localized descriptions to paths
         if "paths" in localized_doc:
             for path, path_info in localized_doc["paths"].items():
@@ -249,7 +247,7 @@ class InternationalizationManager:
                         # Add localized summaries if missing
                         if "summary" not in operation or not operation["summary"]:
                             operation["summary"] = f"{method.upper()} {path}"
-        
+
         # Add compliance notices if required
         for region in self.config.compliance_regions:
             compliance_notice = self.get_compliance_notice(region, "data_processing_notice")
@@ -258,40 +256,40 @@ class InternationalizationManager:
                     localized_doc["info"] = {}
                 if "description" not in localized_doc["info"]:
                     localized_doc["info"]["description"] = ""
-                
+
                 localized_doc["info"]["description"] += f"\n\n**Compliance Notice**: {compliance_notice}"
-        
+
         return localized_doc
-    
+
     def format_date(self, date_obj) -> str:
         """Format date according to regional preferences."""
         # Simplified date formatting - would use proper locale formatting in production
         formats = {
             "US": "%m/%d/%Y",
-            "EU": "%d/%m/%Y", 
+            "EU": "%d/%m/%Y",
             "ISO": "%Y-%m-%d",
             "JP": "%Y年%m月%d日",
             "CN": "%Y年%m月%d日"
         }
-        
+
         format_str = formats.get(self.config.region, formats["ISO"])
         return date_obj.strftime(format_str)
-    
+
     def get_supported_languages(self) -> List[str]:
         """Get list of supported language codes."""
         return [lang.value for lang in SupportedLanguage]
-    
+
     def set_language(self, language: SupportedLanguage) -> None:
         """Change the current language setting."""
         self.config.language = language
         logger.info(f"Language changed to {language.value}")
-    
+
     def add_compliance_region(self, region: ComplianceRegion) -> None:
         """Add a compliance region to the configuration."""
         if region not in self.config.compliance_regions:
             self.config.compliance_regions.append(region)
             logger.info(f"Added compliance region: {region.name}")
-    
+
     def get_region_config(self) -> Dict[str, Any]:
         """Get region-specific configuration settings."""
         return {
@@ -306,12 +304,12 @@ class InternationalizationManager:
 
 class GlobalDeploymentManager:
     """Manages global deployment considerations and multi-region support."""
-    
+
     def __init__(self, i18n_manager: InternationalizationManager):
         self.i18n = i18n_manager
         self.deployment_regions: Dict[str, Dict[str, Any]] = {}
         self._initialize_regions()
-    
+
     def _initialize_regions(self) -> None:
         """Initialize supported deployment regions with their characteristics."""
         regions = {
@@ -348,16 +346,16 @@ class GlobalDeploymentManager:
                 "api_gateway": "https://api-ap-northeast.example.com"
             }
         }
-        
+
         self.deployment_regions.update(regions)
         logger.info(f"Initialized {len(regions)} deployment regions")
-    
+
     def get_optimal_region(self, user_language: str, user_region: str) -> str:
         """Determine optimal deployment region for a user."""
         # Simple region selection logic
         region_mapping = {
             "US": "us-east-1",
-            "CA": "us-east-1", 
+            "CA": "us-east-1",
             "EU": "eu-west-1",
             "GB": "eu-west-1",
             "FR": "eu-west-1",
@@ -366,9 +364,9 @@ class GlobalDeploymentManager:
             "JP": "ap-northeast-1",
             "CN": "ap-southeast-1",
         }
-        
+
         return region_mapping.get(user_region, "us-east-1")
-    
+
     def generate_deployment_config(self, target_regions: List[str]) -> Dict[str, Any]:
         """Generate deployment configuration for specified regions."""
         config = {
@@ -380,7 +378,7 @@ class GlobalDeploymentManager:
                 "compliance_monitoring": True
             }
         }
-        
+
         for region in target_regions:
             if region in self.deployment_regions:
                 region_info = self.deployment_regions[region]
@@ -395,17 +393,17 @@ class GlobalDeploymentManager:
                     "data_residency": region_info["data_residency"],
                     "health_check_endpoint": f"{region_info['api_gateway']}/health"
                 }
-        
+
         return config
-    
+
     def validate_compliance(self, region: str, data_types: List[str]) -> Dict[str, Any]:
         """Validate compliance requirements for data processing in a region."""
         if region not in self.deployment_regions:
             return {"valid": False, "reason": "Unknown region"}
-        
+
         region_info = self.deployment_regions[region]
         compliance_regions = region_info["compliance"]
-        
+
         validation_result = {
             "valid": True,
             "region": region,
@@ -414,20 +412,20 @@ class GlobalDeploymentManager:
             "data_types_allowed": data_types,
             "recommendations": []
         }
-        
+
         # Check GDPR requirements
         if ComplianceRegion.GDPR in compliance_regions:
             if "personal_data" in data_types:
                 validation_result["required_measures"].extend([
                     "lawful_basis_required",
-                    "data_protection_impact_assessment", 
+                    "data_protection_impact_assessment",
                     "consent_management",
                     "right_to_be_forgotten_support"
                 ])
                 validation_result["recommendations"].append(
                     "Implement privacy by design principles"
                 )
-        
+
         # Check CCPA requirements
         if ComplianceRegion.CCPA in compliance_regions:
             if "personal_information" in data_types:
@@ -436,7 +434,7 @@ class GlobalDeploymentManager:
                     "opt_out_mechanisms",
                     "data_sale_disclosure"
                 ])
-        
+
         return validation_result
 
 
@@ -455,10 +453,10 @@ def get_i18n_manager() -> InternationalizationManager:
             language = SupportedLanguage(detected_lang)
         except ValueError:
             language = SupportedLanguage.ENGLISH
-        
+
         config = LocalizationConfig(language=language)
         _i18n_manager = InternationalizationManager(config)
-    
+
     return _i18n_manager
 
 
@@ -467,7 +465,7 @@ def get_deployment_manager() -> GlobalDeploymentManager:
     global _deployment_manager
     if _deployment_manager is None:
         _deployment_manager = GlobalDeploymentManager(get_i18n_manager())
-    
+
     return _deployment_manager
 
 

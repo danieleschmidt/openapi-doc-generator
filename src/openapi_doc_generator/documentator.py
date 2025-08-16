@@ -9,11 +9,11 @@ from typing import List
 
 from .config import config
 from .discovery import RouteDiscoverer, RouteInfo
+from .i18n import get_i18n_manager
 from .markdown import MarkdownGenerator
 from .schema import SchemaInferer, SchemaInfo
 from .spec import OpenAPISpecGenerator
 from .utils import PerformanceMetrics, get_performance_tracker, get_processing_pool
-from .i18n import get_i18n_manager
 
 
 @dataclass
@@ -32,12 +32,12 @@ class DocumentationResult:
             self.routes, self.schemas, title=title, version=version
         )
         spec = generator.generate()
-        
+
         # Apply localization if enabled
         if localize:
             i18n_manager = get_i18n_manager()
             spec = i18n_manager.localize_documentation(spec)
-        
+
         return spec
 
     def generate_markdown(

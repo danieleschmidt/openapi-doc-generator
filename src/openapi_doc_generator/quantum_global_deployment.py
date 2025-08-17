@@ -6,7 +6,7 @@ import logging
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .i18n import ComplianceRegion, SupportedLanguage, get_i18n_manager
 from .quantum_audit_logger import AuditEventType, get_audit_logger
@@ -43,9 +43,9 @@ class DeploymentRegion(Enum):
 @dataclass
 class DeploymentConfig:
     """Global deployment configuration."""
-    target_regions: List[DeploymentRegion]
-    supported_languages: List[SupportedLanguage]
-    compliance_regions: List[ComplianceRegion]
+    target_regions: list[DeploymentRegion]
+    supported_languages: list[SupportedLanguage]
+    compliance_regions: list[ComplianceRegion]
     enable_canary: bool = True
     canary_traffic_percent: float = 5.0
     rollback_on_errors: bool = True
@@ -61,11 +61,11 @@ class RegionDeploymentStatus:
     stage: DeploymentStage
     status: str  # success, failed, in_progress, pending
     start_time: float
-    end_time: Optional[float]
+    end_time: float | None
     health_score: float
-    performance_metrics: Dict[str, Any]
-    compliance_status: Dict[str, bool]
-    error_message: Optional[str] = None
+    performance_metrics: dict[str, Any]
+    compliance_status: dict[str, bool]
+    error_message: str | None = None
 
 
 @dataclass
@@ -74,12 +74,12 @@ class GlobalDeploymentResult:
     deployment_id: str
     overall_status: str
     start_time: float
-    end_time: Optional[float]
-    region_statuses: List[RegionDeploymentStatus]
-    quality_gate_result: Optional[QualityResult]
+    end_time: float | None
+    region_statuses: list[RegionDeploymentStatus]
+    quality_gate_result: QualityResult | None
     deployment_config: DeploymentConfig
     rollback_executed: bool = False
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
 
 class QuantumGlobalDeployment:
@@ -97,8 +97,8 @@ class QuantumGlobalDeployment:
         self.logger = logging.getLogger(__name__)
 
         # Deployment state
-        self.active_deployments: Dict[str, GlobalDeploymentResult] = {}
-        self.deployment_history: List[GlobalDeploymentResult] = []
+        self.active_deployments: dict[str, GlobalDeploymentResult] = {}
+        self.deployment_history: list[GlobalDeploymentResult] = []
 
         # Region-specific configurations
         self.region_configs = {
@@ -141,7 +141,7 @@ class QuantumGlobalDeployment:
 
     def deploy_globally(self,
                        deployment_config: DeploymentConfig,
-                       deployment_id: Optional[str] = None) -> GlobalDeploymentResult:
+                       deployment_id: str | None = None) -> GlobalDeploymentResult:
         """Execute global deployment with autonomous operations."""
         deployment_id = deployment_id or f"deploy_{int(time.time())}"
         start_time = time.time()
@@ -435,7 +435,7 @@ class QuantumGlobalDeployment:
 
     def _validate_regional_compliance(self,
                                     region: DeploymentRegion,
-                                    compliance_regions: List[ComplianceRegion]) -> Dict[str, bool]:
+                                    compliance_regions: list[ComplianceRegion]) -> dict[str, bool]:
         """Validate compliance requirements for region."""
         self.logger.info(f"Validating compliance for region {region.value}")
 
@@ -455,12 +455,12 @@ class QuantumGlobalDeployment:
 
     def _validate_regional_performance(self,
                                      region: DeploymentRegion,
-                                     target_performance: float) -> Dict[str, Any]:
+                                     target_performance: float) -> dict[str, Any]:
         """Validate performance requirements for region."""
         self.logger.info(f"Validating performance for region {region.value}")
 
         # Get performance statistics
-        perf_stats = self.performance_optimizer.get_performance_stats()
+        self.performance_optimizer.get_performance_stats()
 
         # Simulate region-specific performance test
         simulated_latency = target_performance * 0.8  # 20% better than target
@@ -556,7 +556,7 @@ class QuantumGlobalDeployment:
             }
         )
 
-    def get_deployment_status(self, deployment_id: str) -> Optional[GlobalDeploymentResult]:
+    def get_deployment_status(self, deployment_id: str) -> GlobalDeploymentResult | None:
         """Get status of active or historical deployment."""
         # Check active deployments first
         if deployment_id in self.active_deployments:
@@ -569,15 +569,15 @@ class QuantumGlobalDeployment:
 
         return None
 
-    def list_active_deployments(self) -> List[GlobalDeploymentResult]:
+    def list_active_deployments(self) -> list[GlobalDeploymentResult]:
         """List all active deployments."""
         return list(self.active_deployments.values())
 
-    def get_deployment_history(self, limit: int = 50) -> List[GlobalDeploymentResult]:
+    def get_deployment_history(self, limit: int = 50) -> list[GlobalDeploymentResult]:
         """Get deployment history."""
         return self.deployment_history[-limit:]
 
-    def get_global_health_status(self) -> Dict[str, Any]:
+    def get_global_health_status(self) -> dict[str, Any]:
         """Get global health status across all regions."""
         system_health = self.health_monitor.get_system_health()
         perf_stats = self.performance_optimizer.get_performance_stats()
@@ -624,7 +624,7 @@ class QuantumGlobalDeployment:
 
 
 # Global deployment system instance
-_global_deployment: Optional[QuantumGlobalDeployment] = None
+_global_deployment: QuantumGlobalDeployment | None = None
 
 
 def get_global_deployment() -> QuantumGlobalDeployment:

@@ -7,7 +7,7 @@ import logging
 import time
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .quantum_security import SecurityLevel
 
@@ -29,15 +29,15 @@ class AuditEvent:
     """Security audit event record."""
     event_type: AuditEventType
     timestamp: float
-    user_id: Optional[str]
-    session_id: Optional[str]
-    source_ip: Optional[str]
-    resource: Optional[str]
+    user_id: str | None
+    session_id: str | None
+    source_ip: str | None
+    resource: str | None
     action: str
     result: str  # "success", "failure", "warning"
     severity: SecurityLevel
-    details: Dict[str, Any]
-    correlation_id: Optional[str] = None
+    details: dict[str, Any]
+    correlation_id: str | None = None
 
 
 class QuantumAuditLogger:
@@ -52,8 +52,8 @@ class QuantumAuditLogger:
         self.enable_encryption = enable_encryption
         self.retention_days = retention_days
         self.compliance_mode = compliance_mode
-        self.audit_buffer: List[AuditEvent] = []
-        self.security_alerts: List[AuditEvent] = []
+        self.audit_buffer: list[AuditEvent] = []
+        self.security_alerts: list[AuditEvent] = []
 
         # Setup structured logging
         self._setup_audit_handler()
@@ -74,10 +74,10 @@ class QuantumAuditLogger:
                           action: str,
                           result: str,
                           severity: SecurityLevel = SecurityLevel.MEDIUM,
-                          user_id: Optional[str] = None,
-                          resource: Optional[str] = None,
-                          details: Optional[Dict[str, Any]] = None,
-                          correlation_id: Optional[str] = None) -> None:
+                          user_id: str | None = None,
+                          resource: str | None = None,
+                          details: dict[str, Any] | None = None,
+                          correlation_id: str | None = None) -> None:
         """Log a security audit event."""
         event = AuditEvent(
             event_type=event_type,
@@ -119,7 +119,7 @@ class QuantumAuditLogger:
                                  user_id: str,
                                  success: bool,
                                  method: str = "api_key",
-                                 source_ip: Optional[str] = None) -> None:
+                                 source_ip: str | None = None) -> None:
         """Log authentication attempt."""
         self.log_security_event(
             event_type=AuditEventType.AUTHENTICATION,
@@ -136,9 +136,9 @@ class QuantumAuditLogger:
 
     def log_security_violation(self,
                              violation_type: str,
-                             details: Dict[str, Any],
+                             details: dict[str, Any],
                              severity: SecurityLevel = SecurityLevel.HIGH,
-                             user_id: Optional[str] = None) -> None:
+                             user_id: str | None = None) -> None:
         """Log security policy violation."""
         self.log_security_event(
             event_type=AuditEventType.SECURITY_VIOLATION,
@@ -152,7 +152,7 @@ class QuantumAuditLogger:
     def log_resource_access(self,
                           resource: str,
                           action: str,
-                          user_id: Optional[str] = None,
+                          user_id: str | None = None,
                           success: bool = True) -> None:
         """Log resource access attempt."""
         self.log_security_event(
@@ -167,7 +167,7 @@ class QuantumAuditLogger:
     def log_data_access(self,
                        data_type: str,
                        operation: str,
-                       user_id: Optional[str] = None,
+                       user_id: str | None = None,
                        classification: str = "internal") -> None:
         """Log data access for compliance."""
         self.log_security_event(
@@ -187,7 +187,7 @@ class QuantumAuditLogger:
                                config_key: str,
                                old_value: Any,
                                new_value: Any,
-                               user_id: Optional[str] = None) -> None:
+                               user_id: str | None = None) -> None:
         """Log configuration changes."""
         self.log_security_event(
             event_type=AuditEventType.CONFIGURATION_CHANGE,
@@ -205,7 +205,7 @@ class QuantumAuditLogger:
 
     def log_error_condition(self,
                           error_type: str,
-                          error_details: Dict[str, Any],
+                          error_details: dict[str, Any],
                           severity: SecurityLevel = SecurityLevel.LOW) -> None:
         """Log error conditions that might indicate security issues."""
         self.log_security_event(
@@ -217,8 +217,8 @@ class QuantumAuditLogger:
         )
 
     def get_security_alerts(self,
-                           severity_filter: Optional[SecurityLevel] = None,
-                           limit: int = 100) -> List[AuditEvent]:
+                           severity_filter: SecurityLevel | None = None,
+                           limit: int = 100) -> list[AuditEvent]:
         """Get recent security alerts."""
         alerts = self.security_alerts[-limit:]
 
@@ -252,7 +252,7 @@ class QuantumAuditLogger:
 
     def generate_compliance_report(self,
                                  start_time: float,
-                                 end_time: float) -> Dict[str, Any]:
+                                 end_time: float) -> dict[str, Any]:
         """Generate compliance audit report."""
         # Filter events within time range
         filtered_events = [
@@ -312,7 +312,7 @@ class QuantumAuditLogger:
 
 
 # Global audit logger instance
-_audit_logger: Optional[QuantumAuditLogger] = None
+_audit_logger: QuantumAuditLogger | None = None
 
 
 def get_audit_logger() -> QuantumAuditLogger:

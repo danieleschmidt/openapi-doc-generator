@@ -13,7 +13,7 @@ import logging
 import os
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class LocalizationConfig:
     timezone: str = "UTC"
     currency: str = "USD"
     date_format: str = "YYYY-MM-DD"
-    compliance_regions: List[ComplianceRegion] = None
+    compliance_regions: list[ComplianceRegion] = None
 
     def __post_init__(self):
         if self.compliance_regions is None:
@@ -60,10 +60,10 @@ class LocalizationConfig:
 class InternationalizationManager:
     """Manages internationalization and localization for the application."""
 
-    def __init__(self, config: Optional[LocalizationConfig] = None):
+    def __init__(self, config: LocalizationConfig | None = None):
         self.config = config or LocalizationConfig()
-        self.translations: Dict[str, Dict[str, str]] = {}
-        self.compliance_messages: Dict[ComplianceRegion, Dict[str, str]] = {}
+        self.translations: dict[str, dict[str, str]] = {}
+        self.compliance_messages: dict[ComplianceRegion, dict[str, str]] = {}
         self._load_translations()
         self._load_compliance_messages()
 
@@ -204,7 +204,7 @@ class InternationalizationManager:
         self.compliance_messages.update(compliance_messages)
         logger.info(f"Loaded compliance messages for {len(compliance_messages)} regions")
 
-    def get_text(self, key: str, language: Optional[SupportedLanguage] = None, **kwargs) -> str:
+    def get_text(self, key: str, language: SupportedLanguage | None = None, **kwargs) -> str:
         """Get localized text for a given key."""
         lang = (language or self.config.language).value
 
@@ -229,7 +229,7 @@ class InternationalizationManager:
 
         return self.compliance_messages[region].get(notice_type, "")
 
-    def localize_documentation(self, doc_content: Dict[str, Any]) -> Dict[str, Any]:
+    def localize_documentation(self, doc_content: dict[str, Any]) -> dict[str, Any]:
         """Localize documentation content based on current language settings."""
         localized_doc = doc_content.copy()
 
@@ -275,7 +275,7 @@ class InternationalizationManager:
         format_str = formats.get(self.config.region, formats["ISO"])
         return date_obj.strftime(format_str)
 
-    def get_supported_languages(self) -> List[str]:
+    def get_supported_languages(self) -> list[str]:
         """Get list of supported language codes."""
         return [lang.value for lang in SupportedLanguage]
 
@@ -290,7 +290,7 @@ class InternationalizationManager:
             self.config.compliance_regions.append(region)
             logger.info(f"Added compliance region: {region.name}")
 
-    def get_region_config(self) -> Dict[str, Any]:
+    def get_region_config(self) -> dict[str, Any]:
         """Get region-specific configuration settings."""
         return {
             "language": self.config.language.value,
@@ -307,7 +307,7 @@ class GlobalDeploymentManager:
 
     def __init__(self, i18n_manager: InternationalizationManager):
         self.i18n = i18n_manager
-        self.deployment_regions: Dict[str, Dict[str, Any]] = {}
+        self.deployment_regions: dict[str, dict[str, Any]] = {}
         self._initialize_regions()
 
     def _initialize_regions(self) -> None:
@@ -367,7 +367,7 @@ class GlobalDeploymentManager:
 
         return region_mapping.get(user_region, "us-east-1")
 
-    def generate_deployment_config(self, target_regions: List[str]) -> Dict[str, Any]:
+    def generate_deployment_config(self, target_regions: list[str]) -> dict[str, Any]:
         """Generate deployment configuration for specified regions."""
         config = {
             "regions": {},
@@ -396,7 +396,7 @@ class GlobalDeploymentManager:
 
         return config
 
-    def validate_compliance(self, region: str, data_types: List[str]) -> Dict[str, Any]:
+    def validate_compliance(self, region: str, data_types: list[str]) -> dict[str, Any]:
         """Validate compliance requirements for data processing in a region."""
         if region not in self.deployment_regions:
             return {"valid": False, "reason": "Unknown region"}
@@ -439,8 +439,8 @@ class GlobalDeploymentManager:
 
 
 # Global instances
-_i18n_manager: Optional[InternationalizationManager] = None
-_deployment_manager: Optional[GlobalDeploymentManager] = None
+_i18n_manager: InternationalizationManager | None = None
+_deployment_manager: GlobalDeploymentManager | None = None
 
 
 def get_i18n_manager() -> InternationalizationManager:

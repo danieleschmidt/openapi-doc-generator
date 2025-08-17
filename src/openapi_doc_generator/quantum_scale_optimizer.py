@@ -123,7 +123,7 @@ class CacheEntry:
 class QuantumCoherentCache:
     """
     Advanced caching system with quantum coherence preservation.
-    
+
     This cache maintains quantum coherence across distributed cache entries,
     enabling consistent quantum state preservation at scale.
     """
@@ -349,7 +349,7 @@ class QuantumCoherentCache:
 class QuantumLoadBalancer:
     """
     Load balancer with quantum-inspired distribution algorithms.
-    
+
     Uses quantum superposition and entanglement concepts to optimize
     load distribution across multiple system instances.
     """
@@ -575,7 +575,7 @@ class QuantumLoadBalancer:
 class QuantumAutoScaler:
     """
     Auto-scaling system with quantum-inspired scaling algorithms.
-    
+
     Uses quantum principles to predict scaling needs and optimize
     resource allocation across multiple dimensions.
     """
@@ -798,13 +798,6 @@ class QuantumAutoScaler:
         quantum_prediction = await self._get_quantum_prediction()
 
         # Current system state
-        current_state = {
-            'cpu': self.scaling_metrics.cpu_utilization,
-            'memory': self.scaling_metrics.memory_utilization,
-            'quantum_coherence': self.scaling_metrics.quantum_coherence_utilization,
-            'throughput': self.scaling_metrics.throughput,
-            'response_time': self.scaling_metrics.average_response_time
-        }
 
         # Quantum superposition of possible scaling states
         scaling_states = [
@@ -1003,7 +996,7 @@ class QuantumAutoScaler:
 class QuantumScaleOptimizer:
     """
     Main orchestrator for quantum-inspired scaling and optimization.
-    
+
     Combines caching, load balancing, and auto-scaling to provide
     comprehensive performance optimization for quantum SDLC systems.
     """

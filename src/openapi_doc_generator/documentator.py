@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from typing import List
 
 from .config import config
 from .discovery import RouteDiscoverer, RouteInfo
@@ -18,8 +17,8 @@ from .utils import PerformanceMetrics, get_performance_tracker, get_processing_p
 
 @dataclass
 class DocumentationResult:
-    routes: List[RouteInfo]
-    schemas: List[SchemaInfo]
+    routes: list[RouteInfo]
+    schemas: list[SchemaInfo]
 
     def generate_openapi_spec(
         self,
@@ -116,11 +115,11 @@ class APIDocumentator:
 
         return DocumentationResult(routes, schemas)
 
-    def _discover_routes(self, app_path: str) -> List[RouteInfo]:
+    def _discover_routes(self, app_path: str) -> list[RouteInfo]:
         """Thread-safe route discovery."""
         return RouteDiscoverer(app_path).discover()
 
-    def _infer_schemas(self, app_path: str) -> List[SchemaInfo]:
+    def _infer_schemas(self, app_path: str) -> list[SchemaInfo]:
         """Thread-safe schema inference."""
         self._logger.info("Inferring schemas from %s", app_path)
         try:

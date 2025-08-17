@@ -1,0 +1,23 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Documentaci\u00f3n de API",
+    "version": "1.0.0",
+    "description": "\n\n**Compliance Notice**: This tool processes personal data in accordance with GDPR Article 6."
+  },
+  "paths": {
+    "/hello": {
+      "get": {
+        "summary": "hello",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

@@ -79,7 +79,7 @@ class QuantumBiologicalState:
 class SoftwareGenome:
     """
     Represents the 'genetic code' of a software component with quantum biological properties.
-    
+
     This breakthrough concept treats software architecture, code patterns, and
     dependencies as analogous to biological DNA, enabling quantum-biological
     evolution algorithms.
@@ -126,7 +126,7 @@ class QuantumBiologicalEnvironment:
 class QuantumPhotosynthesis:
     """
     Implementation of quantum photosynthesis principles for SDLC energy efficiency.
-    
+
     This revolutionary approach models how software systems can achieve near-perfect
     efficiency in resource utilization by mimicking quantum coherence in photosynthetic
     complexes, representing the first application of photosynthetic quantum mechanics
@@ -136,7 +136,7 @@ class QuantumPhotosynthesis:
     def __init__(self, num_chromophores: int = 7):
         """
         Initialize quantum photosynthetic system.
-        
+
         Args:
             num_chromophores: Number of chromophores (analogous to software modules)
         """
@@ -155,14 +155,14 @@ class QuantumPhotosynthesis:
     async def simulate_energy_transfer(self, initial_excitation: int, target_sink: int) -> Dict[str, Any]:
         """
         Simulate quantum-coherent energy transfer between software modules.
-        
+
         Research Innovation: First implementation of quantum photosynthetic energy
         transfer algorithms for software system optimization.
-        
+
         Args:
             initial_excitation: Index of initially excited module
             target_sink: Index of target module (processing center)
-            
+
         Returns:
             Detailed simulation results including efficiency metrics
         """
@@ -297,7 +297,7 @@ class QuantumPhotosynthesis:
 class QuantumAvianNavigation:
     """
     Implementation of quantum avian navigation for SDLC directional guidance.
-    
+
     This breakthrough system applies the quantum compass mechanism used by
     migratory birds to provide optimal pathfinding and decision-making in
     software development processes.
@@ -318,15 +318,15 @@ class QuantumAvianNavigation:
                                      environmental_constraints: Dict[str, Any]) -> Dict[str, Any]:
         """
         Provide quantum compass-guided navigation for SDLC decision making.
-        
+
         Research Innovation: First application of avian quantum navigation
         principles to software development lifecycle guidance.
-        
+
         Args:
             current_state: Current state of software development
             target_objectives: List of target objectives to reach
             environmental_constraints: Environmental limitations and pressures
-            
+
         Returns:
             Quantum-guided navigation recommendations
         """
@@ -338,7 +338,7 @@ class QuantumAvianNavigation:
         # Calculate quantum compass directions for each objective
         navigation_guidance = {}
 
-        for i, objective in enumerate(target_objectives):
+        for _i, objective in enumerate(target_objectives):
             # Calculate magnetic field interaction
             magnetic_interaction = await self._calculate_magnetic_field_interaction(
                 radical_pair_state, objective, environmental_constraints
@@ -448,7 +448,7 @@ class QuantumAvianNavigation:
     async def _quantum_compass_direction(self, magnetic_interaction: Dict[str, Any]) -> np.ndarray:
         """Calculate optimal direction using quantum compass mechanism."""
         field_vector = magnetic_interaction['field_vector']
-        quantum_interaction = magnetic_interaction['quantum_interaction']
+        magnetic_interaction['quantum_interaction']
 
         # Quantum compass provides enhanced directional sensitivity
         classical_direction = field_vector / np.linalg.norm(field_vector)
@@ -550,7 +550,7 @@ class QuantumAvianNavigation:
 class QuantumBiologicalEvolutionOrchestrator:
     """
     Main orchestrator for quantum biology-inspired SDLC evolution.
-    
+
     This revolutionary system coordinates multiple quantum biological processes
     to evolve software systems with the efficiency and robustness observed in
     biological quantum systems.
@@ -594,10 +594,10 @@ class QuantumBiologicalEvolutionOrchestrator:
     async def initialize_software_ecosystem(self, components: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Initialize software ecosystem with quantum biological properties.
-        
+
         Args:
             components: List of software components to evolve
-            
+
         Returns:
             Initialization results and ecosystem status
         """
@@ -639,11 +639,11 @@ class QuantumBiologicalEvolutionOrchestrator:
                                        environmental_pressures: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
         """
         Evolve software ecosystem for one generation using quantum biological principles.
-        
+
         Args:
             evolution_objectives: Objectives driving evolution
             environmental_pressures: Environmental pressures for adaptation
-            
+
         Returns:
             Evolution results for the generation
         """
@@ -903,7 +903,7 @@ class QuantumBiologicalEvolutionOrchestrator:
         )
 
         # Apply guidance to genome evolution strategies
-        for obj_id, obj_guidance in guidance['navigation_guidance'].items():
+        for _obj_id, obj_guidance in guidance['navigation_guidance'].items():
             # Find genomes that can contribute to this objective
             relevant_genomes = await self._find_genomes_for_objective(obj_guidance['objective'])
 
@@ -1437,7 +1437,7 @@ class QuantumBiologicalEvolutionOrchestrator:
             return 0.0
 
         # Calculate genetic diversity
-        all_gene_sets = [set(g.genetic_sequence) for g in self.genome_registry.values()]
+        [set(g.genetic_sequence) for g in self.genome_registry.values()]
 
         # Jaccard diversity index
         diversity_scores = []

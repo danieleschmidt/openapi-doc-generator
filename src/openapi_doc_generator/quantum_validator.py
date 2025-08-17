@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .quantum_scheduler import QuantumTask, TaskState
 
@@ -32,8 +32,8 @@ class ValidationIssue:
     issue_type: ValidationIssueType
     code: str
     message: str
-    task_id: Optional[str] = None
-    details: Optional[Dict[str, Any]] = None
+    task_id: str | None = None
+    details: dict[str, Any] | None = None
 
 
 class QuantumTaskValidator:
@@ -42,9 +42,9 @@ class QuantumTaskValidator:
     def __init__(self, validation_level: ValidationLevel = ValidationLevel.MODERATE):
         """Initialize validator with specified strictness level."""
         self.validation_level = validation_level
-        self.issues: List[ValidationIssue] = []
+        self.issues: list[ValidationIssue] = []
 
-    def validate_tasks(self, tasks: List[QuantumTask]) -> List[ValidationIssue]:
+    def validate_tasks(self, tasks: list[QuantumTask]) -> list[ValidationIssue]:
         """Validate a list of quantum tasks and return issues found."""
         self.issues = []
 
@@ -155,7 +155,7 @@ class QuantumTaskValidator:
                     task_id=task.id
                 )
 
-    def _validate_task_dependencies(self, tasks: List[QuantumTask]) -> None:
+    def _validate_task_dependencies(self, tasks: list[QuantumTask]) -> None:
         """Validate task dependency relationships."""
         task_ids = {task.id for task in tasks}
 
@@ -190,7 +190,7 @@ class QuantumTaskValidator:
                 details={"cycle": cycle}
             )
 
-    def _validate_task_uniqueness(self, tasks: List[QuantumTask]) -> None:
+    def _validate_task_uniqueness(self, tasks: list[QuantumTask]) -> None:
         """Validate task ID uniqueness."""
         seen_ids = set()
         duplicates = set()
@@ -208,7 +208,7 @@ class QuantumTaskValidator:
                 task_id=duplicate_id
             )
 
-    def _validate_quantum_properties(self, tasks: List[QuantumTask]) -> None:
+    def _validate_quantum_properties(self, tasks: list[QuantumTask]) -> None:
         """Validate quantum-specific properties and relationships."""
         for task in tasks:
             # Validate entangled task references
@@ -240,14 +240,14 @@ class QuantumTaskValidator:
                     task_id=task.id
                 )
 
-    def _detect_dependency_cycles(self, tasks: List[QuantumTask]) -> List[List[str]]:
+    def _detect_dependency_cycles(self, tasks: list[QuantumTask]) -> list[list[str]]:
         """Detect circular dependencies using DFS."""
         graph = {task.id: task.dependencies for task in tasks}
         visited = set()
         rec_stack = set()
         cycles = []
 
-        def dfs(node: str, path: List[str]) -> None:
+        def dfs(node: str, path: list[str]) -> None:
             if node in rec_stack:
                 # Found cycle
                 cycle_start = path.index(node)
@@ -275,8 +275,8 @@ class QuantumTaskValidator:
                    issue_type: ValidationIssueType,
                    code: str,
                    message: str,
-                   task_id: Optional[str] = None,
-                   details: Optional[Dict[str, Any]] = None) -> None:
+                   task_id: str | None = None,
+                   details: dict[str, Any] | None = None) -> None:
         """Add a validation issue to the list."""
         issue = ValidationIssue(
             issue_type=issue_type,
@@ -351,9 +351,9 @@ class QuantumSecurityValidator:
 
     def __init__(self):
         """Initialize security validator."""
-        self.security_issues: List[ValidationIssue] = []
+        self.security_issues: list[ValidationIssue] = []
 
-    def validate_security(self, tasks: List[QuantumTask]) -> List[ValidationIssue]:
+    def validate_security(self, tasks: list[QuantumTask]) -> list[ValidationIssue]:
         """Validate security aspects of quantum tasks."""
         self.security_issues = []
 
@@ -412,7 +412,7 @@ class QuantumSecurityValidator:
                            issue_type: ValidationIssueType,
                            code: str,
                            message: str,
-                           task_id: Optional[str] = None) -> None:
+                           task_id: str | None = None) -> None:
         """Add a security validation issue."""
         issue = ValidationIssue(
             issue_type=issue_type,
@@ -432,11 +432,11 @@ class QuantumSecurityValidator:
             logger.warning(log_message)
 
 
-def validate_quantum_plan(tasks: List[QuantumTask],
+def validate_quantum_plan(tasks: list[QuantumTask],
                          validation_level: ValidationLevel = ValidationLevel.MODERATE,
-                         include_security: bool = True) -> Tuple[List[ValidationIssue], bool]:
+                         include_security: bool = True) -> tuple[list[ValidationIssue], bool]:
     """Validate a complete quantum task plan.
-    
+
     Returns:
         Tuple of (validation_issues, is_valid)
     """

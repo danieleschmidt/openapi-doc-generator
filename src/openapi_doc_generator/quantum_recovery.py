@@ -7,7 +7,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class RecoveryContext:
     operation_name: str
     attempt_count: int
     max_attempts: int
-    error_history: List[str]
+    error_history: list[str]
     recovery_strategy: RecoveryStrategy
     fallback_available: bool = False
 
@@ -37,9 +37,9 @@ class QuantumRecoveryManager:
 
     def __init__(self):
         """Initialize recovery manager."""
-        self.circuit_breakers: Dict[str, CircuitBreaker] = {}
-        self.retry_policies: Dict[str, RetryPolicy] = {}
-        self.recovery_stats: Dict[str, Dict[str, Any]] = {}
+        self.circuit_breakers: dict[str, CircuitBreaker] = {}
+        self.retry_policies: dict[str, RetryPolicy] = {}
+        self.recovery_stats: dict[str, dict[str, Any]] = {}
 
         # Default recovery configurations
         self._setup_default_policies()
@@ -90,7 +90,7 @@ class QuantumRecoveryManager:
     def resilient_execution(self,
                            operation_name: str,
                            strategy: RecoveryStrategy = RecoveryStrategy.RETRY,
-                           fallback: Optional[Callable] = None):
+                           fallback: Callable | None = None):
         """Context manager for resilient operation execution."""
         context = RecoveryContext(
             operation_name=operation_name,
@@ -173,7 +173,7 @@ class QuantumRecoveryManager:
     def _apply_recovery_strategy(self,
                                context: RecoveryContext,
                                error: Exception,
-                               fallback: Optional[Callable]) -> Any:
+                               fallback: Callable | None) -> Any:
         """Apply appropriate recovery strategy."""
         if context.recovery_strategy == RecoveryStrategy.RETRY:
             return self._handle_retry_recovery(context, error)
@@ -209,7 +209,7 @@ class QuantumRecoveryManager:
     def _handle_fallback_recovery(self,
                                 context: RecoveryContext,
                                 error: Exception,
-                                fallback: Optional[Callable]) -> Any:
+                                fallback: Callable | None) -> Any:
         """Handle fallback-based recovery."""
         if fallback and context.fallback_available:
             try:
@@ -244,7 +244,7 @@ class QuantumRecoveryManager:
     def _handle_circuit_breaker_recovery(self,
                                        context: RecoveryContext,
                                        error: Exception,
-                                       fallback: Optional[Callable]) -> Any:
+                                       fallback: Callable | None) -> Any:
         """Handle circuit breaker recovery."""
         circuit_breaker = self.circuit_breakers.get(context.operation_name)
 
@@ -284,7 +284,7 @@ class QuantumRecoveryManager:
         if total_operations > 0:
             stats["average_attempts"] = stats["total_attempts"] / total_operations
 
-    def get_recovery_statistics(self) -> Dict[str, Any]:
+    def get_recovery_statistics(self) -> dict[str, Any]:
         """Get comprehensive recovery statistics."""
         return {
             "recovery_stats": dict(self.recovery_stats),

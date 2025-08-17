@@ -12,7 +12,7 @@ import threading
 import time
 from dataclasses import dataclass
 from functools import lru_cache, wraps
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .quantum_monitor import monitor_operation
 from .quantum_scheduler import (
@@ -46,11 +46,11 @@ class QuantumCache:
         """Initialize cache with size and TTL limits."""
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
-        self.cache: Dict[str, Tuple[Any, float]] = {}
-        self.access_times: Dict[str, float] = {}
+        self.cache: dict[str, tuple[Any, float]] = {}
+        self.access_times: dict[str, float] = {}
         self.lock = threading.RLock()
 
-    def _generate_key(self, tasks: List[QuantumTask], config: Dict[str, Any]) -> str:
+    def _generate_key(self, tasks: list[QuantumTask], config: dict[str, Any]) -> str:
         """Generate cache key from tasks and configuration."""
         # Create deterministic hash from task properties and config
         task_data = []
@@ -70,7 +70,7 @@ class QuantumCache:
         serialized = pickle.dumps(cache_input, protocol=pickle.HIGHEST_PROTOCOL)
         return hashlib.sha256(serialized).hexdigest()
 
-    def get(self, tasks: List[QuantumTask], config: Dict[str, Any]) -> Optional[QuantumScheduleResult]:
+    def get(self, tasks: list[QuantumTask], config: dict[str, Any]) -> QuantumScheduleResult | None:
         """Get cached result if available and valid."""
         key = self._generate_key(tasks, config)
 
@@ -92,7 +92,7 @@ class QuantumCache:
             logger.debug(f"Cache hit for key {key[:8]}...")
             return result
 
-    def put(self, tasks: List[QuantumTask], config: Dict[str, Any], result: QuantumScheduleResult) -> None:
+    def put(self, tasks: list[QuantumTask], config: dict[str, Any], result: QuantumScheduleResult) -> None:
         """Store result in cache."""
         key = self._generate_key(tasks, config)
         current_time = time.time()
@@ -115,7 +115,7 @@ class QuantumCache:
             self.access_times.clear()
             logger.info("Cache cleared")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         with self.lock:
             current_time = time.time()
@@ -146,10 +146,10 @@ class AdaptiveQuantumScheduler:
         """Initialize adaptive scheduler."""
         self.base_scheduler = base_scheduler
         self.config = config
-        self.performance_history: List[Tuple[int, float, float]] = []  # (task_count, duration, fidelity)
+        self.performance_history: list[tuple[int, float, float]] = []  # (task_count, duration, fidelity)
         self.lock = threading.Lock()
 
-    def adaptive_schedule(self, tasks: List[QuantumTask]) -> QuantumScheduleResult:
+    def adaptive_schedule(self, tasks: list[QuantumTask]) -> QuantumScheduleResult:
         """Schedule tasks with adaptive parameter tuning."""
         task_count = len(tasks)
 
@@ -187,7 +187,7 @@ class AdaptiveQuantumScheduler:
             self.base_scheduler.temperature = original_temp
             self.base_scheduler.cooling_rate = original_cooling
 
-    def _get_adaptive_parameters(self, task_count: int) -> Tuple[float, float, int]:
+    def _get_adaptive_parameters(self, task_count: int) -> tuple[float, float, int]:
         """Get adaptive parameters based on task count and performance history."""
         # Base parameters
         base_temp = 2.0
@@ -219,7 +219,7 @@ class AdaptiveQuantumScheduler:
 
         return temperature, cooling_rate, max_iterations
 
-    def _schedule_with_convergence(self, tasks: List[QuantumTask], max_iterations: int) -> QuantumScheduleResult:
+    def _schedule_with_convergence(self, tasks: list[QuantumTask], max_iterations: int) -> QuantumScheduleResult:
         """Run scheduling with early convergence detection."""
         # For now, delegate to base scheduler
         # In a full implementation, we'd modify the annealing loop to check for convergence
@@ -235,7 +235,7 @@ class ParallelQuantumProcessor:
         self.max_workers = config.max_workers or min(mp.cpu_count(), 8)
 
     async def process_multiple_plans_async(self,
-                                          plan_requests: List[Tuple[List[QuantumTask], Dict[str, Any]]]) -> List[QuantumScheduleResult]:
+                                          plan_requests: list[tuple[list[QuantumTask], dict[str, Any]]]) -> list[QuantumScheduleResult]:
         """Process multiple planning requests concurrently."""
         if not self.config.enable_parallel_processing or len(plan_requests) == 1:
             # Fall back to sequential processing
@@ -267,7 +267,7 @@ class ParallelQuantumProcessor:
             results = await asyncio.gather(*tasks_futures)
             return results
 
-    def _process_single_plan(self, tasks: List[QuantumTask], config: Dict[str, Any]) -> QuantumScheduleResult:
+    def _process_single_plan(self, tasks: list[QuantumTask], config: dict[str, Any]) -> QuantumScheduleResult:
         """Process a single planning request."""
         scheduler = QuantumInspiredScheduler(
             temperature=config.get('temperature', 2.0),
@@ -275,7 +275,7 @@ class ParallelQuantumProcessor:
         )
         return scheduler.quantum_annealing_schedule(tasks)
 
-    def process_large_task_set(self, tasks: List[QuantumTask], chunk_size: int = 50) -> QuantumScheduleResult:
+    def process_large_task_set(self, tasks: list[QuantumTask], chunk_size: int = 50) -> QuantumScheduleResult:
         """Process large task sets by dividing into chunks and combining results."""
         if len(tasks) <= chunk_size:
             # Small enough to process normally
@@ -298,7 +298,7 @@ class ParallelQuantumProcessor:
         # Combine results
         return self._combine_chunk_results(chunk_results, tasks)
 
-    def _partition_tasks_intelligently(self, tasks: List[QuantumTask], chunk_size: int) -> List[List[QuantumTask]]:
+    def _partition_tasks_intelligently(self, tasks: list[QuantumTask], chunk_size: int) -> list[list[QuantumTask]]:
         """Partition tasks into chunks while respecting dependencies."""
         # Build dependency graph
         task_map = {task.id: task for task in tasks}
@@ -343,13 +343,13 @@ class ParallelQuantumProcessor:
 
         return chunks
 
-    def _process_chunk(self, chunk: List[QuantumTask]) -> QuantumScheduleResult:
+    def _process_chunk(self, chunk: list[QuantumTask]) -> QuantumScheduleResult:
         """Process a single chunk of tasks."""
         scheduler = QuantumInspiredScheduler()
         return scheduler.quantum_annealing_schedule(chunk)
 
-    def _combine_chunk_results(self, chunk_results: List[QuantumScheduleResult],
-                              original_tasks: List[QuantumTask]) -> QuantumScheduleResult:
+    def _combine_chunk_results(self, chunk_results: list[QuantumScheduleResult],
+                              original_tasks: list[QuantumTask]) -> QuantumScheduleResult:
         """Combine results from multiple chunks into a single result."""
         combined_tasks = []
         total_value = 0.0
@@ -395,7 +395,7 @@ class OptimizedQuantumPlanner:
         self.resource_monitor = ResourceMonitor(self.config)
 
     @monitor_operation("optimized_quantum_planning")
-    def create_optimized_plan(self, tasks: List[QuantumTask]) -> QuantumScheduleResult:
+    def create_optimized_plan(self, tasks: list[QuantumTask]) -> QuantumScheduleResult:
         """Create optimized quantum plan with all performance enhancements."""
         if not tasks:
             return QuantumScheduleResult([], 0.0, 0.0, 1.0, 0)
@@ -437,17 +437,17 @@ class OptimizedQuantumPlanner:
             logger.error(f"Optimized planning failed: {e}, falling back to basic scheduling")
             return self._fallback_schedule(tasks)
 
-    def _fallback_schedule(self, tasks: List[QuantumTask]) -> QuantumScheduleResult:
+    def _fallback_schedule(self, tasks: list[QuantumTask]) -> QuantumScheduleResult:
         """Fallback to basic scheduling when optimizations fail."""
         basic_scheduler = QuantumInspiredScheduler(temperature=1.0, cooling_rate=0.9)
         return basic_scheduler.quantum_annealing_schedule(tasks)
 
     async def create_multiple_plans(self,
-                                   plan_requests: List[Tuple[List[QuantumTask], Dict[str, Any]]]) -> List[QuantumScheduleResult]:
+                                   plan_requests: list[tuple[list[QuantumTask], dict[str, Any]]]) -> list[QuantumScheduleResult]:
         """Create multiple quantum plans concurrently."""
         return await self.parallel_processor.process_multiple_plans_async(plan_requests)
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get performance statistics for the optimized planner."""
         stats = {
             "config": {
@@ -563,7 +563,7 @@ class ResourceMonitor:
             logger.warning(f"Resource check failed: {e}")
             return True  # Assume OK on error
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get resource usage statistics."""
         stats = {
             "last_check_time": self.last_check_time,
@@ -596,7 +596,7 @@ def cached_quantum_result(cache_size: int = 64):
             return func(*args, **kwargs)
 
         @wraps(func)
-        def wrapper(tasks: List[QuantumTask], *args, **kwargs):
+        def wrapper(tasks: list[QuantumTask], *args, **kwargs):
             # Generate hash of tasks for caching
             task_data = tuple(
                 (t.id, t.priority, t.effort, t.value, tuple(sorted(t.dependencies)))

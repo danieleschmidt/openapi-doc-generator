@@ -6,7 +6,6 @@ import ast
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass
@@ -23,7 +22,7 @@ class SchemaInfo:
     """Representation of an inferred schema/model."""
 
     name: str
-    fields: List[FieldInfo]
+    fields: list[FieldInfo]
 
 
 class SchemaInferer:
@@ -36,7 +35,7 @@ class SchemaInferer:
             raise FileNotFoundError(file_path)
 
     # Public API
-    def _load_ast_tree(self) -> Optional[ast.AST]:
+    def _load_ast_tree(self) -> ast.AST | None:
         """Load and parse the AST tree from the file."""
         try:
             from .utils import get_cached_ast
@@ -49,9 +48,9 @@ class SchemaInferer:
             self._logger.warning("Syntax error in %s: %s", self.file_path, e)
             return None
 
-    def _extract_models_from_tree(self, tree: ast.AST) -> List[SchemaInfo]:
+    def _extract_models_from_tree(self, tree: ast.AST) -> list[SchemaInfo]:
         """Extract model classes from the AST tree."""
-        models: List[SchemaInfo] = []
+        models: list[SchemaInfo] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef) and self._is_model(node):
                 try:
@@ -62,7 +61,7 @@ class SchemaInferer:
                     continue
         return models
 
-    def infer(self) -> List[SchemaInfo]:
+    def infer(self) -> list[SchemaInfo]:
         """Return all discovered models in the file."""
         self._logger.debug("Inferring models from %s", self.file_path)
         tree = self._load_ast_tree()
@@ -90,7 +89,7 @@ class SchemaInferer:
         return has_dataclass_decorator() or inherits_base_model()
 
     def _process_class(self, node: ast.ClassDef) -> SchemaInfo:
-        fields: List[FieldInfo] = []
+        fields: list[FieldInfo] = []
         for stmt in node.body:
             if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
                 name = stmt.target.id

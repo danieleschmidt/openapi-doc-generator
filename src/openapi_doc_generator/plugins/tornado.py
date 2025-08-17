@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 import logging
 from pathlib import Path
-from typing import List, Optional
 
 from ..discovery import RouteInfo, RoutePlugin, register_plugin
 
@@ -19,7 +18,7 @@ class TornadoPlugin(RoutePlugin):
         """Return True if the source contains Tornado imports."""
         return "tornado" in source.lower()
 
-    def discover(self, app_path: str) -> List[RouteInfo]:
+    def discover(self, app_path: str) -> list[RouteInfo]:
         """Discover routes from a Tornado application file."""
         try:
             source_path = Path(app_path)
@@ -90,7 +89,7 @@ class TornadoPlugin(RoutePlugin):
         }
         return method_name.lower() in http_methods
 
-    def _find_tornado_routes(self, tree: ast.AST, handlers: dict) -> List[RouteInfo]:
+    def _find_tornado_routes(self, tree: ast.AST, handlers: dict) -> list[RouteInfo]:
         """Find Tornado Application route definitions."""
         routes = []
 
@@ -119,7 +118,7 @@ class TornadoPlugin(RoutePlugin):
                 return True
         return False
 
-    def _extract_route_patterns(self, app_node: ast.Call, handlers: dict) -> List[RouteInfo]:
+    def _extract_route_patterns(self, app_node: ast.Call, handlers: dict) -> list[RouteInfo]:
         """Extract route patterns from Application constructor."""
         routes = []
 
@@ -153,7 +152,7 @@ class TornadoPlugin(RoutePlugin):
 
         return routes
 
-    def _extract_string_value(self, node: ast.expr) -> Optional[str]:
+    def _extract_string_value(self, node: ast.expr) -> str | None:
         """Extract string value from AST node."""
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             return node.value
@@ -161,7 +160,7 @@ class TornadoPlugin(RoutePlugin):
             return node.s
         return None
 
-    def _extract_handler_name(self, node: ast.expr) -> Optional[str]:
+    def _extract_handler_name(self, node: ast.expr) -> str | None:
         """Extract handler class name from AST node."""
         if isinstance(node, ast.Name):
             return node.id

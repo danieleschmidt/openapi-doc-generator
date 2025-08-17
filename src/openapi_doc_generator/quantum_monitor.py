@@ -9,7 +9,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 import psutil
 
@@ -31,17 +31,17 @@ class PerformanceMetrics:
     """Performance metrics for quantum planning operations."""
     operation_name: str
     start_time: float
-    end_time: Optional[float] = None
-    duration_ms: Optional[float] = None
-    memory_before_mb: Optional[float] = None
-    memory_after_mb: Optional[float] = None
-    memory_delta_mb: Optional[float] = None
-    cpu_percent: Optional[float] = None
-    task_count: Optional[int] = None
-    quantum_fidelity: Optional[float] = None
-    convergence_iterations: Optional[int] = None
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    end_time: float | None = None
+    duration_ms: float | None = None
+    memory_before_mb: float | None = None
+    memory_after_mb: float | None = None
+    memory_delta_mb: float | None = None
+    cpu_percent: float | None = None
+    task_count: int | None = None
+    quantum_fidelity: float | None = None
+    convergence_iterations: int | None = None
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -50,7 +50,7 @@ class HealthCheckResult:
     component: str
     status: HealthStatus
     message: str
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     timestamp: float = field(default_factory=time.time)
 
 
@@ -60,9 +60,9 @@ class QuantumPlanningMonitor:
     def __init__(self, max_metrics_history: int = 1000):
         """Initialize monitoring system."""
         self.max_metrics_history = max_metrics_history
-        self.metrics_history: List[PerformanceMetrics] = []
-        self.active_operations: Dict[str, PerformanceMetrics] = {}
-        self.health_checks: Dict[str, Callable[[], HealthCheckResult]] = {}
+        self.metrics_history: list[PerformanceMetrics] = []
+        self.active_operations: dict[str, PerformanceMetrics] = {}
+        self.health_checks: dict[str, Callable[[], HealthCheckResult]] = {}
         self.alert_thresholds = {
             "max_duration_ms": 60000,  # 1 minute
             "max_memory_mb": 1000,     # 1GB
@@ -74,7 +74,7 @@ class QuantumPlanningMonitor:
         # Register default health checks
         self._register_default_health_checks()
 
-    def start_operation(self, operation_name: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def start_operation(self, operation_name: str, metadata: dict[str, Any] | None = None) -> str:
         """Start monitoring an operation."""
         operation_id = f"{operation_name}_{int(time.time() * 1000)}"
 
@@ -98,8 +98,8 @@ class QuantumPlanningMonitor:
         return operation_id
 
     def end_operation(self, operation_id: str,
-                     result: Optional[QuantumScheduleResult] = None,
-                     error: Optional[str] = None) -> Optional[PerformanceMetrics]:
+                     result: QuantumScheduleResult | None = None,
+                     error: str | None = None) -> PerformanceMetrics | None:
         """End monitoring an operation and record metrics."""
         with self.lock:
             if operation_id not in self.active_operations:
@@ -146,7 +146,7 @@ class QuantumPlanningMonitor:
 
         return metrics
 
-    def get_metrics_summary(self, operation_name: Optional[str] = None) -> Dict[str, Any]:
+    def get_metrics_summary(self, operation_name: str | None = None) -> dict[str, Any]:
         """Get summary of performance metrics."""
         with self.lock:
             if operation_name:
@@ -204,7 +204,7 @@ class QuantumPlanningMonitor:
 
         return summary
 
-    def run_health_checks(self) -> List[HealthCheckResult]:
+    def run_health_checks(self) -> list[HealthCheckResult]:
         """Run all registered health checks."""
         results = []
 
@@ -401,7 +401,7 @@ def get_monitor() -> QuantumPlanningMonitor:
     return _global_monitor
 
 
-def monitor_operation(operation_name: str, metadata: Optional[Dict[str, Any]] = None):
+def monitor_operation(operation_name: str, metadata: dict[str, Any] | None = None):
     """Decorator to monitor quantum planning operations."""
     def decorator(func):
         def wrapper(*args, **kwargs):

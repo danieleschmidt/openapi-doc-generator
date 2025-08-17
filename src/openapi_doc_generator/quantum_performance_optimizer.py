@@ -10,7 +10,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_compl
 from dataclasses import asdict, dataclass
 from enum import Enum
 from threading import RLock
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 import psutil
 
@@ -80,16 +80,16 @@ class OptimizationResult:
     optimized_duration_ms: float
     improvement_factor: float
     memory_saved_mb: float
-    optimization_applied: List[str]
-    metadata: Dict[str, Any]
+    optimization_applied: list[str]
+    metadata: dict[str, Any]
 
 
 class ResourcePool:
     """Dynamic resource pool for optimized execution."""
 
     def __init__(self,
-                 cpu_pool_size: Optional[int] = None,
-                 io_pool_size: Optional[int] = None,
+                 cpu_pool_size: int | None = None,
+                 io_pool_size: int | None = None,
                  enable_adaptive_sizing: bool = True):
         """Initialize resource pool."""
         self.cpu_cores = cpu_pool_size or multiprocessing.cpu_count()
@@ -101,8 +101,8 @@ class ResourcePool:
         self.thread_executor = ThreadPoolExecutor(max_workers=self.io_threads)
 
         # Resource utilization tracking
-        self.cpu_utilization_history: List[float] = []
-        self.memory_utilization_history: List[float] = []
+        self.cpu_utilization_history: list[float] = []
+        self.memory_utilization_history: list[float] = []
         self.active_cpu_tasks = 0
         self.active_io_tasks = 0
 
@@ -137,7 +137,7 @@ class ResourcePool:
         future.add_done_callback(cleanup_callback)
         return future
 
-    def get_utilization(self) -> Dict[str, Any]:
+    def get_utilization(self) -> dict[str, Any]:
         """Get current resource utilization."""
         with self._lock:
             return {
@@ -183,14 +183,14 @@ class SmartCache:
         self.enable_compression = enable_compression
         self.enable_prefetch = enable_prefetch
 
-        self._cache: Dict[str, Dict[str, Any]] = {}
-        self._access_count: Dict[str, int] = {}
-        self._access_times: Dict[str, List[float]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
+        self._access_count: dict[str, int] = {}
+        self._access_times: dict[str, list[float]] = {}
         self._lock = RLock()
 
         self.logger = logging.getLogger(f"{__name__}.smart_cache")
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache with smart prefetching."""
         with self._lock:
             if key in self._cache:
@@ -215,7 +215,7 @@ class SmartCache:
             self.logger.debug(f"Cache miss: {key}")
             return None
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set value in cache with intelligent eviction."""
         ttl = ttl or self.ttl_seconds
         expires = time.time() + ttl
@@ -293,7 +293,7 @@ class SmartCache:
         except Exception:
             return 1024  # Default estimate
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         with self._lock:
             total_size = sum(entry.get('size_bytes', 0) for entry in self._cache.values())
@@ -313,9 +313,9 @@ class WorkloadAnalyzer:
 
     def __init__(self):
         """Initialize workload analyzer."""
-        self.operation_profiles: Dict[str, Dict[str, Any]] = {}
-        self.performance_history: Dict[str, List[float]] = {}
-        self.resource_usage_history: Dict[str, List[Dict[str, float]]] = {}
+        self.operation_profiles: dict[str, dict[str, Any]] = {}
+        self.performance_history: dict[str, list[float]] = {}
+        self.resource_usage_history: dict[str, list[dict[str, float]]] = {}
 
         self._lock = RLock()
         self.logger = logging.getLogger(f"{__name__}.workload_analyzer")
@@ -479,13 +479,13 @@ class QuantumPerformanceOptimizer:
         self.audit_logger = get_audit_logger()
 
         # Optimization state
-        self.optimization_profiles: Dict[str, PerformanceProfile] = {}
-        self.scaling_rules: Dict[str, ScalingRule] = {}
-        self.optimization_history: List[OptimizationResult] = []
+        self.optimization_profiles: dict[str, PerformanceProfile] = {}
+        self.scaling_rules: dict[str, ScalingRule] = {}
+        self.optimization_history: list[OptimizationResult] = []
 
         # Auto-scaling state
-        self.last_scale_action: Dict[str, float] = {}
-        self.current_instances: Dict[str, int] = {}
+        self.last_scale_action: dict[str, float] = {}
+        self.current_instances: dict[str, int] = {}
 
         self._lock = RLock()
         self.logger = logging.getLogger(__name__)
@@ -547,7 +547,7 @@ class QuantumPerformanceOptimizer:
 
         try:
             # Apply optimizations based on profile
-            optimized_result = self._execute_optimized(
+            self._execute_optimized(
                 operation_name, func, profile, *args, **kwargs
             )
 
@@ -744,7 +744,7 @@ class QuantumPerformanceOptimizer:
         else:
             return func(*args, **kwargs)
 
-    def _get_applied_optimizations(self, profile: PerformanceProfile) -> List[str]:
+    def _get_applied_optimizations(self, profile: PerformanceProfile) -> list[str]:
         """Get list of applied optimizations."""
         optimizations = []
 
@@ -763,7 +763,7 @@ class QuantumPerformanceOptimizer:
 
         return optimizations
 
-    def check_scaling_triggers(self) -> List[str]:
+    def check_scaling_triggers(self) -> list[str]:
         """Check if auto-scaling should be triggered."""
         if not self.enable_auto_scaling:
             return []
@@ -834,7 +834,7 @@ class QuantumPerformanceOptimizer:
 
         return actions_taken
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get comprehensive performance statistics."""
         stats = {
             "optimization_profiles": len(self.optimization_profiles),
@@ -893,7 +893,7 @@ class QuantumPerformanceOptimizer:
                 new_value=asdict(updated_profile)
             )
 
-    def clear_optimization_cache(self, operation_pattern: Optional[str] = None) -> None:
+    def clear_optimization_cache(self, operation_pattern: str | None = None) -> None:
         """Clear optimization cache."""
         if self.smart_cache:
             if operation_pattern:
@@ -914,7 +914,7 @@ class QuantumPerformanceOptimizer:
 
 
 # Global performance optimizer instance
-_performance_optimizer: Optional[QuantumPerformanceOptimizer] = None
+_performance_optimizer: QuantumPerformanceOptimizer | None = None
 
 
 def get_performance_optimizer() -> QuantumPerformanceOptimizer:

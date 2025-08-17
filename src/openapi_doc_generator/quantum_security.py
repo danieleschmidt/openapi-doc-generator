@@ -9,7 +9,7 @@ import secrets
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .quantum_scheduler import QuantumTask
 
@@ -30,8 +30,8 @@ class SecurityIssue:
     issue_type: str
     severity: SecurityLevel
     message: str
-    task_id: Optional[str] = None
-    recommendation: Optional[str] = None
+    task_id: str | None = None
+    recommendation: str | None = None
 
 
 class QuantumSecurityValidator:
@@ -40,8 +40,8 @@ class QuantumSecurityValidator:
     def __init__(self, security_level: SecurityLevel = SecurityLevel.MEDIUM):
         """Initialize security validator."""
         self.security_level = security_level
-        self.session_keys: Dict[str, str] = {}
-        self.rate_limits: Dict[str, List[float]] = {}
+        self.session_keys: dict[str, str] = {}
+        self.rate_limits: dict[str, list[float]] = {}
         self.blocked_patterns = [
             # Dangerous file patterns
             r'\.\./.*',
@@ -58,7 +58,7 @@ class QuantumSecurityValidator:
             r'vbscript:',
         ]
 
-    def validate_task_security(self, task: QuantumTask) -> List[SecurityIssue]:
+    def validate_task_security(self, task: QuantumTask) -> list[SecurityIssue]:
         """Validate task for security issues."""
         issues = []
 
@@ -104,7 +104,7 @@ class QuantumSecurityValidator:
 
         return issues
 
-    def validate_plan_security(self, tasks: List[QuantumTask]) -> List[SecurityIssue]:
+    def validate_plan_security(self, tasks: list[QuantumTask]) -> list[SecurityIssue]:
         """Validate entire task plan for security issues."""
         issues = []
 
@@ -216,7 +216,7 @@ class QuantumSecurityValidator:
         else:
             return input_data
 
-    def audit_log_security_event(self, event_type: str, details: Dict[str, Any]) -> None:
+    def audit_log_security_event(self, event_type: str, details: dict[str, Any]) -> None:
         """Log security events for auditing."""
         audit_entry = {
             "timestamp": time.time(),
@@ -236,7 +236,7 @@ class QuantumSecurityValidator:
                 return True
         return False
 
-    def _detect_dependency_cycles(self, dep_graph: Dict[str, set]) -> List[List[str]]:
+    def _detect_dependency_cycles(self, dep_graph: dict[str, set]) -> list[list[str]]:
         """Detect circular dependencies using DFS."""
         WHITE = 0  # Unvisited
         GRAY = 1   # Being processed
@@ -245,7 +245,7 @@ class QuantumSecurityValidator:
         colors = dict.fromkeys(dep_graph, WHITE)
         cycles = []
 
-        def dfs(node: str, path: List[str]) -> None:
+        def dfs(node: str, path: list[str]) -> None:
             if colors[node] == GRAY:
                 # Found a cycle
                 cycle_start = path.index(node)
@@ -271,7 +271,7 @@ class QuantumSecurityValidator:
 
         return cycles
 
-    def generate_security_report(self, tasks: List[QuantumTask]) -> Dict[str, Any]:
+    def generate_security_report(self, tasks: list[QuantumTask]) -> dict[str, Any]:
         """Generate comprehensive security report."""
         issues = self.validate_plan_security(tasks)
 
@@ -315,7 +315,7 @@ class QuantumSecurityValidator:
 
         return report
 
-    def _generate_security_recommendations(self, issues: List[SecurityIssue]) -> List[str]:
+    def _generate_security_recommendations(self, issues: list[SecurityIssue]) -> list[str]:
         """Generate security recommendations based on issues."""
         recommendations = []
 

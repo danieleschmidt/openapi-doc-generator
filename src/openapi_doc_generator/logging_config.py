@@ -188,7 +188,7 @@ def get_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
 
     # Ensure logger has correlation filter
-    if correlation_filter not in [f for f in logger.filters]:
+    if correlation_filter not in list(logger.filters):
         logger.addFilter(correlation_filter)
 
     return logger

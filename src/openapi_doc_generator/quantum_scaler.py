@@ -12,7 +12,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 from .quantum_recovery import RecoveryStrategy, get_recovery_manager
 from .quantum_scheduler import QuantumScheduleResult, QuantumTask
@@ -56,26 +56,26 @@ class ScalingConfig:
 class QuantumTaskScaler:
     """Advanced scaling manager for quantum task processing."""
 
-    def __init__(self, config: Optional[ScalingConfig] = None):
+    def __init__(self, config: ScalingConfig | None = None):
         """Initialize quantum task scaler."""
         self.config = config or ScalingConfig()
         self.strategy = ScalingStrategy.AUTO_ADAPTIVE
         self.current_workers = self.config.min_workers
 
         # Worker pools
-        self.thread_pool: Optional[ThreadPoolExecutor] = None
-        self.process_pool: Optional[ProcessPoolExecutor] = None
+        self.thread_pool: ThreadPoolExecutor | None = None
+        self.process_pool: ProcessPoolExecutor | None = None
         self.task_queue = queue.Queue()
 
         # Metrics and monitoring
-        self.metrics_history: List[ScalingMetrics] = []
+        self.metrics_history: list[ScalingMetrics] = []
         self.last_scale_up = 0.0
         self.last_scale_down = 0.0
-        self.scaling_decisions: List[Dict[str, Any]] = []
+        self.scaling_decisions: list[dict[str, Any]] = []
 
         # Performance caches
-        self.result_cache: Dict[str, Any] = {}
-        self.computation_cache: Dict[str, Any] = {}
+        self.result_cache: dict[str, Any] = {}
+        self.computation_cache: dict[str, Any] = {}
         self.cache_stats = {"hits": 0, "misses": 0, "evictions": 0}
 
         # Recovery manager integration
@@ -108,9 +108,9 @@ class QuantumTaskScaler:
                    f"{cpu_workers if self.process_pool else 0} process workers")
 
     async def process_tasks_concurrent(self,
-                                     tasks: List[QuantumTask],
+                                     tasks: list[QuantumTask],
                                      operation: Callable,
-                                     batch_size: Optional[int] = None) -> List[Any]:
+                                     batch_size: int | None = None) -> list[Any]:
         """Process tasks concurrently using optimal scaling strategy."""
         if not tasks:
             return []
@@ -141,11 +141,11 @@ class QuantumTaskScaler:
 
         return flat_results
 
-    async def _process_async_batches(self, batches: List[List[QuantumTask]], operation: Callable) -> List[Any]:
+    async def _process_async_batches(self, batches: list[list[QuantumTask]], operation: Callable) -> list[Any]:
         """Process batches using asyncio."""
         semaphore = asyncio.Semaphore(self.current_workers)
 
-        async def process_batch_async(batch: List[QuantumTask]) -> Any:
+        async def process_batch_async(batch: list[QuantumTask]) -> Any:
             async with semaphore:
                 loop = asyncio.get_event_loop()
                 return await loop.run_in_executor(self.thread_pool, operation, batch)
@@ -153,7 +153,7 @@ class QuantumTaskScaler:
         tasks = [process_batch_async(batch) for batch in batches]
         return await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def _process_with_processes(self, batches: List[List[QuantumTask]], operation: Callable) -> List[Any]:
+    async def _process_with_processes(self, batches: list[list[QuantumTask]], operation: Callable) -> list[Any]:
         """Process batches using process pool."""
         loop = asyncio.get_event_loop()
 
@@ -164,7 +164,7 @@ class QuantumTaskScaler:
 
         return await asyncio.gather(*futures, return_exceptions=True)
 
-    async def _process_with_threads(self, batches: List[List[QuantumTask]], operation: Callable) -> List[Any]:
+    async def _process_with_threads(self, batches: list[list[QuantumTask]], operation: Callable) -> list[Any]:
         """Process batches using thread pool."""
         loop = asyncio.get_event_loop()
 
@@ -175,7 +175,7 @@ class QuantumTaskScaler:
 
         return await asyncio.gather(*futures, return_exceptions=True)
 
-    async def _process_hybrid(self, batches: List[List[QuantumTask]], operation: Callable) -> List[Any]:
+    async def _process_hybrid(self, batches: list[list[QuantumTask]], operation: Callable) -> list[Any]:
         """Process using hybrid thread/process strategy."""
         # Use processes for CPU-intensive batches, threads for I/O
         cpu_intensive_threshold = 10  # tasks per batch
@@ -197,7 +197,7 @@ class QuantumTaskScaler:
 
         return results
 
-    async def _process_adaptive(self, batches: List[List[QuantumTask]], operation: Callable) -> List[Any]:
+    async def _process_adaptive(self, batches: list[list[QuantumTask]], operation: Callable) -> list[Any]:
         """Adaptively choose processing strategy based on current metrics."""
         current_metrics = self._get_current_metrics()
 
@@ -217,7 +217,7 @@ class QuantumTaskScaler:
 
     def optimize_quantum_annealing(self,
                                  planner_function: Callable,
-                                 tasks: List[QuantumTask],
+                                 tasks: list[QuantumTask],
                                  num_iterations: int = 10) -> QuantumScheduleResult:
         """Optimize quantum annealing with parallel exploration."""
         cache_key = self._generate_cache_key("annealing", tasks, num_iterations)
@@ -241,7 +241,7 @@ class QuantumTaskScaler:
         with self.recovery_manager.resilient_execution(
             "quantum_annealing_optimization",
             RecoveryStrategy.RETRY
-        ) as context:
+        ):
 
             futures = []
             with ThreadPoolExecutor(max_workers=min(num_iterations, self.current_workers)) as executor:
@@ -271,7 +271,7 @@ class QuantumTaskScaler:
 
     def parallel_resource_allocation(self,
                                    allocator_function: Callable,
-                                   task_groups: List[List[QuantumTask]]) -> Dict[str, int]:
+                                   task_groups: list[list[QuantumTask]]) -> dict[str, int]:
         """Optimize resource allocation using parallel processing."""
         cache_key = self._generate_cache_key("resource_allocation", task_groups)
 
@@ -284,7 +284,7 @@ class QuantumTaskScaler:
         with self.recovery_manager.resilient_execution(
             "resource_allocation",
             RecoveryStrategy.GRACEFUL_DEGRADATION
-        ) as context:
+        ):
 
             # Process each group in parallel
             allocation_results = {}
@@ -299,7 +299,7 @@ class QuantumTaskScaler:
 
                 for future in concurrent.futures.as_completed(futures):
                     try:
-                        group_index = futures[future]
+                        futures[future]
                         allocation = future.result(timeout=15.0)
                         allocation_results.update(allocation)
                     except Exception as e:
@@ -456,7 +456,7 @@ class QuantumTaskScaler:
                 logger.error(f"Monitoring loop error: {str(e)}")
                 time.sleep(30)  # Back off on errors
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get comprehensive performance statistics."""
         current_metrics = self._get_current_metrics()
 
@@ -509,7 +509,7 @@ class QuantumTaskScaler:
 _quantum_scaler = None
 
 
-def get_quantum_scaler(config: Optional[ScalingConfig] = None) -> QuantumTaskScaler:
+def get_quantum_scaler(config: ScalingConfig | None = None) -> QuantumTaskScaler:
     """Get global quantum task scaler instance."""
     global _quantum_scaler
     if _quantum_scaler is None:

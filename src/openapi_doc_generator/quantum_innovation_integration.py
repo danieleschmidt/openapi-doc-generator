@@ -687,7 +687,7 @@ class BenchmarkingCapability(QuantumCapabilityInterface):
 class QuantumSDLCIntegratedSystem:
     """
     Comprehensive integrated system for quantum SDLC innovations.
-    
+
     This system provides a unified interface to all quantum SDLC capabilities,
     handles cross-system coordination, monitoring, and provides enterprise-grade
     reliability and performance.
@@ -1101,7 +1101,7 @@ class QuantumSDLCIntegratedSystem:
             self.metrics.entanglement_utilization = quantum_metrics.get('entanglement_utilization', 0.0)
 
         elif capability == QuantumSDLCCapability.ML_ANOMALY_DETECTION:
-            ml_metrics = result.get('quantum_ml_metrics', {})
+            result.get('quantum_ml_metrics', {})
             if 'accuracy' in result.get('results', {}):
                 self.metrics.anomaly_detection_accuracy = result['results']['accuracy']
 

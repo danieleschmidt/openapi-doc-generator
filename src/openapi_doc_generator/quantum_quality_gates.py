@@ -9,7 +9,7 @@ import time
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .quantum_audit_logger import AuditEventType, get_audit_logger
 from .quantum_health_monitor import get_health_monitor
@@ -46,9 +46,9 @@ class QualityGateResult:
     result: QualityResult
     score: float  # 0-100 score
     threshold: float  # Minimum required score
-    details: Dict[str, Any]
+    details: dict[str, Any]
     execution_time_ms: float
-    recommendations: List[str]
+    recommendations: list[str]
     blocking: bool  # Whether failure blocks deployment
 
 
@@ -57,19 +57,19 @@ class QualityReport:
     """Comprehensive quality report."""
     overall_result: QualityResult
     overall_score: float
-    gate_results: List[QualityGateResult]
+    gate_results: list[QualityGateResult]
     timestamp: float
-    environment: Dict[str, Any]
+    environment: dict[str, Any]
     deployment_ready: bool
-    critical_issues: List[str]
-    warnings: List[str]
+    critical_issues: list[str]
+    warnings: list[str]
 
 
 class QuantumQualityGates:
     """Advanced quality gates with autonomous verification."""
 
     def __init__(self,
-                 project_root: Optional[str] = None,
+                 project_root: str | None = None,
                  enable_all_gates: bool = True,
                  strict_mode: bool = False):
         """Initialize quality gates."""
@@ -732,7 +732,7 @@ class QuantumQualityGates:
         )
 
     def _calculate_overall_results(self,
-                                  gate_results: List[QualityGateResult]) -> Tuple[QualityResult, float, bool]:
+                                  gate_results: list[QualityGateResult]) -> tuple[QualityResult, float, bool]:
         """Calculate overall quality results."""
         if not gate_results:
             return QualityResult.FAIL, 0.0, False
@@ -758,7 +758,7 @@ class QuantumQualityGates:
 
         return overall_result, overall_score, deployment_ready
 
-    def _get_environment_info(self) -> Dict[str, Any]:
+    def _get_environment_info(self) -> dict[str, Any]:
         """Get environment information."""
         return {
             "python_version": "3.12",
@@ -789,7 +789,7 @@ class QuantumQualityGates:
 
 
 # Global quality gates instance
-_quality_gates: Optional[QuantumQualityGates] = None
+_quality_gates: QuantumQualityGates | None = None
 
 
 def get_quality_gates() -> QuantumQualityGates:

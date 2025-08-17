@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 
 @dataclass
@@ -22,12 +22,12 @@ class SpecValidator:
         "trace",
     }
 
-    def validate(self, spec: Dict[str, Any]) -> List[str]:
+    def validate(self, spec: dict[str, Any]) -> list[str]:
         """Return a list of suggestions for improving the spec."""
         if not isinstance(spec, dict):
             raise TypeError("spec must be a dict")
 
-        suggestions: List[str] = []
+        suggestions: list[str] = []
 
         # Validate OpenAPI version
         suggestions.extend(self._validate_openapi_version(spec))
@@ -49,7 +49,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_openapi_version(self, spec: Dict[str, Any]) -> List[str]:
+    def _validate_openapi_version(self, spec: dict[str, Any]) -> list[str]:
         """Validate OpenAPI version field."""
         suggestions = []
         version = spec.get("openapi", "")
@@ -63,7 +63,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_required_fields(self, spec: Dict[str, Any]) -> List[str]:
+    def _validate_required_fields(self, spec: dict[str, Any]) -> list[str]:
         """Validate required top-level fields."""
         suggestions = []
         required_fields = ["info", "paths"]
@@ -74,7 +74,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_info_section(self, spec: Dict[str, Any]) -> List[str]:
+    def _validate_info_section(self, spec: dict[str, Any]) -> list[str]:
         """Validate info section."""
         suggestions = []
         info = spec.get("info", {})
@@ -92,7 +92,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_paths_section(self, spec: Dict[str, Any]) -> List[str]:
+    def _validate_paths_section(self, spec: dict[str, Any]) -> list[str]:
         """Validate paths section."""
         suggestions = []
         paths = spec.get("paths", {})
@@ -106,7 +106,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_path_operations(self, path: str, operations: Any) -> List[str]:
+    def _validate_path_operations(self, path: str, operations: Any) -> list[str]:
         """Validate operations for a single path."""
         suggestions = []
 
@@ -127,7 +127,7 @@ class SpecValidator:
 
     def _validate_single_operation(
         self, method: str, path: str, operation: Any
-    ) -> List[str]:
+    ) -> list[str]:
         """Validate a single operation."""
         suggestions = []
 
@@ -154,8 +154,8 @@ class SpecValidator:
         return suggestions
 
     def _validate_operation_responses(
-        self, method: str, path: str, operation: Dict[str, Any]
-    ) -> List[str]:
+        self, method: str, path: str, operation: dict[str, Any]
+    ) -> list[str]:
         """Validate responses section of an operation."""
         suggestions = []
 
@@ -174,7 +174,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_components_section(self, spec: Dict[str, Any]) -> List[str]:
+    def _validate_components_section(self, spec: dict[str, Any]) -> list[str]:
         """Validate components section."""
         suggestions = []
         components = spec.get("components", {})
@@ -191,7 +191,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_component_schemas(self, components: Dict[str, Any]) -> List[str]:
+    def _validate_component_schemas(self, components: dict[str, Any]) -> list[str]:
         """Validate schemas section within components."""
         suggestions = []
         schemas = components.get("schemas", {})
@@ -204,7 +204,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _validate_single_schema(self, schema_name: str, schema_def: Any) -> List[str]:
+    def _validate_single_schema(self, schema_name: str, schema_def: Any) -> list[str]:
         """Validate a single schema definition."""
         suggestions = []
 
@@ -225,7 +225,7 @@ class SpecValidator:
 
         return suggestions
 
-    def _has_valid_schema_properties(self, schema_def: Dict[str, Any]) -> bool:
+    def _has_valid_schema_properties(self, schema_def: dict[str, Any]) -> bool:
         """Check if schema has valid defining properties."""
         return (
             "type" in schema_def
@@ -233,7 +233,7 @@ class SpecValidator:
             or "$ref" in schema_def
         )
 
-    def _validate_security(self, spec: Dict[str, Any]) -> List[str]:
+    def _validate_security(self, spec: dict[str, Any]) -> list[str]:
         """Validate security configuration."""
         suggestions = []
         security_schemes = self._extract_security_schemes(spec)
@@ -249,14 +249,14 @@ class SpecValidator:
 
         return suggestions
 
-    def _extract_security_schemes(self, spec: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_security_schemes(self, spec: dict[str, Any]) -> dict[str, Any]:
         """Extract security schemes from spec components."""
         components = spec.get("components", {})
         if isinstance(components, dict):
             return components.get("securitySchemes", {})
         return {}
 
-    def _find_referenced_security_schemes(self, spec: Dict[str, Any]) -> set[str]:
+    def _find_referenced_security_schemes(self, spec: dict[str, Any]) -> set[str]:
         """Find all security schemes referenced in operations."""
         referenced_schemes = set()
         paths = spec.get("paths", {})
@@ -273,7 +273,7 @@ class SpecValidator:
 
         return referenced_schemes
 
-    def _extract_schemes_from_operation(self, operation: Dict[str, Any]) -> set[str]:
+    def _extract_schemes_from_operation(self, operation: dict[str, Any]) -> set[str]:
         """Extract security scheme names from a single operation."""
         schemes = set()
         security = operation.get("security", [])

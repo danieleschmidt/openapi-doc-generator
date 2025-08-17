@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from threading import Lock, Thread
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 import psutil
 
@@ -47,8 +47,8 @@ class ComponentHealth:
     response_time_ms: float
     error_count: int
     warning_count: int
-    details: Dict[str, Any]
-    dependencies: List[str]
+    details: dict[str, Any]
+    dependencies: list[str]
 
 
 @dataclass
@@ -56,10 +56,10 @@ class SystemHealth:
     """Overall system health assessment."""
     overall_status: HealthStatus
     timestamp: float
-    components: List[ComponentHealth]
+    components: list[ComponentHealth]
     system_metrics: SystemMetrics
-    alerts: List[str]
-    recommendations: List[str]
+    alerts: list[str]
+    recommendations: list[str]
 
 
 class HealthCheck:
@@ -68,7 +68,7 @@ class HealthCheck:
     def __init__(self,
                  component_type: ComponentType,
                  component_name: str,
-                 check_function: Callable[[], Dict[str, Any]],
+                 check_function: Callable[[], dict[str, Any]],
                  critical_threshold: float = 5.0,
                  warning_threshold: float = 2.0,
                  timeout_seconds: float = 10.0):
@@ -131,7 +131,7 @@ class HealthCheck:
                 dependencies=[]
             )
 
-    def _execute_with_timeout(self) -> Dict[str, Any]:
+    def _execute_with_timeout(self) -> dict[str, Any]:
         """Execute check function with timeout protection."""
         # Simple timeout implementation
         start_time = time.time()
@@ -144,7 +144,7 @@ class HealthCheck:
 
     def _determine_status(self,
                          duration_ms: float,
-                         result: Dict[str, Any]) -> HealthStatus:
+                         result: dict[str, Any]) -> HealthStatus:
         """Determine health status based on metrics."""
         # Check for explicit status in result
         if 'status' in result:
@@ -183,17 +183,17 @@ class QuantumHealthMonitor:
         self.enable_auto_diagnostics = enable_auto_diagnostics
         self.enable_self_healing = enable_self_healing
 
-        self.health_checks: Dict[str, HealthCheck] = {}
+        self.health_checks: dict[str, HealthCheck] = {}
         self.metrics_collector = MetricsCollector()
         self.audit_logger = get_audit_logger()
         self.logger = logging.getLogger(__name__)
 
-        self._monitoring_thread: Optional[Thread] = None
+        self._monitoring_thread: Thread | None = None
         self._stop_monitoring = False
         self._lock = Lock()
 
         # Health history for trend analysis
-        self.health_history: List[SystemHealth] = []
+        self.health_history: list[SystemHealth] = []
         self.max_history_size = 1000
 
         # Setup default health checks
@@ -249,7 +249,7 @@ class QuantumHealthMonitor:
     def add_health_check(self,
                         component_type: ComponentType,
                         component_name: str,
-                        check_function: Callable[[], Dict[str, Any]],
+                        check_function: Callable[[], dict[str, Any]],
                         **kwargs) -> None:
         """Add a custom health check."""
         check_key = f"{component_type.value}_{component_name}"
@@ -371,14 +371,14 @@ class QuantumHealthMonitor:
                 self.logger.error(f"Health monitoring error: {e}")
                 time.sleep(5.0)  # Brief pause on error
 
-    def _check_core_api_health(self) -> Dict[str, Any]:
+    def _check_core_api_health(self) -> dict[str, Any]:
         """Check core API health."""
         try:
             from .documentator import APIDocumentator
 
             # Simple functionality test
             start_time = time.time()
-            documentator = APIDocumentator()
+            APIDocumentator()
             duration = (time.time() - start_time) * 1000
 
             return {
@@ -393,7 +393,7 @@ class QuantumHealthMonitor:
                 "dependencies": []
             }
 
-    def _check_quantum_planner_health(self) -> Dict[str, Any]:
+    def _check_quantum_planner_health(self) -> dict[str, Any]:
         """Check quantum planner health."""
         try:
             from .quantum_planner import QuantumTaskPlanner
@@ -415,7 +415,7 @@ class QuantumHealthMonitor:
                 "dependencies": []
             }
 
-    def _check_security_validator_health(self) -> Dict[str, Any]:
+    def _check_security_validator_health(self) -> dict[str, Any]:
         """Check security validator health."""
         try:
             from .quantum_security import QuantumSecurityValidator
@@ -437,7 +437,7 @@ class QuantumHealthMonitor:
                 "dependencies": []
             }
 
-    def _check_plugin_system_health(self) -> Dict[str, Any]:
+    def _check_plugin_system_health(self) -> dict[str, Any]:
         """Check plugin system health."""
         try:
             import pkg_resources
@@ -459,7 +459,7 @@ class QuantumHealthMonitor:
                 "dependencies": []
             }
 
-    def _check_system_resources_health(self) -> Dict[str, Any]:
+    def _check_system_resources_health(self) -> dict[str, Any]:
         """Check system resource health."""
         try:
             cpu_percent = psutil.cpu_percent()
@@ -509,7 +509,7 @@ class QuantumHealthMonitor:
             return SystemMetrics(0, 0, 0, 0, 0, 0, time.time())
 
     def _determine_overall_status(self,
-                                component_healths: List[ComponentHealth]) -> HealthStatus:
+                                component_healths: list[ComponentHealth]) -> HealthStatus:
         """Determine overall system status from components."""
         if not component_healths:
             return HealthStatus.UNKNOWN
@@ -531,8 +531,8 @@ class QuantumHealthMonitor:
             return HealthStatus.HEALTHY
 
     def _analyze_health_issues(self,
-                             component_healths: List[ComponentHealth],
-                             system_metrics: SystemMetrics) -> tuple[List[str], List[str]]:
+                             component_healths: list[ComponentHealth],
+                             system_metrics: SystemMetrics) -> tuple[list[str], list[str]]:
         """Analyze health issues and generate alerts/recommendations."""
         alerts = []
         recommendations = []
@@ -611,7 +611,7 @@ class QuantumHealthMonitor:
                     details={"actions": healing_actions}
                 )
 
-    def _analyze_error_patterns(self) -> Dict[str, Any]:
+    def _analyze_error_patterns(self) -> dict[str, Any]:
         """Analyze error patterns from health history."""
         if len(self.health_history) < 5:
             return {"status": "insufficient_data"}
@@ -631,7 +631,7 @@ class QuantumHealthMonitor:
             "analysis_window": len(recent_healths)
         }
 
-    def _check_dependency_health(self) -> Dict[str, Any]:
+    def _check_dependency_health(self) -> dict[str, Any]:
         """Check health of external dependencies."""
         # Simple dependency health check
         dependencies = ["jinja2", "graphql-core", "psutil"]
@@ -650,7 +650,7 @@ class QuantumHealthMonitor:
             "healthy_deps": healthy_deps
         }
 
-    def _analyze_performance_trends(self) -> Dict[str, Any]:
+    def _analyze_performance_trends(self) -> dict[str, Any]:
         """Analyze performance trends from metrics history."""
         if len(self.health_history) < 5:
             return {"status": "insufficient_data"}
@@ -670,7 +670,7 @@ class QuantumHealthMonitor:
 
 
 # Global health monitor instance
-_health_monitor: Optional[QuantumHealthMonitor] = None
+_health_monitor: QuantumHealthMonitor | None = None
 
 
 def get_health_monitor() -> QuantumHealthMonitor:

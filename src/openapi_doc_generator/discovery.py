@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from importlib import metadata
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from .plugins import RoutePlugin
@@ -19,9 +19,9 @@ class RouteInfo:
     """Information about a discovered API route."""
 
     path: str
-    methods: List[str]
+    methods: list[str]
     name: str
-    docstring: Optional[str] = None
+    docstring: str | None = None
 
 
 class RoutePlugin(ABC):
@@ -33,12 +33,12 @@ class RoutePlugin(ABC):
         pass
 
     @abstractmethod
-    def discover(self, app_path: str) -> List[RouteInfo]:
+    def discover(self, app_path: str) -> list[RouteInfo]:
         """Return discovered routes for the file."""
         pass
 
 
-_PLUGINS: List[RoutePlugin] = []
+_PLUGINS: list[RoutePlugin] = []
 
 
 def register_plugin(plugin: RoutePlugin) -> None:
@@ -46,7 +46,7 @@ def register_plugin(plugin: RoutePlugin) -> None:
     _PLUGINS.append(plugin)
 
 
-def get_plugins() -> List[RoutePlugin]:
+def get_plugins() -> list[RoutePlugin]:
     """Get all registered route discovery plugins."""
     if not _PLUGINS:
         import importlib
@@ -83,7 +83,7 @@ class RouteDiscoverer:
         if not self.app_path.exists():
             raise FileNotFoundError(f"{app_path} does not exist")
 
-    def discover(self) -> List[RouteInfo]:
+    def discover(self) -> list[RouteInfo]:
         """Discover routes based on detected framework."""
         from .utils import measure_performance
 
@@ -121,7 +121,7 @@ class RouteDiscoverer:
 
         return _discover_routes()
 
-    def _extract_imports_from_ast(self, source: str) -> Optional[set[str]]:
+    def _extract_imports_from_ast(self, source: str) -> set[str] | None:
         """Extract import names from AST, return None if parsing fails."""
         try:
             from .utils import get_cached_ast
@@ -151,7 +151,7 @@ class RouteDiscoverer:
         if node.module:
             imports.add(node.module)
 
-    def _detect_framework_from_imports(self, imports: set[str]) -> Optional[str]:
+    def _detect_framework_from_imports(self, imports: set[str]) -> str | None:
         """Detect framework from import names using priority order."""
         framework_patterns = [
             ("fastapi", "fastapi"),
@@ -165,7 +165,7 @@ class RouteDiscoverer:
                 return framework
         return None
 
-    def _detect_framework(self, source: str) -> Optional[str]:
+    def _detect_framework(self, source: str) -> str | None:
         """Detect framework based on imports and patterns."""
         from .utils import measure_performance
 
@@ -183,7 +183,7 @@ class RouteDiscoverer:
 
         return _detect()
 
-    def _detect_framework_fallback(self, source: str) -> Optional[str]:
+    def _detect_framework_fallback(self, source: str) -> str | None:
         """Fallback framework detection using string matching."""
         lowered = source.lower()
 
@@ -223,11 +223,11 @@ class RouteDiscoverer:
         return "express" in lowered_source or "require('express')" in lowered_source
 
     # --- Framework specific discovery methods ---------------------------------
-    def _discover_fastapi(self, source: str) -> List[RouteInfo]:
+    def _discover_fastapi(self, source: str) -> list[RouteInfo]:
         from .utils import get_cached_ast
 
         tree = get_cached_ast(source, str(self.app_path))
-        routes: List[RouteInfo] = []
+        routes: list[RouteInfo] = []
         discoverer = self
 
         class Visitor(ast.NodeVisitor):
@@ -243,7 +243,7 @@ class RouteDiscoverer:
 
     def _extract_fastapi_route(
         self, deco: ast.expr, node: ast.FunctionDef
-    ) -> Optional[RouteInfo]:
+    ) -> RouteInfo | None:
         """Extract FastAPI route information from decorator and function node."""
         if not (isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute)):
             return None
@@ -265,11 +265,11 @@ class RouteDiscoverer:
             docstring=doc,
         )
 
-    def _discover_flask(self, source: str) -> List[RouteInfo]:
+    def _discover_flask(self, source: str) -> list[RouteInfo]:
         from .utils import get_cached_ast
 
         tree = get_cached_ast(source, str(self.app_path))
-        routes: List[RouteInfo] = []
+        routes: list[RouteInfo] = []
         discoverer = self
 
         class Visitor(ast.NodeVisitor):
@@ -285,7 +285,7 @@ class RouteDiscoverer:
 
     def _extract_flask_route(
         self, deco: ast.expr, node: ast.FunctionDef
-    ) -> Optional[RouteInfo]:
+    ) -> RouteInfo | None:
         """Extract Flask route information from decorator and function node."""
         if not self._is_flask_route_decorator(deco):
             return None
@@ -312,9 +312,9 @@ class RouteDiscoverer:
             and deco.func.attr == "route"
         )
 
-    def _extract_flask_methods(self, keywords: List[ast.keyword]) -> List[str]:
+    def _extract_flask_methods(self, keywords: list[ast.keyword]) -> list[str]:
         """Extract HTTP methods from Flask route keyword arguments."""
-        methods: List[str] = ["GET"]  # Default Flask method
+        methods: list[str] = ["GET"]  # Default Flask method
 
         for kw in keywords:
             if kw.arg == "methods" and isinstance(kw.value, (ast.List, ast.Tuple)):
@@ -325,11 +325,11 @@ class RouteDiscoverer:
 
         return methods
 
-    def _discover_django(self, source: str) -> List[RouteInfo]:
+    def _discover_django(self, source: str) -> list[RouteInfo]:
         from .utils import get_cached_ast
 
         tree = get_cached_ast(source, str(self.app_path))
-        routes: List[RouteInfo] = []
+        routes: list[RouteInfo] = []
         discoverer = self
 
         class Visitor(ast.NodeVisitor):
@@ -342,7 +342,7 @@ class RouteDiscoverer:
         Visitor().visit(tree)
         return routes
 
-    def _extract_django_route(self, node: ast.Call) -> Optional[RouteInfo]:
+    def _extract_django_route(self, node: ast.Call) -> RouteInfo | None:
         """Extract Django route information from Call node."""
         if not self._is_django_path_call(node):
             return None
@@ -362,7 +362,7 @@ class RouteDiscoverer:
             and node.func.id in {"path", "re_path"}
         )
 
-    def _extract_django_view_name(self, args: List[ast.expr]) -> str:
+    def _extract_django_view_name(self, args: list[ast.expr]) -> str:
         """Extract view name from Django path arguments."""
         if len(args) > 1:
             target = args[1]
@@ -379,18 +379,18 @@ class RouteDiscoverer:
             and func.value.id == "app"
         )
 
-    def _extract_path_from_args(self, args: List[ast.expr]) -> str:
+    def _extract_path_from_args(self, args: list[ast.expr]) -> str:
         """Extract path string from function arguments."""
         if args and isinstance(args[0], ast.Constant):
             return str(args[0].value)
         return ""
 
-    def _discover_express(self, source: str) -> List[RouteInfo]:
+    def _discover_express(self, source: str) -> list[RouteInfo]:
         import re
 
         text = source
         pattern = re.compile(r"app\.(get|post|put|patch|delete)\(['\"]([^'\"]+)['\"]")
-        routes: List[RouteInfo] = []
+        routes: list[RouteInfo] = []
         for match in pattern.finditer(text):
             method, path = match.group(1).upper(), match.group(2)
             name = path.strip("/").replace("/", "_") or "root"

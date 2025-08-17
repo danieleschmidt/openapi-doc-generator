@@ -14,7 +14,7 @@ import uuid
 from collections import deque
 from dataclasses import dataclass
 from functools import lru_cache, wraps
-from typing import Any, Callable, Dict, List, Optional, TypeVar
+from typing import Any, Callable, TypeVar
 
 import psutil
 
@@ -44,7 +44,7 @@ class AdvancedPerformanceTracker:
 
     def __init__(self, max_history: int = 1000):
         self.metrics_history: deque = deque(maxlen=max_history)
-        self.operation_stats: Dict[str, List[PerformanceMetrics]] = {}
+        self.operation_stats: dict[str, list[PerformanceMetrics]] = {}
         self.lock = threading.RLock()
         self.start_time = time.time()
 
@@ -56,7 +56,7 @@ class AdvancedPerformanceTracker:
                 self.operation_stats[metric.operation_name] = []
             self.operation_stats[metric.operation_name].append(metric)
 
-    def get_operation_stats(self, operation_name: str) -> Dict[str, float]:
+    def get_operation_stats(self, operation_name: str) -> dict[str, float]:
         """Get aggregated statistics for a specific operation."""
         with self.lock:
             if operation_name not in self.operation_stats:
@@ -79,7 +79,7 @@ class AdvancedPerformanceTracker:
                 'operations_per_second': len(metrics) / (time.time() - self.start_time)
             }
 
-    def get_system_health(self) -> Dict[str, Any]:
+    def get_system_health(self) -> dict[str, Any]:
         """Get current system health metrics."""
         try:
             cpu_percent = psutil.cpu_percent(interval=0.1)
@@ -105,7 +105,7 @@ _performance_tracker = AdvancedPerformanceTracker()
 class ConcurrentProcessingPool:
     """Thread pool for concurrent processing with intelligent scaling."""
 
-    def __init__(self, max_workers: Optional[int] = None):
+    def __init__(self, max_workers: int | None = None):
         self.max_workers = max_workers or min(32, (psutil.cpu_count() or 1) + 4)
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers)
         self.active_tasks = 0
@@ -221,8 +221,8 @@ def _clear_ast_cache() -> None:
 
 
 # Global correlation ID for the current execution
-_correlation_id: Optional[str] = None
-_execution_start_time: Optional[float] = None
+_correlation_id: str | None = None
+_execution_start_time: float | None = None
 
 
 class JSONFormatter(logging.Formatter):
@@ -238,7 +238,7 @@ class JSONFormatter(logging.Formatter):
         if _execution_start_time is None:
             _execution_start_time = time.time()
 
-        log_entry: Dict[str, Any] = {
+        log_entry: dict[str, Any] = {
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S.%fZ", time.gmtime()),
             "level": record.levelname,
             "logger": record.name,
@@ -306,7 +306,7 @@ def reset_correlation_id() -> None:
 
 # Performance tracking globals
 _performance_tracking_enabled = True
-_performance_stats: Dict[str, Dict[str, Any]] = {}
+_performance_stats: dict[str, dict[str, Any]] = {}
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -317,7 +317,7 @@ def set_performance_tracking(enabled: bool) -> None:
     _performance_tracking_enabled = enabled
 
 
-def get_performance_summary() -> Dict[str, Dict[str, Any]]:
+def get_performance_summary() -> dict[str, dict[str, Any]]:
     """Get aggregated performance statistics."""
     return _performance_stats.copy()
 

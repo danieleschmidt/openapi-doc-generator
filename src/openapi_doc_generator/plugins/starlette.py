@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from ..discovery import RouteInfo, RoutePlugin, register_plugin
 
@@ -19,7 +18,7 @@ class StarlettePlugin(RoutePlugin):
         """Return True if the source contains Starlette imports."""
         return "starlette" in source.lower()
 
-    def _load_and_parse_source(self, app_path: str) -> Optional[ast.AST]:
+    def _load_and_parse_source(self, app_path: str) -> ast.AST | None:
         """Load and parse the source file."""
         source_path = Path(app_path)
         if not source_path.exists():
@@ -29,7 +28,7 @@ class StarlettePlugin(RoutePlugin):
         content = source_path.read_text(encoding='utf-8')
         return ast.parse(content)
 
-    def _collect_route_assignments(self, tree: ast.AST) -> Dict[str, ast.AST]:
+    def _collect_route_assignments(self, tree: ast.AST) -> dict[str, ast.AST]:
         """Collect all route assignments from the AST."""
         route_assignments = {}
         for node in ast.walk(tree):
@@ -39,7 +38,7 @@ class StarlettePlugin(RoutePlugin):
                         route_assignments[target.id] = node.value
         return route_assignments
 
-    def discover(self, app_path: str) -> List[RouteInfo]:
+    def discover(self, app_path: str) -> list[RouteInfo]:
         """Discover routes from a Starlette application file."""
         try:
             tree = self._load_and_parse_source(app_path)
@@ -62,7 +61,7 @@ class StarlettePlugin(RoutePlugin):
             logger.error(f"Error parsing {app_path}: {e}")
             return []
 
-    def _extract_function_docstrings(self, tree: ast.AST) -> Dict[str, str]:
+    def _extract_function_docstrings(self, tree: ast.AST) -> dict[str, str]:
         """Extract docstrings from function definitions."""
         docs = {}
         for node in ast.walk(tree):
@@ -72,8 +71,8 @@ class StarlettePlugin(RoutePlugin):
                     docs[node.name] = docstring
         return docs
 
-    def _process_route_list(self, route_list_node: ast.AST, route_assignments: Dict[str, ast.AST],
-                           function_docs: Dict[str, str], mount_prefix: str = "") -> List[RouteInfo]:
+    def _process_route_list(self, route_list_node: ast.AST, route_assignments: dict[str, ast.AST],
+                           function_docs: dict[str, str], mount_prefix: str = "") -> list[RouteInfo]:
         """Process a list of route definitions."""
         routes = []
 
@@ -92,8 +91,8 @@ class StarlettePlugin(RoutePlugin):
 
         return routes
 
-    def _parse_route_item(self, item: ast.AST, route_assignments: Dict[str, ast.AST],
-                         function_docs: Dict[str, str], mount_prefix: str = "") -> Optional[RouteInfo]:
+    def _parse_route_item(self, item: ast.AST, route_assignments: dict[str, ast.AST],
+                         function_docs: dict[str, str], mount_prefix: str = "") -> RouteInfo | None:
         """Parse a single route item (Route, Mount, or WebSocketRoute)."""
         if not isinstance(item, ast.Call):
             return None
@@ -112,7 +111,7 @@ class StarlettePlugin(RoutePlugin):
 
         return None
 
-    def _get_call_name(self, call: ast.Call) -> Optional[str]:
+    def _get_call_name(self, call: ast.Call) -> str | None:
         """Get the name of a function call."""
         if isinstance(call.func, ast.Name):
             return call.func.id
@@ -120,7 +119,7 @@ class StarlettePlugin(RoutePlugin):
             return call.func.attr
         return None
 
-    def _extract_path_from_route_call(self, call: ast.Call, mount_prefix: str) -> Optional[str]:
+    def _extract_path_from_route_call(self, call: ast.Call, mount_prefix: str) -> str | None:
         """Extract path from route call arguments."""
         if len(call.args) < 2:
             return None
@@ -131,7 +130,7 @@ class StarlettePlugin(RoutePlugin):
 
         return mount_prefix + path_arg.value
 
-    def _extract_methods_from_keywords(self, call: ast.Call) -> List[str]:
+    def _extract_methods_from_keywords(self, call: ast.Call) -> list[str]:
         """Extract HTTP methods from route call keywords."""
         methods = ['GET']  # Default method
         for keyword in call.keywords:
@@ -142,7 +141,7 @@ class StarlettePlugin(RoutePlugin):
                         methods.append(method_node.value)
         return methods
 
-    def _parse_route_call(self, call: ast.Call, function_docs: Dict[str, str], mount_prefix: str = "") -> Optional[RouteInfo]:
+    def _parse_route_call(self, call: ast.Call, function_docs: dict[str, str], mount_prefix: str = "") -> RouteInfo | None:
         """Parse a Route() call."""
         # Extract path
         path = self._extract_path_from_route_call(call, mount_prefix)
@@ -166,7 +165,7 @@ class StarlettePlugin(RoutePlugin):
             docstring=docstring
         )
 
-    def _parse_websocket_route_call(self, call: ast.Call, function_docs: Dict[str, str], mount_prefix: str = "") -> Optional[RouteInfo]:
+    def _parse_websocket_route_call(self, call: ast.Call, function_docs: dict[str, str], mount_prefix: str = "") -> RouteInfo | None:
         """Parse a WebSocketRoute() call."""
         if len(call.args) < 2:
             return None
@@ -191,8 +190,8 @@ class StarlettePlugin(RoutePlugin):
             docstring=docstring
         )
 
-    def _parse_mount_call(self, call: ast.Call, route_assignments: Dict[str, ast.AST],
-                         function_docs: Dict[str, str], mount_prefix: str = "") -> List[RouteInfo]:
+    def _parse_mount_call(self, call: ast.Call, route_assignments: dict[str, ast.AST],
+                         function_docs: dict[str, str], mount_prefix: str = "") -> list[RouteInfo]:
         """Parse a Mount() call and extract nested routes."""
         if len(call.args) < 1:
             return []
@@ -211,7 +210,7 @@ class StarlettePlugin(RoutePlugin):
 
         return routes
 
-    def _get_function_name(self, func_node: ast.AST) -> Optional[str]:
+    def _get_function_name(self, func_node: ast.AST) -> str | None:
         """Extract function name from various AST node types."""
         if isinstance(func_node, ast.Name):
             return func_node.id

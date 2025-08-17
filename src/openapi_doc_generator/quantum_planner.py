@@ -6,7 +6,7 @@ import json
 import logging
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .quantum_monitor import get_monitor, monitor_operation
 from .quantum_optimizer import (
@@ -46,7 +46,7 @@ class QuantumTaskPlanner:
         """Initialize quantum task planner with security validation."""
         self.scheduler = QuantumInspiredScheduler(temperature, cooling_rate)
         self.allocator = QuantumResourceAllocator(num_resources)
-        self.task_registry: Dict[str, QuantumTask] = {}
+        self.task_registry: dict[str, QuantumTask] = {}
         self.validation_level = validation_level
         self.enable_monitoring = enable_monitoring
         self.validator = QuantumTaskValidator(validation_level)
@@ -78,7 +78,7 @@ class QuantumTaskPlanner:
                  priority: float = 1.0,
                  effort: float = 1.0,
                  value: float = 1.0,
-                 dependencies: Optional[List[str]] = None,
+                 dependencies: list[str] | None = None,
                  coherence_time: float = 10.0) -> QuantumTask:
         """Add a task to the quantum planning system with security validation."""
         dependencies = dependencies or []
@@ -235,7 +235,7 @@ class QuantumTaskPlanner:
 
         logger.info(f"Quantum plan exported to {output_path}")
 
-    def import_classical_tasks(self, classical_tasks: List[Dict[str, Any]]) -> List[QuantumTask]:
+    def import_classical_tasks(self, classical_tasks: list[dict[str, Any]]) -> list[QuantumTask]:
         """Convert classical task format to quantum tasks."""
         quantum_tasks = []
 
@@ -273,7 +273,7 @@ class QuantumTaskPlanner:
         logger.info(f"Imported {len(quantum_tasks)} classical tasks to quantum format")
         return quantum_tasks
 
-    def get_task_quantum_metrics(self, task_id: str) -> Optional[Dict[str, float]]:
+    def get_task_quantum_metrics(self, task_id: str) -> dict[str, float] | None:
         """Get quantum-specific metrics for a task."""
         if task_id not in self.task_registry:
             return None
@@ -287,7 +287,7 @@ class QuantumTaskPlanner:
             "quantum_priority": self.scheduler.quantum_priority_score(task, task.created_at)
         }
 
-    def simulate_execution(self, result: QuantumScheduleResult) -> Dict[str, Any]:
+    def simulate_execution(self, result: QuantumScheduleResult) -> dict[str, Any]:
         """Simulate quantum plan execution and measure performance."""
         simulation_results = {
             "total_tasks": len(result.optimized_tasks),
@@ -338,7 +338,7 @@ class QuantumTaskPlanner:
         logger.info(f"Simulation completed: {simulation_results['estimated_completion_time']:.2f} time units")
         return simulation_results
 
-    def get_performance_statistics(self) -> Dict[str, Any]:
+    def get_performance_statistics(self) -> dict[str, Any]:
         """Get comprehensive performance statistics including security metrics."""
         stats = {
             "configuration": {
@@ -381,7 +381,7 @@ class QuantumTaskPlanner:
 
         return stats
 
-    def get_security_report(self) -> Dict[str, Any]:
+    def get_security_report(self) -> dict[str, Any]:
         """Get detailed security validation report."""
         if not self.task_registry:
             return {
@@ -392,7 +392,7 @@ class QuantumTaskPlanner:
         tasks = list(self.task_registry.values())
         return self.security_validator.generate_security_report(tasks)
 
-    def _analyze_task_types(self) -> Dict[str, Any]:
+    def _analyze_task_types(self) -> dict[str, Any]:
         """Analyze task registry for insights."""
         if not self.task_registry:
             return {"message": "No tasks in registry"}

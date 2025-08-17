@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 
 @dataclass
@@ -30,7 +30,7 @@ class OpenAPIConfig:
     TEST_BASE_URL: str = "http://localhost"
 
     # Response schema template
-    DEFAULT_SUCCESS_RESPONSE: Dict[str, Any] = None
+    DEFAULT_SUCCESS_RESPONSE: dict[str, Any] = None
 
     def __post_init__(self) -> None:
         """Initialize computed fields after dataclass creation."""

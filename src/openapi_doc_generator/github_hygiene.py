@@ -550,7 +550,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
-  
+
   - type: textarea
     id: what-happened
     attributes:
@@ -558,7 +558,7 @@ body:
       description: A clear description of the bug
     validations:
       required: true
-  
+
   - type: textarea
     id: reproduce
     attributes:
@@ -566,7 +566,7 @@ body:
       description: How can we reproduce this issue?
     validations:
       required: true
-  
+
   - type: textarea
     id: expected
     attributes:
@@ -585,7 +585,7 @@ body:
     attributes:
       value: |
         Thanks for suggesting a new feature!
-  
+
   - type: textarea
     id: problem
     attributes:
@@ -593,7 +593,7 @@ body:
       description: What problem does this feature solve?
     validations:
       required: true
-  
+
   - type: textarea
     id: solution
     attributes:
@@ -601,7 +601,7 @@ body:
       description: Describe your proposed solution
     validations:
       required: true
-  
+
   - type: textarea
     id: alternatives
     attributes:
@@ -655,12 +655,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    
+
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -715,22 +715,22 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Generate SBOM
         uses: cyclonedx/github-action@v1
         with:
           path: '.'
           output: 'docs/sbom/latest.json'
-      
+
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: sbom
           path: docs/sbom/latest.json
-          
+
       - name: Commit SBOM
         run: |
           git config --local user.email "action@github.com"
@@ -754,16 +754,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      
+
       - name: Install cyclonedx-cli
         run: npm install -g @cyclonedx/cyclonedx-cli
-      
+
       - name: Generate current SBOM
         uses: cyclonedx/github-action@v1
         with:
           path: '.'
           output: 'current-sbom.json'
-      
+
       - name: Compare SBOMs
         run: |
           if [ -f "docs/sbom/latest.json" ]; then

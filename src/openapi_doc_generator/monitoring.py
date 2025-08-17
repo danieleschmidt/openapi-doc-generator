@@ -135,7 +135,7 @@ class MetricsCollector:
             from openapi_doc_generator.documentator import APIDocumentator
 
             # Quick functional test
-            documentator = APIDocumentator()
+            APIDocumentator()
 
             status = "healthy"
             checks["application"] = HealthCheck(

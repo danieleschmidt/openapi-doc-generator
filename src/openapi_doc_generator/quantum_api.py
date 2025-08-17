@@ -6,7 +6,7 @@ import json
 import logging
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
 from .quantum_validator import ValidationLevel
@@ -19,7 +19,7 @@ class QuantumPlannerAPI:
 
     def __init__(self):
         """Initialize the quantum planner API."""
-        self.planners: Dict[str, QuantumTaskPlanner] = {}
+        self.planners: dict[str, QuantumTaskPlanner] = {}
         self.active_session = None
 
     def create_session(self,
@@ -28,7 +28,7 @@ class QuantumPlannerAPI:
                       cooling_rate: float = 0.95,
                       num_resources: int = 4,
                       validation_level: str = "moderate",
-                      enable_monitoring: bool = True) -> Dict[str, Any]:
+                      enable_monitoring: bool = True) -> dict[str, Any]:
         """Create a new quantum planning session."""
         try:
             # Map validation level
@@ -74,7 +74,7 @@ class QuantumPlannerAPI:
 
     def add_task(self,
                 session_id: str,
-                task_data: Dict[str, Any]) -> Dict[str, Any]:
+                task_data: dict[str, Any]) -> dict[str, Any]:
         """Add a task to a quantum planning session."""
         try:
             if session_id not in self.planners:
@@ -128,7 +128,7 @@ class QuantumPlannerAPI:
                 "message": f"Task addition failed: {str(e)}"
             }
 
-    def add_sdlc_tasks(self, session_id: str) -> Dict[str, Any]:
+    def add_sdlc_tasks(self, session_id: str) -> dict[str, Any]:
         """Add standard SDLC tasks to a session."""
         try:
             if session_id not in self.planners:
@@ -160,7 +160,7 @@ class QuantumPlannerAPI:
                 "message": f"SDLC task integration failed: {str(e)}"
             }
 
-    def create_plan(self, session_id: str) -> Dict[str, Any]:
+    def create_plan(self, session_id: str) -> dict[str, Any]:
         """Create a quantum-optimized execution plan."""
         try:
             if session_id not in self.planners:
@@ -217,7 +217,7 @@ class QuantumPlannerAPI:
     def export_plan(self,
                    session_id: str,
                    format: str = "json",
-                   output_path: Optional[str] = None) -> Dict[str, Any]:
+                   output_path: str | None = None) -> dict[str, Any]:
         """Export quantum plan in specified format."""
         try:
             if session_id not in self.planners:
@@ -226,7 +226,7 @@ class QuantumPlannerAPI:
                     "message": f"Session {session_id} not found"
                 }
 
-            planner = self.planners[session_id]
+            self.planners[session_id]
             plan_result = self.create_plan(session_id)
 
             if plan_result["status"] != "success":
@@ -310,7 +310,7 @@ class QuantumPlannerAPI:
                 "message": f"Plan export failed: {str(e)}"
             }
 
-    def get_session_status(self, session_id: str) -> Dict[str, Any]:
+    def get_session_status(self, session_id: str) -> dict[str, Any]:
         """Get status and metrics for a quantum planning session."""
         try:
             if session_id not in self.planners:
@@ -337,7 +337,7 @@ class QuantumPlannerAPI:
                 "message": f"Status retrieval failed: {str(e)}"
             }
 
-    def list_sessions(self) -> Dict[str, Any]:
+    def list_sessions(self) -> dict[str, Any]:
         """List all active quantum planning sessions."""
         try:
             sessions = []
@@ -363,7 +363,7 @@ class QuantumPlannerAPI:
                 "message": f"Session listing failed: {str(e)}"
             }
 
-    def delete_session(self, session_id: str) -> Dict[str, Any]:
+    def delete_session(self, session_id: str) -> dict[str, Any]:
         """Delete a quantum planning session."""
         try:
             if session_id not in self.planners:

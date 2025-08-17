@@ -1,17 +1,17 @@
 {
   "errors": [],
-  "generated_at": "2025-08-10T13:10:38Z",
+  "generated_at": "2025-08-17T15:36:21Z",
   "metrics": {
     "_totals": {
-      "CONFIDENCE.HIGH": 36,
+      "CONFIDENCE.HIGH": 43,
       "CONFIDENCE.LOW": 0,
-      "CONFIDENCE.MEDIUM": 4,
+      "CONFIDENCE.MEDIUM": 5,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 2,
-      "SEVERITY.LOW": 33,
+      "SEVERITY.LOW": 41,
       "SEVERITY.MEDIUM": 5,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 16148,
+      "loc": 17228,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -37,7 +37,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 561,
+      "loc": 564,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -76,7 +76,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 100,
+      "loc": 99,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -128,7 +128,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 403,
+      "loc": 401,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -219,7 +219,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 20,
+      "loc": 19,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -232,7 +232,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 167,
+      "loc": 166,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -245,7 +245,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 125,
+      "loc": 124,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -271,7 +271,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 271,
+      "loc": 274,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -301,6 +301,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "src/openapi_doc_generator/quantum_global_deployment.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 471,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "src/openapi_doc_generator/quantum_health_monitor.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -310,7 +323,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 527,
+      "loc": 526,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -388,7 +401,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 706,
+      "loc": 708,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -401,7 +414,20 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 438,
+      "loc": 417,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src/openapi_doc_generator/quantum_quality_gates.py": {
+      "CONFIDENCE.HIGH": 7,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 1,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 8,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 641,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -427,7 +453,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 468,
+      "loc": 467,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -440,7 +466,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 1039,
+      "loc": 1032,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -466,7 +492,7 @@
       "SEVERITY.LOW": 2,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 243,
+      "loc": 242,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -505,7 +531,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 1,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 461,
+      "loc": 460,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -531,7 +557,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 78,
+      "loc": 77,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -570,7 +596,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 28,
+      "loc": 27,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1250,7 +1276,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "280                         return compressed\n281             except Exception:\n282                 pass\n283         return value\n",
+      "code": "283                         return compressed\n284             except Exception:\n285                 pass\n286         return value\n",
       "col_offset": 12,
       "end_col_offset": 20,
       "filename": "src/openapi_doc_generator/quantum_performance_optimizer.py",
@@ -1261,14 +1287,204 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Try, Except, Pass detected.",
-      "line_number": 281,
+      "line_number": 284,
       "line_range": [
-        281,
-        282
+        284,
+        285
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
       "test_id": "B110",
       "test_name": "try_except_pass"
+    },
+    {
+      "code": "6 import logging\n7 import subprocess\n8 import time\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 7,
+      "line_range": [
+        7
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "35     \"\"\"Quality gate results.\"\"\"\n36     PASS = \"pass\"\n37     FAIL = \"fail\"\n",
+      "col_offset": 11,
+      "end_col_offset": 17,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 259,
+        "link": "https://cwe.mitre.org/data/definitions/259.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Possible hardcoded password: 'pass'",
+      "line_number": 36,
+      "line_range": [
+        36
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b105_hardcoded_password_string.html",
+      "test_id": "B105",
+      "test_name": "hardcoded_password_string"
+    },
+    {
+      "code": "297 \n298             result = subprocess.run(\n299                 cmd,\n300                 cwd=self.project_root,\n301                 capture_output=True,\n302                 text=True,\n303                 timeout=120\n304             )\n305 \n",
+      "col_offset": 21,
+      "end_col_offset": 13,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 298,
+      "line_range": [
+        298,
+        299,
+        300,
+        301,
+        302,
+        303,
+        304
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "381 \n382             result = subprocess.run(\n383                 cmd,\n384                 cwd=self.project_root,\n385                 capture_output=True,\n386                 text=True,\n387                 timeout=60\n388             )\n389 \n",
+      "col_offset": 21,
+      "end_col_offset": 13,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 382,
+      "line_range": [
+        382,
+        383,
+        384,
+        385,
+        386,
+        387,
+        388
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "457 \n458             result = subprocess.run(\n459                 cmd,\n460                 cwd=self.project_root,\n461                 capture_output=True,\n462                 text=True,\n463                 timeout=30\n464             )\n465 \n",
+      "col_offset": 21,
+      "end_col_offset": 13,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 458,
+      "line_range": [
+        458,
+        459,
+        460,
+        461,
+        462,
+        463,
+        464
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "575 \n576             subprocess.run(cmd, cwd=self.project_root, timeout=60, capture_output=True)\n577 \n",
+      "col_offset": 12,
+      "end_col_offset": 87,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 576,
+      "line_range": [
+        576
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "579             coverage_cmd = [\"python\", \"-m\", \"coverage\", \"report\", \"--format=json\"]\n580             result = subprocess.run(\n581                 coverage_cmd,\n582                 cwd=self.project_root,\n583                 capture_output=True,\n584                 text=True,\n585                 timeout=30\n586             )\n587 \n",
+      "col_offset": 21,
+      "end_col_offset": 13,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 580,
+      "line_range": [
+        580,
+        581,
+        582,
+        583,
+        584,
+        585,
+        586
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "632 \n633             result = subprocess.run(\n634                 cmd,\n635                 cwd=self.project_root,\n636                 capture_output=True,\n637                 text=True,\n638                 timeout=60\n639             )\n640 \n",
+      "col_offset": 21,
+      "end_col_offset": 13,
+      "filename": "src/openapi_doc_generator/quantum_quality_gates.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 633,
+      "line_range": [
+        633,
+        634,
+        635,
+        636,
+        637,
+        638,
+        639
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
     },
     {
       "code": "331             import random\n332             delay *= (0.5 + random.random() * 0.5)  # 50-100% of calculated delay\n333 \n",
@@ -1291,7 +1507,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "373                         import random\n374                         delay *= (0.5 + random.random() * 0.5)\n375                         \n",
+      "code": "372                         import random\n373                         delay *= (0.5 + random.random() * 0.5)\n374 \n",
       "col_offset": 40,
       "end_col_offset": 55,
       "filename": "src/openapi_doc_generator/quantum_resilience_engine.py",
@@ -1302,9 +1518,9 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
-      "line_number": 374,
+      "line_number": 373,
       "line_range": [
-        374
+        373
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
@@ -1351,7 +1567,7 @@
       "test_name": "hashlib"
     },
     {
-      "code": "58         self.cooling_rate = cooling_rate\n59         self.random = random.Random(42)  # Deterministic for testing\n60 \n",
+      "code": "57         self.cooling_rate = cooling_rate\n58         self.random = random.Random(42)  # Deterministic for testing\n59 \n",
       "col_offset": 22,
       "end_col_offset": 39,
       "filename": "src/openapi_doc_generator/quantum_scheduler.py",
@@ -1362,16 +1578,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
-      "line_number": 59,
+      "line_number": 58,
       "line_range": [
-        59
+        58
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
     {
-      "code": "285         self.num_resources = num_resources\n286         self.random = random.Random(42)\n287 \n",
+      "code": "284         self.num_resources = num_resources\n285         self.random = random.Random(42)\n286 \n",
       "col_offset": 22,
       "end_col_offset": 39,
       "filename": "src/openapi_doc_generator/quantum_scheduler.py",
@@ -1382,16 +1598,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
-      "line_number": 286,
+      "line_number": 285,
       "line_range": [
-        286
+        285
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
       "test_id": "B311",
       "test_name": "blacklist"
     },
     {
-      "code": "608         \"quantum_server:app\",\n609         host=\"0.0.0.0\",\n610         port=int(os.getenv(\"PORT\", \"8080\")),\n",
+      "code": "607         \"quantum_server:app\",\n608         host=\"0.0.0.0\",\n609         port=int(os.getenv(\"PORT\", \"8080\")),\n",
       "col_offset": 13,
       "end_col_offset": 22,
       "filename": "src/openapi_doc_generator/quantum_server.py",
@@ -1402,9 +1618,9 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible binding to all interfaces.",
-      "line_number": 609,
+      "line_number": 608,
       "line_range": [
-        609
+        608
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html",
       "test_id": "B104",

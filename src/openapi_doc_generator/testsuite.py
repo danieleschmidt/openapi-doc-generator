@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from .config import config
 from .documentator import DocumentationResult
@@ -20,7 +19,7 @@ class TestSuiteGenerator:
 
     def generate_pytest(self) -> str:
         """Return pytest tests for the analyzed application."""
-        lines: List[str] = ["import requests", ""]
+        lines: list[str] = ["import requests", ""]
         for route in self.result.routes:
             path = route.path or "/"
             for method in route.methods:

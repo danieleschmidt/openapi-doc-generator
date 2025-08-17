@@ -5,7 +5,7 @@ from __future__ import annotations
 import html
 import json
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 from jinja2 import Template
 
@@ -34,7 +34,7 @@ class PlaygroundGenerator:
 
     template: str = DEFAULT_TEMPLATE
 
-    def generate(self, spec: Dict[str, Any]) -> str:
+    def generate(self, spec: dict[str, Any]) -> str:
         """Return the HTML for a Swagger UI playground."""
         if not isinstance(spec, dict):
             raise TypeError("spec must be a dict")

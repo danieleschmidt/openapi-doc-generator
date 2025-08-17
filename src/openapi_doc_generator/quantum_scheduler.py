@@ -8,7 +8,6 @@ import random
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Set
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +29,11 @@ class QuantumTask:
     priority: float = 1.0
     effort: float = 1.0
     value: float = 1.0
-    dependencies: List[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
     state: TaskState = TaskState.PENDING
     quantum_weight: float = 1.0  # Quantum probability amplitude
     coherence_time: float = 10.0  # How long task maintains quantum properties
-    entangled_tasks: Set[str] = field(default_factory=set)
+    entangled_tasks: set[str] = field(default_factory=set)
     measurement_count: int = 0
     created_at: float = field(default_factory=time.time)
 
@@ -42,7 +41,7 @@ class QuantumTask:
 @dataclass
 class QuantumScheduleResult:
     """Result of quantum-inspired scheduling optimization."""
-    optimized_tasks: List[QuantumTask]
+    optimized_tasks: list[QuantumTask]
     total_value: float
     execution_time: float
     quantum_fidelity: float  # How well quantum properties were preserved
@@ -80,7 +79,7 @@ class QuantumInspiredScheduler:
 
         return quantum_score * measurement_penalty
 
-    def create_superposition_state(self, tasks: List[QuantumTask]) -> List[QuantumTask]:
+    def create_superposition_state(self, tasks: list[QuantumTask]) -> list[QuantumTask]:
         """Create quantum superposition of task states for parallel exploration."""
         superposition_tasks = []
 
@@ -104,10 +103,10 @@ class QuantumInspiredScheduler:
 
         return superposition_tasks
 
-    def entangle_tasks(self, tasks: List[QuantumTask]) -> None:
+    def entangle_tasks(self, tasks: list[QuantumTask]) -> None:
         """Create quantum entanglement between related tasks."""
         for i, task1 in enumerate(tasks):
-            for j, task2 in enumerate(tasks[i+1:], i+1):
+            for _j, task2 in enumerate(tasks[i+1:], i+1):
                 # Entangle if tasks have shared dependencies or similar domains
                 shared_deps = set(task1.dependencies) & set(task2.dependencies)
                 similarity = len(shared_deps) / max(len(task1.dependencies) + len(task2.dependencies), 1)
@@ -121,7 +120,7 @@ class QuantumInspiredScheduler:
                     task1.quantum_weight *= (1 + entanglement_factor)
                     task2.quantum_weight *= (1 + entanglement_factor)
 
-    def quantum_annealing_schedule(self, tasks: List[QuantumTask]) -> QuantumScheduleResult:
+    def quantum_annealing_schedule(self, tasks: list[QuantumTask]) -> QuantumScheduleResult:
         """Use quantum annealing to find optimal task schedule."""
         start_time = time.time()
         current_temp = self.temperature
@@ -177,7 +176,7 @@ class QuantumInspiredScheduler:
             convergence_iterations=iterations
         )
 
-    def _quantum_mutation(self, tasks: List[QuantumTask], temperature: float) -> List[QuantumTask]:
+    def _quantum_mutation(self, tasks: list[QuantumTask], temperature: float) -> list[QuantumTask]:
         """Apply quantum-inspired mutations to task ordering."""
         mutated_tasks = tasks.copy()
 
@@ -201,7 +200,7 @@ class QuantumInspiredScheduler:
 
         return mutated_tasks
 
-    def _calculate_system_energy(self, tasks: List[QuantumTask]) -> float:
+    def _calculate_system_energy(self, tasks: list[QuantumTask]) -> float:
         """Calculate total system energy (lower is better)."""
         energy = 0.0
         current_time = time.time()
@@ -217,7 +216,7 @@ class QuantumInspiredScheduler:
             dependency_penalty = 0.0
             for dep_id in task.dependencies:
                 dep_found = False
-                for j, dep_task in enumerate(tasks[:i]):  # Only check previous tasks
+                for _j, dep_task in enumerate(tasks[:i]):  # Only check previous tasks
                     if dep_task.id == dep_id and dep_task.state == TaskState.COMPLETED:
                         dep_found = True
                         break
@@ -235,7 +234,7 @@ class QuantumInspiredScheduler:
 
         return energy
 
-    def _collapse_superposition(self, tasks: List[QuantumTask]) -> List[QuantumTask]:
+    def _collapse_superposition(self, tasks: list[QuantumTask]) -> list[QuantumTask]:
         """Collapse quantum superposition states through measurement."""
         collapsed_tasks = []
 
@@ -262,7 +261,7 @@ class QuantumInspiredScheduler:
 
         return list(unique_tasks.values())
 
-    def _calculate_quantum_fidelity(self, tasks: List[QuantumTask]) -> float:
+    def _calculate_quantum_fidelity(self, tasks: list[QuantumTask]) -> float:
         """Calculate how well quantum properties were preserved during scheduling."""
         if not tasks:
             return 1.0
@@ -285,7 +284,7 @@ class QuantumResourceAllocator:
         self.num_resources = num_resources
         self.random = random.Random(42)
 
-    def variational_optimize(self, tasks: List[QuantumTask], max_iterations: int = 100) -> Dict[str, int]:
+    def variational_optimize(self, tasks: list[QuantumTask], max_iterations: int = 100) -> dict[str, int]:
         """Use variational quantum eigensolvers concept for resource allocation."""
         allocation = {task.id: self.random.randint(0, self.num_resources - 1) for task in tasks}
         best_allocation = allocation.copy()
@@ -308,7 +307,7 @@ class QuantumResourceAllocator:
 
         return best_allocation
 
-    def _apply_quantum_rotation(self, allocation: Dict[str, int], progress: float) -> Dict[str, int]:
+    def _apply_quantum_rotation(self, allocation: dict[str, int], progress: float) -> dict[str, int]:
         """Apply quantum rotation gates to change resource allocation."""
         new_allocation = allocation.copy()
 
@@ -336,7 +335,7 @@ class QuantumResourceAllocator:
 
         return new_allocation
 
-    def _calculate_allocation_cost(self, tasks: List[QuantumTask], allocation: Dict[str, int]) -> float:
+    def _calculate_allocation_cost(self, tasks: list[QuantumTask], allocation: dict[str, int]) -> float:
         """Calculate cost of resource allocation (load balancing + affinity)."""
         # Resource load
         resource_loads = [0.0] * self.num_resources

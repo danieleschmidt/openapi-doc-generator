@@ -7,7 +7,7 @@ import time
 import uuid
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +37,12 @@ class ComplianceEvent:
     timestamp: float
     event_type: str
     data_classification: DataClassification
-    user_id: Optional[str]
-    session_id: Optional[str]
+    user_id: str | None
+    session_id: str | None
     data_processed: bool
     retention_required: bool
-    compliance_standards: List[ComplianceStandard]
-    metadata: Dict[str, Any]
+    compliance_standards: list[ComplianceStandard]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -52,7 +52,7 @@ class DataRetentionPolicy:
     retention_days: int
     auto_deletion: bool
     archive_required: bool
-    compliance_standards: List[ComplianceStandard]
+    compliance_standards: list[ComplianceStandard]
 
 
 @dataclass
@@ -69,7 +69,7 @@ class PrivacySettings:
 class QuantumComplianceManager:
     """Manages compliance for quantum task planning system."""
 
-    def __init__(self, enabled_standards: Optional[List[ComplianceStandard]] = None):
+    def __init__(self, enabled_standards: list[ComplianceStandard] | None = None):
         """Initialize compliance manager."""
         self.enabled_standards = enabled_standards or [
             ComplianceStandard.GDPR,
@@ -78,10 +78,10 @@ class QuantumComplianceManager:
         ]
 
         self.privacy_settings = PrivacySettings()
-        self.audit_log: List[ComplianceEvent] = []
+        self.audit_log: list[ComplianceEvent] = []
         self.retention_policies = self._setup_default_retention_policies()
-        self.consent_records: Dict[str, Dict[str, Any]] = {}
-        self.data_inventory: Dict[str, Dict[str, Any]] = {}
+        self.consent_records: dict[str, dict[str, Any]] = {}
+        self.data_inventory: dict[str, dict[str, Any]] = {}
 
         # Initialize compliance tracking
         self.compliance_status = {
@@ -91,7 +91,7 @@ class QuantumComplianceManager:
 
         logger.info(f"Compliance manager initialized with standards: {[s.value for s in self.enabled_standards]}")
 
-    def _setup_default_retention_policies(self) -> Dict[DataClassification, DataRetentionPolicy]:
+    def _setup_default_retention_policies(self) -> dict[DataClassification, DataRetentionPolicy]:
         """Setup default data retention policies."""
         return {
             DataClassification.PUBLIC: DataRetentionPolicy(
@@ -127,10 +127,10 @@ class QuantumComplianceManager:
     def log_compliance_event(self,
                            event_type: str,
                            data_classification: DataClassification = DataClassification.INTERNAL,
-                           user_id: Optional[str] = None,
-                           session_id: Optional[str] = None,
+                           user_id: str | None = None,
+                           session_id: str | None = None,
                            data_processed: bool = False,
-                           metadata: Optional[Dict[str, Any]] = None) -> str:
+                           metadata: dict[str, Any] | None = None) -> str:
         """Log a compliance event for audit trail."""
         event_id = str(uuid.uuid4())
 
@@ -173,8 +173,8 @@ class QuantumComplianceManager:
                       user_id: str,
                       purpose: str,
                       consent_given: bool,
-                      data_types: List[str],
-                      retention_period: Optional[int] = None) -> str:
+                      data_types: list[str],
+                      retention_period: int | None = None) -> str:
         """Record user consent for data processing."""
         consent_id = str(uuid.uuid4())
 
@@ -240,7 +240,7 @@ class QuantumComplianceManager:
 
         return True
 
-    def anonymize_data(self, data: Dict[str, Any], fields_to_anonymize: List[str]) -> Dict[str, Any]:
+    def anonymize_data(self, data: dict[str, Any], fields_to_anonymize: list[str]) -> dict[str, Any]:
         """Anonymize sensitive data fields."""
         if not self.privacy_settings.data_anonymization:
             return data
@@ -263,10 +263,10 @@ class QuantumComplianceManager:
         return anonymized
 
     def validate_data_processing(self,
-                                user_id: Optional[str],
+                                user_id: str | None,
                                 purpose: str,
-                                data_types: List[str],
-                                session_id: Optional[str] = None) -> Tuple[bool, List[str]]:
+                                data_types: list[str],
+                                session_id: str | None = None) -> tuple[bool, list[str]]:
         """Validate if data processing is compliant."""
         violations = []
 
@@ -301,7 +301,7 @@ class QuantumComplianceManager:
 
         return len(violations) == 0, violations
 
-    def export_user_data(self, user_id: str) -> Dict[str, Any]:
+    def export_user_data(self, user_id: str) -> dict[str, Any]:
         """Export all user data for portability (GDPR Article 20)."""
         if not self.privacy_settings.data_portability:
             raise ValueError("Data portability not enabled")
@@ -320,7 +320,7 @@ class QuantumComplianceManager:
                 user_data["audit_events"].append(asdict(event))
 
         # Find all data inventory entries for this user
-        for data_id, inventory in self.data_inventory.items():
+        for _data_id, inventory in self.data_inventory.items():
             if inventory.get("user_id") == user_id:
                 user_data["data_inventory"].append(inventory)
 
@@ -335,7 +335,7 @@ class QuantumComplianceManager:
 
         return user_data
 
-    def delete_user_data(self, user_id: str, reason: str = "user_request") -> Dict[str, Any]:
+    def delete_user_data(self, user_id: str, reason: str = "user_request") -> dict[str, Any]:
         """Delete all user data (GDPR Article 17 - Right to Erasure)."""
         if not self.privacy_settings.right_to_deletion:
             raise ValueError("Right to deletion not enabled")
@@ -382,7 +382,7 @@ class QuantumComplianceManager:
 
         return deletion_summary
 
-    def run_compliance_audit(self) -> Dict[str, Any]:
+    def run_compliance_audit(self) -> dict[str, Any]:
         """Run comprehensive compliance audit."""
         audit_results = {
             "audit_timestamp": time.time(),
@@ -436,7 +436,7 @@ class QuantumComplianceManager:
 
         return audit_results
 
-    def _audit_standard_compliance(self, standard: ComplianceStandard) -> Dict[str, Any]:
+    def _audit_standard_compliance(self, standard: ComplianceStandard) -> dict[str, Any]:
         """Audit compliance for specific standard."""
         result = {
             "standard": standard.value,
@@ -460,7 +460,7 @@ class QuantumComplianceManager:
 
         return result
 
-    def _audit_gdpr_compliance(self) -> Dict[str, Any]:
+    def _audit_gdpr_compliance(self) -> dict[str, Any]:
         """Audit GDPR compliance."""
         violations = []
         recommendations = []
@@ -492,7 +492,7 @@ class QuantumComplianceManager:
 
         return {"violations": violations, "recommendations": recommendations}
 
-    def _audit_ccpa_compliance(self) -> Dict[str, Any]:
+    def _audit_ccpa_compliance(self) -> dict[str, Any]:
         """Audit CCPA compliance."""
         violations = []
         recommendations = []
@@ -508,7 +508,7 @@ class QuantumComplianceManager:
 
         return {"violations": violations, "recommendations": recommendations}
 
-    def _audit_soc2_compliance(self) -> Dict[str, Any]:
+    def _audit_soc2_compliance(self) -> dict[str, Any]:
         """Audit SOC2 compliance."""
         violations = []
         recommendations = []
@@ -526,7 +526,7 @@ class QuantumComplianceManager:
 
         return {"violations": violations, "recommendations": recommendations}
 
-    def _audit_nist_compliance(self) -> Dict[str, Any]:
+    def _audit_nist_compliance(self) -> dict[str, Any]:
         """Audit NIST Cybersecurity Framework compliance."""
         violations = []
         recommendations = []
@@ -581,12 +581,12 @@ class QuantumComplianceManager:
                 if not self._has_any_consent(event.user_id):
                     logger.warning(f"Data processing without consent: {event.event_id}")
 
-    def _has_valid_consent(self, user_id: str, purpose: str, data_types: List[str]) -> bool:
+    def _has_valid_consent(self, user_id: str, purpose: str, data_types: list[str]) -> bool:
         """Check if user has valid consent for data processing."""
         if user_id not in self.consent_records:
             return False
 
-        for consent_id, consent in self.consent_records[user_id].items():
+        for _consent_id, consent in self.consent_records[user_id].items():
             if (consent["consent_given"] and
                 consent["purpose"] == purpose and
                 consent["withdrawn_at"] is None and
@@ -600,7 +600,7 @@ class QuantumComplianceManager:
         if user_id not in self.consent_records:
             return False
 
-        for consent_id, consent in self.consent_records[user_id].items():
+        for _consent_id, consent in self.consent_records[user_id].items():
             if consent["consent_given"] and consent["withdrawn_at"] is None:
                 return True
 
@@ -616,7 +616,7 @@ class QuantumComplianceManager:
         ]
         return purpose in allowed_purposes
 
-    def _is_data_minimal(self, data_types: List[str], purpose: str) -> bool:
+    def _is_data_minimal(self, data_types: list[str], purpose: str) -> bool:
         """Check if data collection is minimal for purpose."""
         purpose_requirements = {
             "task_planning": ["task_id", "user_id", "session_id"],
@@ -636,7 +636,7 @@ class QuantumComplianceManager:
         # In a real implementation, this would schedule an async job
         logger.info(f"Scheduled data deletion for user {user_id}, consent {consent_id}")
 
-    def get_compliance_dashboard(self) -> Dict[str, Any]:
+    def get_compliance_dashboard(self) -> dict[str, Any]:
         """Get compliance dashboard data."""
         return {
             "overall_status": all(status["compliant"] for status in self.compliance_status.values()),
@@ -662,7 +662,7 @@ class QuantumComplianceManager:
 _compliance_manager = None
 
 
-def get_compliance_manager(standards: Optional[List[ComplianceStandard]] = None) -> QuantumComplianceManager:
+def get_compliance_manager(standards: list[ComplianceStandard] | None = None) -> QuantumComplianceManager:
     """Get global compliance manager instance."""
     global _compliance_manager
     if _compliance_manager is None:

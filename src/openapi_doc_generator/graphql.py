@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from graphql import build_schema, get_introspection_query, graphql_sync
 from graphql.error import GraphQLSyntaxError
@@ -17,7 +17,7 @@ class GraphQLSchema:
         if not self.schema_path.exists():
             raise FileNotFoundError(schema_path)
 
-    def introspect(self) -> Dict[str, Any]:
+    def introspect(self) -> dict[str, Any]:
         """Return introspection result for the schema."""
         try:
             schema_str = self.schema_path.read_text()

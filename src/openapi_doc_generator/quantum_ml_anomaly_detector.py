@@ -107,7 +107,7 @@ class QuantumAnomalyModel:
 class QuantumCircuitSimulator:
     """
     Simplified quantum circuit simulator for quantum ML operations.
-    
+
     In a production implementation, this would interface with actual quantum
     hardware or sophisticated quantum simulators like Qiskit or Cirq.
     """
@@ -160,7 +160,7 @@ class QuantumCircuitSimulator:
 class QuantumFeatureEncoder:
     """
     Quantum feature encoder for SDLC events and metrics.
-    
+
     This class implements novel quantum feature embedding techniques that map
     classical SDLC data to quantum feature spaces, enabling quantum ML algorithms
     to process software engineering data.
@@ -173,7 +173,7 @@ class QuantumFeatureEncoder:
     def encode_sdlc_event(self, event: SDLCAnomalyEvent) -> np.ndarray:
         """
         Encode SDLC event into quantum feature space.
-        
+
         Research Innovation: First implementation of SDLC-specific quantum feature
         encoding that preserves both classical metrics and quantum correlations.
         """
@@ -319,7 +319,7 @@ class QuantumFeatureEncoder:
 class QuantumVariationalAnomalyDetector:
     """
     Variational quantum anomaly detector using quantum autoencoders.
-    
+
     This implements a breakthrough quantum machine learning approach for SDLC
     anomaly detection, using variational quantum circuits to learn normal
     patterns and identify deviations.
@@ -359,7 +359,7 @@ class QuantumVariationalAnomalyDetector:
     async def train_on_normal_patterns(self, normal_events: List[SDLCAnomalyEvent]) -> Dict[str, Any]:
         """
         Train the quantum autoencoder on normal SDLC patterns.
-        
+
         Research Innovation: First implementation of quantum autoencoder training
         specifically designed for software development lifecycle patterns.
         """
@@ -434,7 +434,7 @@ class QuantumVariationalAnomalyDetector:
     async def detect_anomaly(self, event: SDLCAnomalyEvent) -> Tuple[bool, float, AnomalyConfidence]:
         """
         Detect if an SDLC event represents an anomaly using quantum ML.
-        
+
         Research Breakthrough: First quantum ML anomaly detection specifically
         designed for software development lifecycle events.
         """
@@ -509,7 +509,7 @@ class QuantumVariationalAnomalyDetector:
 
         # Apply variational encoding layers
         param_idx = self.num_qubits
-        for layer in range(self.feature_map.encoding_depth):
+        for _layer in range(self.feature_map.encoding_depth):
             for qubit in range(self.num_qubits):
                 if param_idx < len(self.variational_parameters):
                     circuit.apply_rotation_y(qubit, self.variational_parameters[param_idx])
@@ -536,7 +536,7 @@ class QuantumVariationalAnomalyDetector:
         decoder_param_start = self.num_qubits + self.num_qubits * self.feature_map.encoding_depth
         param_idx = decoder_param_start
 
-        for layer in range(2):  # Two decoder layers
+        for _layer in range(2):  # Two decoder layers
             for qubit in range(self.num_latent_qubits):
                 if param_idx < len(self.variational_parameters):
                     circuit.apply_rotation_y(qubit, self.variational_parameters[param_idx])
@@ -595,7 +595,7 @@ class QuantumVariationalAnomalyDetector:
 class QuantumSecurityAnomalyDetector:
     """
     Specialized quantum ML detector for security vulnerabilities in SDLC.
-    
+
     This extends the general anomaly detector with security-specific quantum
     features and detection algorithms, representing the first application of
     quantum ML to cybersecurity in software development.
@@ -622,7 +622,7 @@ class QuantumSecurityAnomalyDetector:
     async def detect_security_anomaly(self, event: SDLCAnomalyEvent) -> Dict[str, Any]:
         """
         Detect security-specific anomalies using quantum ML.
-        
+
         Research Innovation: First quantum ML system for security vulnerability
         detection in software development lifecycle.
         """
@@ -887,7 +887,7 @@ class QuantumSecurityAnomalyDetector:
 class QuantumAnomalyDetectionOrchestrator:
     """
     Main orchestrator for quantum ML anomaly detection in SDLC systems.
-    
+
     This class coordinates multiple quantum anomaly detectors and integrates
     with the existing quantum SDLC infrastructure to provide comprehensive
     anomaly detection capabilities.
@@ -928,10 +928,10 @@ class QuantumAnomalyDetectionOrchestrator:
     async def train_system(self, normal_training_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Train the quantum anomaly detection system on normal SDLC patterns.
-        
+
         Args:
             normal_training_data: List of normal SDLC events for training
-            
+
         Returns:
             Training results and system readiness status
         """
@@ -969,10 +969,10 @@ class QuantumAnomalyDetectionOrchestrator:
     async def detect_anomalies_in_event(self, event_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Detect anomalies in a single SDLC event using quantum ML.
-        
+
         Args:
             event_data: SDLC event data to analyze
-            
+
         Returns:
             Comprehensive anomaly detection results
         """
@@ -1038,10 +1038,10 @@ class QuantumAnomalyDetectionOrchestrator:
     async def analyze_anomaly_trends(self, time_window_hours: int = 24) -> Dict[str, Any]:
         """
         Analyze anomaly trends over a specified time window using quantum ML insights.
-        
+
         Args:
             time_window_hours: Time window for trend analysis
-            
+
         Returns:
             Comprehensive anomaly trend analysis
         """

@@ -4,20 +4,20 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Iterable
 
 
 @dataclass
 class MigrationGuideGenerator:
     """Compare OpenAPI specs and generate a markdown migration guide."""
 
-    old_spec: Dict[str, Any]
-    new_spec: Dict[str, Any]
+    old_spec: dict[str, Any]
+    new_spec: dict[str, Any]
 
     def __post_init__(self) -> None:
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    def _endpoints(self, spec: Dict[str, Any]) -> Iterable[Tuple[str, str]]:
+    def _endpoints(self, spec: dict[str, Any]) -> Iterable[tuple[str, str]]:
         for path, ops in spec.get("paths", {}).items():
             for method in ops:
                 yield method.upper(), path

@@ -9,7 +9,7 @@ from concurrent.futures import TimeoutError as FuturesTimeout
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable
 
 from .quantum_audit_logger import AuditEventType, get_audit_logger
 from .quantum_health_monitor import get_health_monitor
@@ -50,11 +50,11 @@ class OperationResult:
     """Result of a resilient operation."""
     success: bool
     result: Any
-    error: Optional[Exception]
+    error: Exception | None
     attempts: int
     total_duration_ms: float
-    pattern_used: Optional[ResiliencePattern]
-    metadata: Dict[str, Any]
+    pattern_used: ResiliencePattern | None
+    metadata: dict[str, Any]
 
 
 class CircuitBreakerState(Enum):
@@ -200,10 +200,10 @@ class ResilienceCache:
     def __init__(self, default_ttl: int = 300):
         """Initialize cache."""
         self.default_ttl = default_ttl
-        self.cache: Dict[str, Dict[str, Any]] = {}
+        self.cache: dict[str, dict[str, Any]] = {}
         self.logger = logging.getLogger(f"{__name__}.cache")
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache."""
         if key in self.cache:
             entry = self.cache[key]
@@ -217,7 +217,7 @@ class ResilienceCache:
 
         return None
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set value in cache."""
         ttl = ttl or self.default_ttl
         expires = time.time() + ttl
@@ -240,9 +240,9 @@ class QuantumResilienceEngine:
 
     def __init__(self):
         """Initialize resilience engine."""
-        self.circuit_breakers: Dict[str, CircuitBreaker] = {}
-        self.bulkhead_executors: Dict[str, BulkheadExecutor] = {}
-        self.rate_limiters: Dict[str, RateLimiter] = {}
+        self.circuit_breakers: dict[str, CircuitBreaker] = {}
+        self.bulkhead_executors: dict[str, BulkheadExecutor] = {}
+        self.rate_limiters: dict[str, RateLimiter] = {}
         self.cache = ResilienceCache()
 
         self.recovery_manager = QuantumRecoveryManager()
@@ -252,12 +252,12 @@ class QuantumResilienceEngine:
         self.logger = logging.getLogger(__name__)
 
         # Operation metrics
-        self.operation_stats: Dict[str, Dict[str, Any]] = {}
+        self.operation_stats: dict[str, dict[str, Any]] = {}
 
     def execute_resilient(self,
                          operation_name: str,
                          func: Callable,
-                         config: Optional[ResilienceConfig] = None,
+                         config: ResilienceConfig | None = None,
                          *args, **kwargs) -> OperationResult:
         """Execute operation with resilience patterns."""
         start_time = time.time()
@@ -520,7 +520,7 @@ class QuantumResilienceEngine:
     @contextmanager
     def resilient_context(self,
                          operation_name: str,
-                         config: Optional[ResilienceConfig] = None):
+                         config: ResilienceConfig | None = None):
         """Context manager for resilient operations."""
         try:
             self.logger.info(f"Starting resilient operation: {operation_name}")
@@ -536,11 +536,11 @@ class QuantumResilienceEngine:
 
             raise e
 
-    def get_operation_stats(self) -> Dict[str, Dict[str, Any]]:
+    def get_operation_stats(self) -> dict[str, dict[str, Any]]:
         """Get operation statistics."""
         return self.operation_stats.copy()
 
-    def get_circuit_breaker_states(self) -> Dict[str, str]:
+    def get_circuit_breaker_states(self) -> dict[str, str]:
         """Get current circuit breaker states."""
         return {
             name: breaker.state.value
@@ -566,7 +566,7 @@ class QuantumResilienceEngine:
 
         return False
 
-    def clear_cache(self, pattern: Optional[str] = None) -> None:
+    def clear_cache(self, pattern: str | None = None) -> None:
         """Clear cache entries."""
         if pattern:
             # Remove specific pattern
@@ -589,7 +589,7 @@ class QuantumResilienceEngine:
 
 
 # Global resilience engine instance
-_resilience_engine: Optional[QuantumResilienceEngine] = None
+_resilience_engine: QuantumResilienceEngine | None = None
 
 
 def get_resilience_engine() -> QuantumResilienceEngine:

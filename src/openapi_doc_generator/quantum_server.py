@@ -6,7 +6,6 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional
 
 import uvicorn
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
@@ -61,35 +60,35 @@ class AddTaskRequest(BaseModel):
     priority: float = Field(default=1.0, ge=0.0, le=10.0)
     effort: float = Field(default=1.0, ge=0.0, le=1000.0)
     value: float = Field(default=1.0, ge=0.0, le=10000.0)
-    dependencies: List[str] = Field(default_factory=list)
+    dependencies: list[str] = Field(default_factory=list)
     coherence_time: float = Field(default=10.0, ge=0.1, le=3600.0)
 
 
 class ExportPlanRequest(BaseModel):
     format: str = Field(..., regex="^(json|markdown)$")
-    output_path: Optional[str] = Field(default=None)
+    output_path: str | None = Field(default=None)
 
 
 class HealthResponse(BaseModel):
     status: str
     timestamp: float
     version: str
-    services: Dict[str, str]
+    services: dict[str, str]
 
 
 class ConsentRequest(BaseModel):
     user_id: str = Field(..., min_length=1, max_length=100)
     purpose: str = Field(..., min_length=1, max_length=200)
     consent_given: bool
-    data_types: List[str]
-    retention_period: Optional[int] = Field(default=None, ge=1, le=3650)
+    data_types: list[str]
+    retention_period: int | None = Field(default=None, ge=1, le=3650)
 
 
 # Global instances
-api_instance: Optional[QuantumPlannerAPI] = None
-compliance_manager: Optional[QuantumComplianceManager] = None
-security_validator: Optional[QuantumSecurityValidator] = None
-scaler: Optional[QuantumTaskScaler] = None
+api_instance: QuantumPlannerAPI | None = None
+compliance_manager: QuantumComplianceManager | None = None
+security_validator: QuantumSecurityValidator | None = None
+scaler: QuantumTaskScaler | None = None
 
 
 @asynccontextmanager

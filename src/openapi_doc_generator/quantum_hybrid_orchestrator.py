@@ -66,7 +66,7 @@ class HybridTaskState(Enum):
 class HybridTask:
     """
     Hybrid task supporting both quantum and classical execution paradigms.
-    
+
     This represents a breakthrough in task modeling where a single task can
     simultaneously exist in quantum superposition and classical deterministic states.
     """
@@ -114,7 +114,7 @@ class OrchestrationMetrics:
 class QuantumClassicalInterface(ABC):
     """
     Abstract interface for quantum-classical interaction protocols.
-    
+
     This defines the contract for how quantum optimization results
     influence classical CI/CD pipeline decisions, representing a novel
     approach to cross-domain system integration.
@@ -139,7 +139,7 @@ class QuantumClassicalInterface(ABC):
 class CrossDomainEntanglementManager:
     """
     Manages quantum entanglement between classical and quantum domain tasks.
-    
+
     Research Innovation: First implementation of cross-domain entanglement
     management for hybrid quantum-classical task orchestration.
     """
@@ -194,7 +194,7 @@ class CrossDomainEntanglementManager:
 class CICDQuantumInterface(QuantumClassicalInterface):
     """
     Concrete implementation of quantum-classical interface for CI/CD pipelines.
-    
+
     This breakthrough implementation demonstrates how quantum optimization can
     directly influence classical deployment strategies through entanglement.
     """
@@ -207,7 +207,7 @@ class CICDQuantumInterface(QuantumClassicalInterface):
     async def quantum_to_classical_signal(self, quantum_result: Dict[str, Any]) -> Dict[str, Any]:
         """
         Translate quantum optimization results into classical CI/CD parameters.
-        
+
         Research Innovation: First implementation of quantum state collapse
         directly influencing classical deployment strategies.
         """
@@ -245,7 +245,7 @@ class CICDQuantumInterface(QuantumClassicalInterface):
     async def classical_to_quantum_feedback(self, classical_result: Dict[str, Any]) -> Dict[str, Any]:
         """
         Provide classical execution feedback to quantum optimization system.
-        
+
         Research Innovation: Closed-loop feedback mechanism between classical
         execution and quantum state evolution.
         """
@@ -271,7 +271,7 @@ class CICDQuantumInterface(QuantumClassicalInterface):
     async def establish_entanglement(self, quantum_task: HybridTask, classical_task: HybridTask) -> bool:
         """
         Establish quantum entanglement between quantum and classical task components.
-        
+
         Research Breakthrough: First implementation of cross-domain task entanglement
         between quantum optimization and classical execution systems.
         """
@@ -362,18 +362,18 @@ class CICDQuantumInterface(QuantumClassicalInterface):
 class HybridQuantumClassicalOrchestrator:
     """
     Revolutionary hybrid quantum-classical orchestration framework for SDLC automation.
-    
+
     This represents the first comprehensive implementation of seamless quantum-classical
     integration in software development lifecycle orchestration. The system combines
     quantum-inspired optimization with classical CI/CD execution, creating unprecedented
     efficiency gains through cross-domain entanglement and hybrid state management.
-    
+
     Research Contributions:
     - Novel hybrid task state management
     - Cross-domain entanglement protocols
     - Quantum-informed classical optimization
     - Industry-first benchmark metrics for hybrid systems
-    
+
     Academic Impact: Targets top-tier venues (ICSE, FSE) and patent applications
     """
 
@@ -419,14 +419,14 @@ class HybridQuantumClassicalOrchestrator:
                                         workflow_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Orchestrate a hybrid quantum-classical workflow with cross-domain optimization.
-        
+
         This is the main entry point for hybrid orchestration, demonstrating the
         breakthrough capability of seamless quantum-classical task execution.
-        
+
         Args:
             tasks: List of task definitions supporting both quantum and classical components
             workflow_config: Configuration for workflow execution parameters
-            
+
         Returns:
             Comprehensive workflow results including quantum metrics and classical outcomes
         """
@@ -490,7 +490,7 @@ class HybridQuantumClassicalOrchestrator:
     async def _create_hybrid_tasks(self, task_definitions: List[Dict[str, Any]]) -> List[HybridTask]:
         """
         Create hybrid tasks supporting both quantum and classical execution paradigms.
-        
+
         Research Innovation: First implementation of task objects that can simultaneously
         exist in quantum superposition and classical deterministic states.
         """
@@ -551,7 +551,7 @@ class HybridQuantumClassicalOrchestrator:
     async def _establish_cross_domain_entanglements(self, hybrid_tasks: List[HybridTask]) -> None:
         """
         Establish quantum entanglements between quantum and classical task components.
-        
+
         Research Breakthrough: First implementation of cross-domain task entanglement
         enabling quantum optimization to directly influence classical execution.
         """
@@ -593,7 +593,7 @@ class HybridQuantumClassicalOrchestrator:
                                            workflow_config: Optional[Dict[str, Any]]) -> HybridExecutionMode:
         """
         Dynamically select optimal execution mode based on task characteristics and system state.
-        
+
         Research Innovation: First adaptive execution mode selection for hybrid quantum-classical systems.
         """
         # Analyze task characteristics
@@ -633,7 +633,7 @@ class HybridQuantumClassicalOrchestrator:
                                      execution_mode: HybridExecutionMode) -> Dict[str, Any]:
         """
         Execute hybrid workflow using the selected execution mode.
-        
+
         Research Implementation: Demonstrates the breakthrough capability of seamless
         quantum-classical task execution with cross-domain optimization.
         """
@@ -712,7 +712,7 @@ class HybridQuantumClassicalOrchestrator:
 
         # Extract quantum-guided parameters
         deployment_order = quantum_guidance.get('deployment_order', [])
-        parallel_groups = quantum_guidance.get('parallel_execution_groups', [])
+        quantum_guidance.get('parallel_execution_groups', [])
         error_tolerance = quantum_guidance.get('error_tolerance', 0.05)
 
         executed_tasks = 0
@@ -911,7 +911,7 @@ class HybridQuantumClassicalOrchestrator:
 
     async def _execute_quantum_only(self, hybrid_tasks: List[HybridTask]) -> Dict[str, Any]:
         """Execute tasks in quantum-only mode."""
-        quantum_tasks = [t.quantum_component for t in hybrid_tasks if t.quantum_component]
+        [t.quantum_component for t in hybrid_tasks if t.quantum_component]
         return await self._execute_quantum_optimization(hybrid_tasks)
 
     async def _execute_classical_with_monitoring(self, hybrid_tasks: List[HybridTask]) -> Dict[str, Any]:
@@ -1064,13 +1064,13 @@ class HybridQuantumClassicalOrchestrator:
 async def benchmark_hybrid_orchestration(test_scenarios: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Comprehensive benchmarking suite for hybrid quantum-classical orchestration.
-    
+
     This function provides industry-standard benchmarks for evaluating hybrid
     orchestration systems, suitable for academic research and industrial adoption.
-    
+
     Args:
         test_scenarios: List of test scenarios with varying complexity and characteristics
-        
+
     Returns:
         Comprehensive benchmark results for academic publication and industry comparison
     """

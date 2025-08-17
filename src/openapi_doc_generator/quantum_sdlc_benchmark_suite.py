@@ -166,7 +166,7 @@ class QuantumSDLCBenchmarkFramework(ABC):
 class StandardQuantumSDLCBenchmarkSuite(QuantumSDLCBenchmarkFramework):
     """
     Industry-standard quantum SDLC benchmark suite implementation.
-    
+
     This comprehensive suite establishes the industry standard for evaluating
     quantum-inspired SDLC automation systems, providing rigorous benchmarks
     that enable scientific comparison and certification.
@@ -456,7 +456,7 @@ class StandardQuantumSDLCBenchmarkSuite(QuantumSDLCBenchmarkFramework):
             await self._extract_benchmark_metrics(result, execution_results, scenario)
 
             # Validate results against success criteria
-            validation_results = await self._validate_scenario_results(result, scenario)
+            await self._validate_scenario_results(result, scenario)
 
             # Statistical analysis
             statistical_results = await self._perform_statistical_analysis(result, scenario)
@@ -751,7 +751,7 @@ class StandardQuantumSDLCBenchmarkSuite(QuantumSDLCBenchmarkFramework):
 
         # Evolve for multiple generations
         evolution_results = []
-        for generation in range(scenario.quantum_properties.get('evolution_generations', 5)):
+        for _generation in range(scenario.quantum_properties.get('evolution_generations', 5)):
             generation_result = await self.evolution_orchestrator.evolve_software_generation(
                 evolution_objectives, {}
             )
@@ -787,7 +787,7 @@ class StandardQuantumSDLCBenchmarkSuite(QuantumSDLCBenchmarkFramework):
         for load_factor in load_levels:
             # Scale task count
             scaled_task_count = int(scenario.task_count * load_factor)
-            scaled_tasks = data['tasks'][:scaled_task_count]
+            data['tasks'][:scaled_task_count]
 
             # Measure performance at this scale
             start_time = time.time()
@@ -1435,7 +1435,7 @@ class StandardQuantumSDLCBenchmarkSuite(QuantumSDLCBenchmarkFramework):
             strengths.append("Superior execution performance and efficiency")
 
         # Cross-category excellence
-        categories_tested = set(r.category for r in results)
+        categories_tested = {r.category for r in results}
         if len(categories_tested) >= 4:
             strengths.append("Comprehensive multi-domain quantum SDLC capabilities")
 
@@ -1471,7 +1471,7 @@ class StandardQuantumSDLCBenchmarkSuite(QuantumSDLCBenchmarkFramework):
             opportunities.append("Improve memory utilization efficiency")
 
         # Category coverage
-        categories_tested = set(r.category for r in results)
+        categories_tested = {r.category for r in results}
         all_categories = set(BenchmarkCategory)
         missing_categories = all_categories - categories_tested
         if missing_categories:

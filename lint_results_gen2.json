@@ -18,37 +18,36 @@
   },
   {
     "cell": null,
-    "code": "B904",
+    "code": "I001",
     "end_location": {
-      "column": 65,
-      "row": 25
+      "column": 18,
+      "row": 65
     },
-    "filename": "/root/repo/src/openapi_doc_generator/graphql.py",
-    "fix": null,
+    "filename": "/root/repo/src/openapi_doc_generator/quantum_audit_logger.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "        import os\n        import tempfile\n",
+          "end_location": {
+            "column": 1,
+            "row": 66
+          },
+          "location": {
+            "column": 1,
+            "row": 64
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
     "location": {
-      "column": 13,
-      "row": 25
+      "column": 9,
+      "row": 64
     },
-    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
-    "noqa_row": 25,
-    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
-  },
-  {
-    "cell": null,
-    "code": "B904",
-    "end_location": {
-      "column": 68,
-      "row": 31
-    },
-    "filename": "/root/repo/src/openapi_doc_generator/graphql.py",
-    "fix": null,
-    "location": {
-      "column": 13,
-      "row": 31
-    },
-    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
-    "noqa_row": 31,
-    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 64,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
   },
   {
     "cell": null,
@@ -287,23 +286,6 @@
     "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
     "noqa_row": 417,
     "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
-  },
-  {
-    "cell": null,
-    "code": "F821",
-    "end_location": {
-      "column": 49,
-      "row": 144
-    },
-    "filename": "/root/repo/src/openapi_doc_generator/quantum_scale_optimizer.py",
-    "fix": null,
-    "location": {
-      "column": 46,
-      "row": 144
-    },
-    "message": "Undefined name `Set`",
-    "noqa_row": 144,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
   },
   {
     "cell": null,

@@ -111,7 +111,7 @@ class HealthHandler(BaseHTTPRequestHandler):
 class HealthServer:
     """Simple HTTP server for health checks and metrics."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+    def __init__(self, host: str = "127.0.0.1", port: int = 8080):
         self.host = host
         self.port = port
         self.server: Optional[HTTPServer] = None
@@ -156,7 +156,7 @@ class HealthServer:
 health_server: Optional[HealthServer] = None
 
 
-def start_health_server(host: str = "0.0.0.0", port: int = 8080) -> HealthServer:
+def start_health_server(host: str = "127.0.0.1", port: int = 8080) -> HealthServer:
     """Start the global health server."""
     global health_server
 

@@ -60,8 +60,13 @@ class QuantumAuditLogger:
 
     def _setup_audit_handler(self):
         """Setup dedicated audit log handler."""
-        # Create audit-specific handler
-        audit_handler = logging.FileHandler('/tmp/quantum_audit.log')
+        # Create audit-specific handler with secure temp directory
+        import tempfile
+        import os
+        audit_dir = os.path.join(tempfile.gettempdir(), 'quantum_audit')
+        os.makedirs(audit_dir, mode=0o700, exist_ok=True)
+        audit_file = os.path.join(audit_dir, 'quantum_audit.log')
+        audit_handler = logging.FileHandler(audit_file)
         audit_formatter = logging.Formatter(
             '%(asctime)s|AUDIT|%(levelname)s|%(message)s'
         )

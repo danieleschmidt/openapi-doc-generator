@@ -54,6 +54,22 @@ from .quantum_validator import (
     validate_quantum_plan,
 )
 
+# Generation 3: Advanced Performance Optimization and Auto-Scaling
+from .performance_optimizer import (
+    get_optimizer,
+    optimized,
+    PerformanceOptimizer,
+    OptimizationConfig as PerfOptimizationConfig,
+    AdvancedCache,
+    ParallelProcessor,
+)
+from .auto_scaler import (
+    get_auto_scaler,
+    IntelligentAutoScaler,
+    ResourceLimits,
+    ScalingRule,
+)
+
 # Advanced Quantum SDLC Research Innovations (Generation 1-3)
 # Temporarily disabled quantum imports to fix loading issues
 # Will be re-enabled after core functionality is stable
@@ -112,6 +128,17 @@ __all__ = [
     "AdaptiveQuantumScheduler",
     "ParallelQuantumProcessor",
     "QuantumCache",
+    # Generation 3: Performance optimization and auto-scaling exports
+    "get_optimizer",
+    "optimized",
+    "PerformanceOptimizer",
+    "PerfOptimizationConfig",
+    "AdvancedCache",
+    "ParallelProcessor",
+    "get_auto_scaler",
+    "IntelligentAutoScaler",
+    "ResourceLimits",
+    "ScalingRule",
     # Advanced Quantum SDLC Research Innovation exports (temporarily disabled)
     # "HybridQuantumClassicalOrchestrator",
     # ... quantum exports will be re-enabled after core stability

@@ -28,7 +28,7 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -507,8 +507,8 @@ class QuantumLoadBalancer:
             session_id = request_context['session_id']
 
             # Use session hash to create entanglement with specific instances
-            session_hash = hashlib.md5(session_id.encode()).hexdigest()
-            preferred_instance_index = int(session_hash, 16) % len(self.instances)
+            session_hash = hashlib.sha256(session_id.encode()).hexdigest()
+            preferred_instance_index = int(session_hash[:8], 16) % len(self.instances)
             preferred_instance = self.instances[preferred_instance_index]
 
             # Check if preferred instance is healthy

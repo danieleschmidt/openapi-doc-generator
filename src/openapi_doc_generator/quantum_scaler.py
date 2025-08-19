@@ -420,7 +420,7 @@ class QuantumTaskScaler:
 
         # Create a deterministic key from operation and args
         key_data = f"{operation}:{str(args)}"
-        return hashlib.md5(key_data.encode()).hexdigest()
+        return hashlib.sha256(key_data.encode()).hexdigest()[:16]
 
     def _cache_result(self, key: str, result: Any, cache_type: str = "result"):
         """Cache computation result with LRU eviction."""

@@ -16,6 +16,9 @@ from typing import Any
 from . import __version__
 from .config import config
 from .documentator import APIDocumentator, DocumentationResult
+from .enhanced_error_handling import ErrorContext, get_error_handler
+from .enhanced_monitoring import get_monitor, monitor_operation
+from .enhanced_validation import get_validator
 from .graphql import GraphQLSchema
 from .i18n import ComplianceRegion, SupportedLanguage, get_i18n_manager, localize_text
 from .migration import MigrationGuideGenerator
@@ -343,19 +346,15 @@ def _validate_app_path_input(app_path_str: str) -> Path:
 def _validate_app_path(
     app_path_str: str, parser: argparse.ArgumentParser, logger: logging.Logger
 ) -> Path:
-    """Validate and normalize app path with security checks."""
+    """Validate and normalize app path with enhanced security checks."""
     try:
-        app_path = _validate_app_path_input(app_path_str)
-    except (ValueError, OSError) as e:
+        validator = get_validator()
+        app_path = validator.validate_file_path(app_path_str, "app_path_validation")
+        return app_path
+    except Exception as e:
         logger.error("Invalid app path '%s': %s", app_path_str, e)
         parser.error(f"[{ErrorCode.APP_NOT_FOUND}] Invalid app path: {e}")
         return Path()  # This line will never be reached in real usage, but needed for testing
-
-    if not app_path.exists():
-        logger.error("App file '%s' not found", app_path)
-        parser.error(f"[{ErrorCode.APP_NOT_FOUND}] App file '{app_path}' not found")
-
-    return app_path
 
 
 def _process_graphql_format(
@@ -596,10 +595,20 @@ def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -
             )
 
 
+@monitor_operation("cli_main")
 def main(argv: list[str] | None = None) -> int:
     """Main CLI function with comprehensive error handling and security measures."""
     start_time = time.time()
     parser = build_parser()
+    
+    # Initialize enhanced monitoring and error handling
+    monitor = get_monitor()
+    error_handler = get_error_handler()
+    validator = get_validator()
+    
+    # Start monitoring if performance metrics are requested
+    if "--performance-metrics" in (argv or sys.argv):
+        monitor.start_monitoring()
 
     try:
         args = parser.parse_args(argv)

@@ -13,6 +13,8 @@ from .markdown import MarkdownGenerator
 from .schema import SchemaInferer, SchemaInfo
 from .spec import OpenAPISpecGenerator
 from .utils import PerformanceMetrics, get_performance_tracker, get_processing_pool
+from .advanced_caching import get_cache, cached_operation
+from .parallel_processor import get_parallel_processor
 
 
 @dataclass
@@ -56,16 +58,31 @@ class APIDocumentator:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._enable_concurrent = enable_concurrent_processing
         self._performance_tracker = get_performance_tracker()
+        self.cache = get_cache()
+        self.parallel_processor = get_parallel_processor()
 
+    @cached_operation("doc", ttl=600)  # Cache for 10 minutes
     def analyze_app(self, app_path: str) -> DocumentationResult:
         """Analyze application with performance optimizations and concurrent processing."""
         start_time = time.time()
+        
+        # Check cache first
+        file_hash = self.cache.compute_file_hash(app_path)
+        cached_result = self.cache.get_documentation(f"analysis_{file_hash}")
+        if cached_result is not None:
+            self._logger.debug("Using cached analysis for %s", app_path)
+            return cached_result
+        
         self._logger.info("Discovering routes from %s", app_path)
 
         if self._enable_concurrent:
-            return self._analyze_app_concurrent(app_path, start_time)
+            result = self._analyze_app_concurrent(app_path, start_time)
         else:
-            return self._analyze_app_sequential(app_path, start_time)
+            result = self._analyze_app_sequential(app_path, start_time)
+        
+        # Cache the result
+        self.cache.put_documentation(f"analysis_{file_hash}", result)
+        return result
 
     def _analyze_app_sequential(self, app_path: str, start_time: float) -> DocumentationResult:
         """Sequential analysis (original method)."""

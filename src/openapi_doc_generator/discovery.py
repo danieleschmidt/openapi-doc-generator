@@ -10,6 +10,9 @@ from importlib import metadata
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from .advanced_caching import get_cache, cached_operation
+from .parallel_processor import get_parallel_processor, parallel_operation
+
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from .plugins import RoutePlugin
 
@@ -75,26 +78,39 @@ def _load_single_plugin(ep) -> None:
 
 
 class RouteDiscoverer:
-    """Discover routes from application source files."""
+    """Discover routes from application source files with advanced caching."""
 
     def __init__(self, app_path: str) -> None:
         self.app_path = Path(app_path)
         self._logger = logging.getLogger(self.__class__.__name__)
+        self.cache = get_cache()
         if not self.app_path.exists():
             raise FileNotFoundError(f"{app_path} does not exist")
 
     def discover(self) -> list[RouteInfo]:
-        """Discover routes based on detected framework."""
+        """Discover routes based on detected framework with intelligent caching."""
         from .utils import measure_performance
+
+        # Check cache first
+        file_hash = self.cache.compute_file_hash(self.app_path)
+        cached_routes = self.cache.get_routes(file_hash)
+        if cached_routes is not None:
+            self._logger.debug("Using cached routes for %s", self.app_path)
+            return cached_routes
 
         @measure_performance("route_discovery")
         def _discover_routes():
             self._logger.debug("Scanning %s for routes", self.app_path)
             source = self.app_path.read_text()
+            
+            # Try plugins first
             for plugin in get_plugins():
                 if plugin.detect(source):
                     self._logger.debug("Using plugin %s", plugin.__class__.__name__)
-                    return plugin.discover(str(self.app_path))
+                    routes = plugin.discover(str(self.app_path))
+                    # Cache the results
+                    self.cache.put_routes(file_hash, routes)
+                    return routes
 
             framework = self._detect_framework(source)
             if framework == "fastapi":
@@ -117,6 +133,9 @@ class RouteDiscoverer:
                     "framework": framework,
                 },
             )
+            
+            # Cache the results
+            self.cache.put_routes(file_hash, routes)
             return routes
 
         return _discover_routes()

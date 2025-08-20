@@ -25,6 +25,8 @@ from .migration import MigrationGuideGenerator
 from .playground import PlaygroundGenerator
 from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
 from .testsuite import TestSuiteGenerator
+from .circuit_breaker import get_circuit_breaker, CircuitBreakerConfig
+from .health_check import get_health_checker, quick_health_check
 
 
 class ErrorCode:
@@ -47,8 +49,13 @@ def build_parser() -> argparse.ArgumentParser:
         description="Generate documentation in various formats"
     )
     parser.add_argument(
+        "--health-check", 
+        action="store_true",
+        help="Run comprehensive health check and display system status"
+    )
+    parser.add_argument(
         "--app",
-        required=True,
+        required=False,  # Not required for health check
         help="Path to application source file",
     )
     parser.add_argument(
@@ -99,6 +106,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--performance-metrics",
         action="store_true",
         help="Enable detailed performance metrics collection and logging",
+    )
+    parser.add_argument(
+        "--cache-size",
+        type=int,
+        default=200,
+        help="Maximum cache size in MB (default: 200)",
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=None,
+        help="Maximum number of parallel workers (default: auto-detect)",
+    )
+    parser.add_argument(
+        "--disable-cache",
+        action="store_true",
+        help="Disable caching for this operation",
     )
     parser.add_argument(
         "--quantum-temperature",
@@ -415,9 +439,14 @@ def _process_documentation_format(args: argparse.Namespace, app_path: Path, pars
         return output, None
     else:
         _show_progress("Analyzing application structure", args.verbose)
-        result = APIDocumentator().analyze_app(str(app_path))
+        # Use circuit breaker for robust operation
+        circuit = get_circuit_breaker("analyze_app", CircuitBreakerConfig(failure_threshold=3, timeout=30.0))
+        with circuit.protect("analyze_app"):
+            result = APIDocumentator().analyze_app(str(app_path))
         _show_progress("Generating documentation", args.verbose)
-        output = _generate_output(result, args, parser, logger)
+        circuit = get_circuit_breaker("generate_output", CircuitBreakerConfig(failure_threshold=2, timeout=15.0))
+        with circuit.protect("generate_output"):
+            output = _generate_output(result, args, parser, logger)
         return output, result
 
 
@@ -595,6 +624,66 @@ def _log_performance_summary(args: argparse.Namespace, logger: logging.Logger) -
             )
 
 
+def _handle_health_check(args: argparse.Namespace) -> None:
+    """Handle health check command."""
+    try:
+        health_summary = quick_health_check()
+        
+        if not getattr(args, 'no_color', False):
+            # Colorized output
+            status_colors = {
+                "healthy": "\033[32m",      # Green
+                "degraded": "\033[33m",     # Yellow
+                "unhealthy": "\033[31m",    # Red
+                "critical": "\033[91m"      # Bright Red
+            }
+            reset_color = "\033[0m"
+        else:
+            status_colors = {status: "" for status in ["healthy", "degraded", "unhealthy", "critical"]}
+            reset_color = ""
+        
+        overall_status = health_summary["overall_status"]
+        status_color = status_colors.get(overall_status, "")
+        
+        print(f"🏥 System Health Check")
+        print(f"Overall Status: {status_color}{overall_status.upper()}{reset_color}")
+        print(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(health_summary['timestamp']))}")
+        print()
+        
+        for check_name, check_result in health_summary["checks"].items():
+            check_status = check_result["status"]
+            check_color = status_colors.get(check_status, "")
+            
+            print(f"📊 {check_name.replace('_', ' ').title()}")
+            print(f"   Status: {check_color}{check_status.upper()}{reset_color}")
+            print(f"   Message: {check_result['message']}")
+            print(f"   Response Time: {check_result['response_time_ms']:.2f}ms")
+            
+            # Show key metrics
+            if check_result.get("metrics"):
+                print("   Key Metrics:")
+                metrics = check_result["metrics"]
+                if "cpu_percent" in metrics:
+                    print(f"     CPU: {metrics['cpu_percent']:.1f}%")
+                if "memory_percent" in metrics:
+                    print(f"     Memory: {metrics['memory_percent']:.1f}%")
+                if "disk_percent" in metrics:
+                    print(f"     Disk: {metrics['disk_percent']:.1f}%")
+            print()
+        
+        # Exit with appropriate code
+        if overall_status in ["critical", "unhealthy"]:
+            sys.exit(1)
+        elif overall_status == "degraded":
+            sys.exit(2)
+        else:
+            sys.exit(0)
+            
+    except Exception as e:
+        print(f"❌ Health check failed: {e}")
+        sys.exit(1)
+
+
 @monitor_operation("cli_main")
 def main(argv: list[str] | None = None) -> int:
     """Main CLI function with comprehensive error handling and security measures."""
@@ -612,6 +701,15 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         args = parser.parse_args(argv)
+
+        # Handle health check first
+        if getattr(args, 'health_check', False):
+            _handle_health_check(args)
+            return 0
+
+        # Validate that --app is provided for non-health-check operations
+        if not args.app:
+            parser.error("--app is required unless using --health-check")
 
         # Configure i18n and global settings
         i18n_manager = get_i18n_manager()

@@ -7,9 +7,10 @@ robust operation under all conditions.
 """
 
 import logging
+import time
 import traceback
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Generator, List, Optional, Type
 
@@ -48,13 +49,23 @@ class ErrorContext:
 @dataclass
 class EnhancedError:
     """Enhanced error with categorization and context."""
-    original_error: Exception
+    message: str
     category: ErrorCategory
     severity: ErrorSeverity
     context: ErrorContext
-    recovery_suggestions: List[str]
-    user_friendly_message: str
-    technical_details: str
+    original_exception: Optional[Exception] = None
+    recovery_suggestions: List[str] = field(default_factory=list)
+    timestamp: float = field(default_factory=time.time)
+
+
+class SecurityValidationError(Exception):
+    """Raised when security validation fails."""
+    pass
+
+
+class RateLimitExceededError(Exception):
+    """Raised when rate limits are exceeded."""
+    pass
 
 
 class EnhancedErrorHandler:

@@ -1,0 +1,38 @@
+{
+  "compliance_checks": {
+    "documentation_compliance": {
+      "check": "documentation_compliance",
+      "missing_documentation": [],
+      "required_docs": [
+        "README.md",
+        "SECURITY.md",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "LICENSE"
+      ],
+      "status": "pass"
+    },
+    "sbom_compliance": {
+      "check": "sbom_compliance",
+      "components_count": 135,
+      "last_updated": "2025-08-24T05:23:05.955942",
+      "sbom_file": "sbom.json",
+      "status": "pass"
+    },
+    "security_compliance": {
+      "check": "security_compliance",
+      "details": {},
+      "security_issues": 0,
+      "status": "pass"
+    },
+    "test_coverage": {
+      "check": "test_coverage",
+      "error": "Unable to determine coverage",
+      "status": "error"
+    }
+  },
+  "compliance_score": 75,
+  "failed_checks": [],
+  "overall_status": "partially_compliant",
+  "timestamp": "2025-08-24T05:23:06.974139"
+}

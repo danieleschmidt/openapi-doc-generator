@@ -95,7 +95,7 @@ class TestQuantumEnhancementsIntegration:
         result = performance_optimizer.optimize_operation(
             operation_name="test_multiply",
             func=test_operation,
-            test_data
+            data=test_data
         )
         
         assert result.success is True
@@ -294,7 +294,7 @@ class TestQuantumEnhancementsIntegration:
             result = performance_optimizer.optimize_operation(
                 operation_name=op_name,
                 func=op_func,
-                100
+                data=100
             )
             
             assert result.success is True

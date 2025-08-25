@@ -5,16 +5,14 @@ This module provides comprehensive security validation for inputs, outputs,
 and operations to prevent malicious usage and ensure safe operation.
 """
 
-import hashlib
 import re
-import time
+from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
-from dataclasses import dataclass, field
-from collections import defaultdict
 
-from .enhanced_error_handling import SecurityValidationError, RateLimitExceededError
+from .enhanced_error_handling import RateLimitExceededError, SecurityValidationError
 
 
 @dataclass
@@ -50,18 +48,18 @@ class SecurityConfig:
 
 class SecurityValidator:
     """Comprehensive security validation system."""
-    
+
     def __init__(self, config: Optional[SecurityConfig] = None):
         self.config = config or SecurityConfig()
         self.request_history: Dict[str, List[datetime]] = defaultdict(list)
         self.blocked_ips: Set[str] = set()
         self.security_alerts: List[Dict[str, Any]] = []
-        
+
     def validate_input_safety(self, input_text: str, context: str = "general") -> bool:
         """Validate that input text is safe from malicious patterns."""
         if not input_text:
             return True
-            
+
         for pattern in self.config.blocked_patterns:
             if re.search(pattern, input_text, re.IGNORECASE):
                 self._log_security_alert(
@@ -74,19 +72,19 @@ class SecurityValidator:
                     f"Input contains potentially malicious pattern: {pattern[:20]}..."
                 )
         return True
-    
+
     def validate_file_path_safety(self, file_path: str) -> bool:
         """Validate file path for security issues."""
         try:
             path = Path(file_path).resolve()
         except Exception:
             raise SecurityValidationError(f"Invalid file path: {file_path}")
-        
+
         # Check for path traversal attempts
         if '..' in str(path) or str(path).startswith('/'):
             if not str(path).startswith('/root/repo'):  # Allow repo paths
                 raise SecurityValidationError("Path traversal attempt detected")
-        
+
         # Check file size
         if path.exists() and path.is_file():
             size_mb = path.stat().st_size / (1024 * 1024)
@@ -94,9 +92,9 @@ class SecurityValidator:
                 raise SecurityValidationError(
                     f"File too large: {size_mb:.1f}MB (max: {self.config.max_file_size_mb}MB)"
                 )
-        
+
         return True
-    
+
     def validate_task_security(self, task_name: str, task_effort: float) -> bool:
         """Validate task for security issues."""
         # Check suspicious patterns
@@ -104,73 +102,73 @@ class SecurityValidator:
             if re.search(pattern, task_name, re.IGNORECASE):
                 self._log_security_alert(
                     alert_type="suspicious_task",
-                    context="task_validation", 
+                    context="task_validation",
                     details=f"Suspicious task pattern: {pattern}",
                     task_name=task_name
                 )
-                raise SecurityValidationError(f"Task name contains suspicious pattern")
-        
+                raise SecurityValidationError("Task name contains suspicious pattern")
+
         # Check effort bounds
         if task_effort > self.config.max_task_effort:
             raise SecurityValidationError(
                 f"Task effort too high: {task_effort} (max: {self.config.max_task_effort})"
             )
-        
+
         return True
-    
+
     def validate_rate_limit(self, client_id: str = "default") -> bool:
         """Check if client is within rate limits."""
         now = datetime.now()
-        
+
         # Clean old entries
         cutoff_minute = now - timedelta(minutes=1)
         cutoff_hour = now - timedelta(hours=1)
         cutoff_day = now - timedelta(days=1)
-        
+
         history = self.request_history[client_id]
         self.request_history[client_id] = [
             ts for ts in history if ts > cutoff_day
         ]
-        
+
         # Check limits
         recent_minute = len([ts for ts in history if ts > cutoff_minute])
         recent_hour = len([ts for ts in history if ts > cutoff_hour])
         recent_day = len([ts for ts in history if ts > cutoff_day])
-        
+
         if (recent_minute > self.config.rate_limit_windows['minute'] or
-            recent_hour > self.config.rate_limit_windows['hour'] or 
+            recent_hour > self.config.rate_limit_windows['hour'] or
             recent_day > self.config.rate_limit_windows['day']):
-            
+
             self._log_security_alert(
                 alert_type="rate_limit_exceeded",
                 context="rate_limiting",
                 details=f"Client {client_id} exceeded rate limits",
                 rate_info={
                     "minute": recent_minute,
-                    "hour": recent_hour, 
+                    "hour": recent_hour,
                     "day": recent_day
                 }
             )
             raise RateLimitExceededError(f"Rate limit exceeded for client {client_id}")
-        
+
         # Record request
         self.request_history[client_id].append(now)
         return True
-    
+
     def sanitize_input(self, input_text: str) -> str:
         """Sanitize input text for safe processing."""
         if not input_text:
             return ""
-        
+
         # Remove potentially dangerous characters
         sanitized = re.sub(r'[<>&"\']', '', input_text)
-        
+
         # Limit length
         if len(sanitized) > 10000:
             sanitized = sanitized[:10000] + "..."
-        
+
         return sanitized
-    
+
     def get_security_report(self) -> Dict[str, Any]:
         """Generate security validation report."""
         return {
@@ -181,7 +179,7 @@ class SecurityValidator:
             "alert_summary": self._summarize_alerts(),
             "timestamp": datetime.now().isoformat()
         }
-    
+
     def _log_security_alert(self, alert_type: str, context: str, details: str, **kwargs):
         """Log security alert for monitoring."""
         alert = {
@@ -193,11 +191,11 @@ class SecurityValidator:
             **kwargs
         }
         self.security_alerts.append(alert)
-        
+
         # Keep only last 1000 alerts
         if len(self.security_alerts) > 1000:
             self.security_alerts = self.security_alerts[-1000:]
-    
+
     def _summarize_alerts(self) -> Dict[str, int]:
         """Summarize alerts by type."""
         summary = defaultdict(int)
@@ -227,18 +225,18 @@ def security_check(func):
     """Decorator for automatic security validation."""
     def wrapper(*args, **kwargs):
         validator = get_security_validator()
-        
+
         # Basic rate limiting
         validator.validate_rate_limit()
-        
+
         # Validate string inputs
         for arg in args:
             if isinstance(arg, str):
                 validator.validate_input_safety(arg, func.__name__)
-        
+
         for key, value in kwargs.items():
             if isinstance(value, str):
                 validator.validate_input_safety(value, f"{func.__name__}.{key}")
-        
+
         return func(*args, **kwargs)
     return wrapper

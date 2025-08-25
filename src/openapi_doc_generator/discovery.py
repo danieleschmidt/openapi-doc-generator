@@ -10,8 +10,7 @@ from importlib import metadata
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .advanced_caching import get_cache, cached_operation
-from .parallel_processor import get_parallel_processor, parallel_operation
+from .advanced_caching import get_cache
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from .plugins import RoutePlugin
@@ -102,7 +101,7 @@ class RouteDiscoverer:
         def _discover_routes():
             self._logger.debug("Scanning %s for routes", self.app_path)
             source = self.app_path.read_text()
-            
+
             # Try plugins first
             for plugin in get_plugins():
                 if plugin.detect(source):
@@ -133,7 +132,7 @@ class RouteDiscoverer:
                     "framework": framework,
                 },
             )
-            
+
             # Cache the results
             self.cache.put_routes(file_hash, routes)
             return routes

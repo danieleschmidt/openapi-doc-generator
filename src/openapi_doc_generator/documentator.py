@@ -6,15 +6,15 @@ import logging
 import time
 from dataclasses import dataclass
 
+from .advanced_caching import cached_operation, get_cache
 from .config import config
 from .discovery import RouteDiscoverer, RouteInfo
 from .i18n import get_i18n_manager
 from .markdown import MarkdownGenerator
+from .parallel_processor import get_parallel_processor
 from .schema import SchemaInferer, SchemaInfo
 from .spec import OpenAPISpecGenerator
 from .utils import PerformanceMetrics, get_performance_tracker, get_processing_pool
-from .advanced_caching import get_cache, cached_operation
-from .parallel_processor import get_parallel_processor
 
 
 @dataclass
@@ -65,21 +65,21 @@ class APIDocumentator:
     def analyze_app(self, app_path: str) -> DocumentationResult:
         """Analyze application with performance optimizations and concurrent processing."""
         start_time = time.time()
-        
+
         # Check cache first
         file_hash = self.cache.compute_file_hash(app_path)
         cached_result = self.cache.get_documentation(f"analysis_{file_hash}")
         if cached_result is not None:
             self._logger.debug("Using cached analysis for %s", app_path)
             return cached_result
-        
+
         self._logger.info("Discovering routes from %s", app_path)
 
         if self._enable_concurrent:
             result = self._analyze_app_concurrent(app_path, start_time)
         else:
             result = self._analyze_app_sequential(app_path, start_time)
-        
+
         # Cache the result
         self.cache.put_documentation(f"analysis_{file_hash}", result)
         return result

@@ -21,8 +21,26 @@ except PackageNotFoundError:  # pragma: no cover - fallback for editable install
     __version__ = "0.0.0"
 
 from . import plugins  # noqa: F401 - register built-in plugins
+from .auto_scaler import (
+    IntelligentAutoScaler,
+    ResourceLimits,
+    ScalingRule,
+    get_auto_scaler,
+)
 from .cli import main as cli_main
 from .discovery import RoutePlugin, register_plugin
+
+# Generation 3: Advanced Performance Optimization and Auto-Scaling
+from .performance_optimizer import (
+    AdvancedCache,
+    ParallelProcessor,
+    PerformanceOptimizer,
+    get_optimizer,
+    optimized,
+)
+from .performance_optimizer import (
+    OptimizationConfig as PerfOptimizationConfig,
+)
 from .quantum_monitor import (
     HealthStatus,
     PerformanceMetrics,
@@ -52,22 +70,6 @@ from .quantum_validator import (
     ValidationIssue,
     ValidationLevel,
     validate_quantum_plan,
-)
-
-# Generation 3: Advanced Performance Optimization and Auto-Scaling
-from .performance_optimizer import (
-    get_optimizer,
-    optimized,
-    PerformanceOptimizer,
-    OptimizationConfig as PerfOptimizationConfig,
-    AdvancedCache,
-    ParallelProcessor,
-)
-from .auto_scaler import (
-    get_auto_scaler,
-    IntelligentAutoScaler,
-    ResourceLimits,
-    ScalingRule,
 )
 
 # Advanced Quantum SDLC Research Innovations (Generation 1-3)

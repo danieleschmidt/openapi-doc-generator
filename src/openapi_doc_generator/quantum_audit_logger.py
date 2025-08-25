@@ -61,8 +61,8 @@ class QuantumAuditLogger:
     def _setup_audit_handler(self):
         """Setup dedicated audit log handler."""
         # Create audit-specific handler with secure temp directory
-        import tempfile
         import os
+        import tempfile
         audit_dir = os.path.join(tempfile.gettempdir(), 'quantum_audit')
         os.makedirs(audit_dir, mode=0o700, exist_ok=True)
         audit_file = os.path.join(audit_dir, 'quantum_audit.log')
@@ -334,15 +334,15 @@ class QuantumAuditLogger:
         # Simple base64 encoding for demonstration - in production use proper encryption
         import base64
         import json
-        
+
         sensitive_fields = ["user_id", "details", "resource"]
         encrypted_data = data.copy()
-        
+
         for field in sensitive_fields:
             if field in encrypted_data and encrypted_data[field] is not None:
                 value = json.dumps(encrypted_data[field]) if isinstance(encrypted_data[field], dict) else str(encrypted_data[field])
                 encrypted_data[field] = base64.b64encode(value.encode()).decode()
-        
+
         return encrypted_data
 
 

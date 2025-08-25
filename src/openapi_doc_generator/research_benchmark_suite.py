@@ -12,27 +12,20 @@ Research Components:
 """
 
 import ast
-import time
-import statistics
-import numpy as np
 import json
-import pickle
-from typing import Dict, List, Optional, Tuple, Any, Callable
-from dataclasses import dataclass, field
-from pathlib import Path
 import logging
-import hashlib
-import concurrent.futures
+import time
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Tuple
+
+import numpy as np
 from scipy import stats
-import matplotlib.pyplot as plt
-from collections import defaultdict, Counter
 
-from .quantum_semantic_analyzer import QuantumSemanticAnalyzer, SemanticAnalysisResult
 from .ml_schema_inference import MLEnhancedSchemaInferencer, ProbabilisticType
+from .quantum_semantic_analyzer import QuantumSemanticAnalyzer, SemanticAnalysisResult
 from .schema import SchemaInferer
-from .discovery import RouteDiscoverer
-from .utils import get_cached_ast, echo
-
+from .utils import echo, get_cached_ast
 
 logger = logging.getLogger(__name__)
 
@@ -82,27 +75,27 @@ class GroundTruthGenerator:
     Creates carefully curated datasets with known-correct schemas and
     semantic annotations for rigorous experimental validation.
     """
-    
+
     def __init__(self):
         self.generated_datasets = {}
         logger.info("Initialized GroundTruthGenerator")
-    
-    def create_synthetic_dataset(self, size: int = 100, 
+
+    def create_synthetic_dataset(self, size: int = 100,
                                 complexity: str = 'medium') -> ExperimentalDataset:
         """Create synthetic dataset with known ground truth."""
         dataset_id = f"synthetic_{complexity}_{size}_{int(time.time())}"
-        
+
         # Generate synthetic Python files with API patterns
         file_paths = []
         ground_truth_schemas = {}
         ground_truth_semantics = {}
-        
+
         for i in range(size):
             file_path, schema, semantics = self._generate_synthetic_file(i, complexity)
             file_paths.append(file_path)
             ground_truth_schemas[file_path] = schema
             ground_truth_semantics[file_path] = semantics
-        
+
         dataset = ExperimentalDataset(
             dataset_id=dataset_id,
             description=f"Synthetic dataset with {size} files, {complexity} complexity",
@@ -113,13 +106,13 @@ class GroundTruthGenerator:
             domain='synthetic_api',
             size_category=self._categorize_size(size)
         )
-        
+
         self.generated_datasets[dataset_id] = dataset
         logger.info(f"Created synthetic dataset {dataset_id} with {size} files")
-        
+
         return dataset
-    
-    def _generate_synthetic_file(self, index: int, 
+
+    def _generate_synthetic_file(self, index: int,
                                 complexity: str) -> Tuple[str, Dict[str, Any], Dict[str, Any]]:
         """Generate a single synthetic Python file with API patterns."""
         # Create synthetic code based on complexity
@@ -131,21 +124,21 @@ class GroundTruthGenerator:
             code = self._generate_hard_api_code(index)
         else:  # expert
             code = self._generate_expert_api_code(index)
-        
+
         # Write to temporary file
         file_path = f"/tmp/synthetic_api_{index}.py"
         with open(file_path, 'w') as f:
             f.write(code)
-        
+
         # Generate ground truth
         schema = self._extract_ground_truth_schema(code)
         semantics = self._extract_ground_truth_semantics(code)
-        
+
         return file_path, schema, semantics
-    
+
     def _generate_easy_api_code(self, index: int) -> str:
         """Generate simple API code with basic patterns."""
-        return f'''
+        return '''
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -154,26 +147,26 @@ app = Flask(__name__)
 def get_users():
     """Get all users."""
     users = [
-        {{"id": 1, "name": "John", "email": "john@example.com"}},
-        {{"id": 2, "name": "Jane", "email": "jane@example.com"}}
+        {"id": 1, "name": "John", "email": "john@example.com"},
+        {"id": 2, "name": "Jane", "email": "jane@example.com"}
     ]
     return jsonify(users)
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id: int):
     """Get user by ID."""
-    user = {{"id": user_id, "name": "Test User", "email": "test@example.com"}}
+    user = {"id": user_id, "name": "Test User", "email": "test@example.com"}
     return jsonify(user)
 
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint."""
-    return jsonify({{"status": "ok", "timestamp": "2025-08-21T10:00:00Z"}})
+    return jsonify({"status": "ok", "timestamp": "2025-08-21T10:00:00Z"})
 '''
-    
+
     def _generate_medium_api_code(self, index: int) -> str:
         """Generate medium complexity API code."""
-        return f'''
+        return '''
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
@@ -201,8 +194,8 @@ async def get_users(skip: int = 0, limit: int = 100):
     for i in range(skip, min(skip + limit, 50)):
         users.append(User(
             id=i,
-            name=f"User {{i}}",
-            email=f"user{{i}}@example.com",
+            name=f"User {i}",
+            email=f"user{i}@example.com",
             age=25 + (i % 50),
             created_at=datetime.now(),
             is_active=True
@@ -222,7 +215,7 @@ async def create_user(user: UserCreate):
     )
     return new_user
 
-@app.get("/users/{{user_id}}", response_model=User)
+@app.get("/users/{user_id}", response_model=User)
 async def get_user(user_id: int):
     """Get user by ID."""
     if user_id <= 0:
@@ -230,15 +223,15 @@ async def get_user(user_id: int):
     
     return User(
         id=user_id,
-        name=f"User {{user_id}}",
-        email=f"user{{user_id}}@example.com",
+        name=f"User {user_id}",
+        email=f"user{user_id}@example.com",
         created_at=datetime.now()
     )
 '''
-    
+
     def _generate_hard_api_code(self, index: int) -> str:
         """Generate complex API code with advanced patterns."""
-        return f'''
+        return '''
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Security
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Union, Dict, Any
@@ -319,12 +312,12 @@ async def get_users(
     for i in range((page - 1) * size, min(page * size, total)):
         users.append(UserResponse(
             id=i,
-            username=f"user{{i}}",
-            email=f"user{{i}}@example.com",
+            username=f"user{i}",
+            email=f"user{i}@example.com",
             role=UserRole.USER,
             created_at=datetime.utcnow(),
             is_active=True,
-            profile={{"bio": f"Bio for user {{i}}", "location": "Earth"}}
+            profile={"bio": f"Bio for user {i}", "location": "Earth"}
         ))
     
     return PaginatedResponse(
@@ -361,12 +354,12 @@ async def create_user(
 async def send_welcome_email(email: str):
     \"\"\"Background task to send welcome email.\"\"\"
     await asyncio.sleep(1)  # Simulate email sending
-    logger.info(f"Welcome email sent to {{email}}")
+    logger.info(f"Welcome email sent to {email}")
 '''
-    
+
     def _generate_expert_api_code(self, index: int) -> str:
         """Generate expert-level API code with cutting-edge patterns."""
-        return f'''
+        return '''
 from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -495,14 +488,14 @@ class UserAggregate(BaseModel):
     
     @validator('permissions')
     def validate_permissions(cls, v):
-        valid_permissions = {{
+        valid_permissions = {
             'user.read', 'user.write', 'user.delete',
             'admin.read', 'admin.write', 'admin.delete'
-        }}
+        }
         
         for perm in v:
             if perm not in valid_permissions:
-                raise ValueError(f'Invalid permission: {{perm}}')
+                raise ValueError(f'Invalid permission: {perm}')
         
         return v
     
@@ -549,7 +542,7 @@ async def get_current_user(
     token = credentials.credentials
     
     # Check cache first
-    cached_user = await cache.get(f"user:{{token}}")
+    cached_user = await cache.get(f"user:{token}")
     if cached_user:
         return UserAggregate(**cached_user)
     
@@ -563,7 +556,7 @@ async def get_current_user(
     )
     
     # Cache user for 1 hour
-    await cache.set(f"user:{{token}}", user.dict(), ttl=3600)
+    await cache.set(f"user:{token}", user.dict(), ttl=3600)
     
     return user
 
@@ -579,11 +572,11 @@ async def websocket_endpoint(websocket: WebSocket):
             message = json.loads(data)
             
             # Echo message to all connected clients
-            await manager.broadcast({{
+            await manager.broadcast({
                 "type": "message",
                 "data": message,
                 "timestamp": datetime.utcnow().isoformat()
-            }})
+            })
     
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -609,54 +602,54 @@ async def advanced_user_search(
     for i in range(size):
         user = UserAggregate(
             id=i,
-            username=f"user_{{i}}",
-            email=f"user{{i}}@example.com",
+            username=f"user_{i}",
+            email=f"user{i}@example.com",
             permissions=["user.read"],
             created_at=datetime.utcnow()
         )
         results.append(user.dict())
     
-    return {{
+    return {
         "results": results,
         "total": 1000,
         "page": page,
         "size": size,
         "query": query,
-        "filters": filters or {{}},
-        "sort": {{"by": sort_by, "order": sort_order}}
-    }}
+        "filters": filters or {},
+        "sort": {"by": sort_by, "order": sort_order}
+    }
 '''
-    
+
     def _extract_ground_truth_schema(self, code: str) -> Dict[str, Any]:
         """Extract ground truth schema from generated code."""
         # Parse AST and extract schema information
         try:
             tree = ast.parse(code)
             schema = {}
-            
+
             for node in ast.walk(tree):
                 if isinstance(node, ast.ClassDef):
                     if any(base.id == 'BaseModel' for base in node.bases if isinstance(base, ast.Name)):
                         class_schema = self._extract_pydantic_schema(node)
                         schema[node.name] = class_schema
-            
+
             return schema
         except Exception as e:
             logger.warning(f"Failed to extract schema: {e}")
             return {}
-    
+
     def _extract_pydantic_schema(self, class_node: ast.ClassDef) -> Dict[str, str]:
         """Extract schema from Pydantic model class."""
         schema = {}
-        
+
         for node in class_node.body:
             if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
                 field_name = node.target.id
                 field_type = ast.unparse(node.annotation) if node.annotation else 'Any'
                 schema[field_name] = field_type
-        
+
         return schema
-    
+
     def _extract_ground_truth_semantics(self, code: str) -> Dict[str, Any]:
         """Extract ground truth semantic information."""
         semantics = {
@@ -665,31 +658,31 @@ async def advanced_user_search(
             'decorators': [],
             'complexity_score': 0
         }
-        
+
         try:
             tree = ast.parse(code)
-            
+
             # Count various semantic elements
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
-                    if any(isinstance(d, ast.Name) and d.id in ['route', 'get', 'post', 'put', 'delete'] 
+                    if any(isinstance(d, ast.Name) and d.id in ['route', 'get', 'post', 'put', 'delete']
                           for d in node.decorator_list):
                         semantics['api_endpoints'].append(node.name)
-                
+
                 elif isinstance(node, ast.ClassDef):
                     semantics['models'].append(node.name)
-                
+
                 elif isinstance(node, ast.Name) and node.id in ['app', 'route', 'get', 'post']:
                     semantics['decorators'].append(node.id)
-            
+
             # Calculate complexity
             semantics['complexity_score'] = len(semantics['api_endpoints']) + len(semantics['models'])
-            
+
         except Exception as e:
             logger.warning(f"Failed to extract semantics: {e}")
-        
+
         return semantics
-    
+
     def _categorize_size(self, size: int) -> str:
         """Categorize dataset size."""
         if size < 50:
@@ -700,12 +693,12 @@ async def advanced_user_search(
             return 'large'
         else:
             return 'massive'
-    
+
     def load_real_world_dataset(self, dataset_path: str) -> ExperimentalDataset:
         """Load real-world dataset for benchmarking."""
         # This would load actual open-source projects
         # For now, return a mock dataset
-        
+
         dataset = ExperimentalDataset(
             dataset_id="real_world_sample",
             description="Real-world Python API projects",
@@ -716,7 +709,7 @@ async def advanced_user_search(
             domain="real_world",
             size_category="medium"
         )
-        
+
         return dataset
 
 
@@ -727,35 +720,35 @@ class StatisticalValidator:
     Implements rigorous statistical tests to validate the significance
     of improvements and ensure reproducible research results.
     """
-    
+
     def __init__(self, alpha: float = 0.05):
         self.alpha = alpha  # Significance level
         logger.info(f"Initialized StatisticalValidator with α={alpha}")
-    
-    def validate_improvement(self, baseline_results: List[float], 
+
+    def validate_improvement(self, baseline_results: List[float],
                            improved_results: List[float]) -> Dict[str, Any]:
         """Validate statistical significance of improvement."""
         if len(baseline_results) < 3 or len(improved_results) < 3:
             return {"error": "Insufficient data for statistical validation"}
-        
+
         # Descriptive statistics
         baseline_mean = np.mean(baseline_results)
         improved_mean = np.mean(improved_results)
         baseline_std = np.std(baseline_results, ddof=1)
         improved_std = np.std(improved_results, ddof=1)
-        
+
         # Effect size (Cohen's d)
-        pooled_std = np.sqrt(((len(baseline_results) - 1) * baseline_std**2 + 
-                             (len(improved_results) - 1) * improved_std**2) / 
+        pooled_std = np.sqrt(((len(baseline_results) - 1) * baseline_std**2 +
+                             (len(improved_results) - 1) * improved_std**2) /
                             (len(baseline_results) + len(improved_results) - 2))
-        
+
         cohens_d = (improved_mean - baseline_mean) / pooled_std if pooled_std > 0 else 0
-        
+
         # Statistical tests
         # 1. Normality test (Shapiro-Wilk)
         baseline_normal = stats.shapiro(baseline_results).pvalue > 0.05
         improved_normal = stats.shapiro(improved_results).pvalue > 0.05
-        
+
         # 2. Choose appropriate test
         if baseline_normal and improved_normal:
             # t-test for normal distributions
@@ -769,23 +762,23 @@ class StatisticalValidator:
                 test_used = "independent_ttest"
         else:
             # Mann-Whitney U test for non-normal distributions
-            statistic, pvalue = stats.mannwhitneyu(improved_results, baseline_results, 
+            statistic, pvalue = stats.mannwhitneyu(improved_results, baseline_results,
                                                   alternative='greater')
             test_used = "mann_whitney_u"
-        
+
         # 3. Confidence interval
         ci_lower, ci_upper = self._calculate_confidence_interval(
             improved_results, baseline_results
         )
-        
+
         # 4. Power analysis
         power = self._calculate_statistical_power(baseline_results, improved_results, cohens_d)
-        
+
         return {
             'baseline_mean': baseline_mean,
             'improved_mean': improved_mean,
             'improvement': improved_mean - baseline_mean,
-            'relative_improvement': ((improved_mean - baseline_mean) / baseline_mean * 100 
+            'relative_improvement': ((improved_mean - baseline_mean) / baseline_mean * 100
                                    if baseline_mean > 0 else 0),
             'cohens_d': cohens_d,
             'effect_size_interpretation': self._interpret_effect_size(cohens_d),
@@ -800,39 +793,39 @@ class StatisticalValidator:
                 'improved': len(improved_results)
             }
         }
-    
-    def _calculate_confidence_interval(self, improved: List[float], 
+
+    def _calculate_confidence_interval(self, improved: List[float],
                                      baseline: List[float]) -> Tuple[float, float]:
         """Calculate confidence interval for the difference in means."""
         improved_mean = np.mean(improved)
         baseline_mean = np.mean(baseline)
         improved_sem = stats.sem(improved)
         baseline_sem = stats.sem(baseline)
-        
+
         # Standard error of difference
         se_diff = np.sqrt(improved_sem**2 + baseline_sem**2)
-        
+
         # Degrees of freedom (Welch's formula)
         df = (improved_sem**2 + baseline_sem**2)**2 / (
-            improved_sem**4 / (len(improved) - 1) + 
+            improved_sem**4 / (len(improved) - 1) +
             baseline_sem**4 / (len(baseline) - 1)
         )
-        
+
         # t-critical value
         t_critical = stats.t.ppf(1 - self.alpha/2, df)
-        
+
         # Confidence interval
         diff = improved_mean - baseline_mean
         margin_error = t_critical * se_diff
-        
+
         return (diff - margin_error, diff + margin_error)
-    
-    def _calculate_statistical_power(self, baseline: List[float], 
+
+    def _calculate_statistical_power(self, baseline: List[float],
                                    improved: List[float], cohens_d: float) -> float:
         """Calculate statistical power of the test."""
         # Simplified power calculation using Cohen's conventions
         n = min(len(baseline), len(improved))
-        
+
         # Effect size categories
         if abs(cohens_d) < 0.2:
             return 0.1  # Very low power for small effects
@@ -842,7 +835,7 @@ class StatisticalValidator:
             return min(0.95, 0.7 + n / 50)  # High power for large effects
         else:
             return 0.99  # Very high power for very large effects
-    
+
     def _interpret_effect_size(self, cohens_d: float) -> str:
         """Interpret Cohen's d effect size."""
         abs_d = abs(cohens_d)
@@ -854,8 +847,8 @@ class StatisticalValidator:
             return "medium"
         else:
             return "large"
-    
-    def multiple_comparison_correction(self, p_values: List[float], 
+
+    def multiple_comparison_correction(self, p_values: List[float],
                                      method: str = 'bonferroni') -> List[float]:
         """Apply multiple comparison correction."""
         if method == 'bonferroni':
@@ -864,10 +857,10 @@ class StatisticalValidator:
             # Holm-Bonferroni method
             sorted_indices = sorted(range(len(p_values)), key=lambda i: p_values[i])
             corrected = [0.0] * len(p_values)
-            
+
             for rank, idx in enumerate(sorted_indices):
                 corrected[idx] = min(p_values[idx] * (len(p_values) - rank), 1.0)
-            
+
             return corrected
         else:
             return p_values  # No correction
@@ -880,33 +873,33 @@ class PerformanceBenchmarker:
     Measures execution time, memory usage, accuracy, and other metrics
     across different methods and datasets with statistical validation.
     """
-    
+
     def __init__(self):
         self.results_cache = {}
         self.validator = StatisticalValidator()
         logger.info("Initialized PerformanceBenchmarker")
-    
-    def benchmark_methods(self, methods: Dict[str, Callable], 
+
+    def benchmark_methods(self, methods: Dict[str, Callable],
                          dataset: ExperimentalDataset,
                          iterations: int = 10) -> Dict[str, ComparisonResult]:
         """Benchmark multiple methods on a dataset."""
         results = {}
-        
+
         logger.info(f"Benchmarking {len(methods)} methods on dataset {dataset.dataset_id}")
-        
+
         for method_name, method_func in methods.items():
             logger.info(f"Benchmarking method: {method_name}")
-            
+
             # Run multiple iterations for statistical validity
             iteration_results = []
-            
+
             for iteration in range(iterations):
                 result = self._benchmark_single_iteration(method_func, dataset, iteration)
                 iteration_results.append(result)
-            
+
             # Aggregate results
             aggregated_metrics = self._aggregate_iteration_results(iteration_results)
-            
+
             results[method_name] = ComparisonResult(
                 method_name=method_name,
                 metrics=aggregated_metrics,
@@ -915,45 +908,46 @@ class PerformanceBenchmarker:
                 confidence_interval=(0.0, 0.0),  # Will be calculated in comparison
                 raw_results=iteration_results
             )
-        
+
         # Calculate statistical comparisons
         if len(results) > 1:
             results = self._calculate_statistical_comparisons(results)
-        
+
         return results
-    
-    def _benchmark_single_iteration(self, method_func: Callable, 
+
+    def _benchmark_single_iteration(self, method_func: Callable,
                                    dataset: ExperimentalDataset,
                                    iteration: int) -> BenchmarkMetrics:
         """Benchmark single iteration of a method."""
-        import psutil
         import gc
-        
+
+        import psutil
+
         # Garbage collection before measurement
         gc.collect()
-        
+
         # Memory before
         process = psutil.Process()
         memory_before = process.memory_info().rss / 1024 / 1024  # MB
-        
+
         # Time measurement
         start_time = time.perf_counter()
-        
+
         try:
             # Run the method
             method_results = method_func(dataset)
-            
+
             # Time measurement
             end_time = time.perf_counter()
             execution_time = end_time - start_time
-            
+
             # Memory after
             memory_after = process.memory_info().rss / 1024 / 1024  # MB
             memory_usage = memory_after - memory_before
-            
+
             # Calculate accuracy metrics
             accuracy_metrics = self._calculate_accuracy_metrics(method_results, dataset)
-            
+
             return BenchmarkMetrics(
                 accuracy=accuracy_metrics['accuracy'],
                 precision=accuracy_metrics['precision'],
@@ -969,10 +963,10 @@ class PerformanceBenchmarker:
                     'error': None
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Method failed in iteration {iteration}: {e}")
-            
+
             return BenchmarkMetrics(
                 accuracy=0.0,
                 precision=0.0,
@@ -988,13 +982,13 @@ class PerformanceBenchmarker:
                     'error': str(e)
                 }
             )
-    
-    def _calculate_accuracy_metrics(self, method_results: Any, 
+
+    def _calculate_accuracy_metrics(self, method_results: Any,
                                    dataset: ExperimentalDataset) -> Dict[str, float]:
         """Calculate accuracy metrics comparing results to ground truth."""
         # This would implement detailed accuracy calculation
         # For now, return mock metrics
-        
+
         return {
             'accuracy': np.random.uniform(0.7, 0.95),
             'precision': np.random.uniform(0.6, 0.9),
@@ -1003,11 +997,11 @@ class PerformanceBenchmarker:
             'confidence': np.random.uniform(0.8, 0.95),
             'coverage': np.random.uniform(0.75, 0.95)
         }
-    
+
     def _aggregate_iteration_results(self, iteration_results: List[BenchmarkMetrics]) -> BenchmarkMetrics:
         """Aggregate results from multiple iterations."""
         successful_results = [r for r in iteration_results if r.metadata.get('method_success', True)]
-        
+
         if not successful_results:
             # All iterations failed
             return BenchmarkMetrics(
@@ -1015,7 +1009,7 @@ class PerformanceBenchmarker:
                 execution_time=0.0, memory_usage=0.0, confidence_score=0.0,
                 coverage=0.0, metadata={'all_failed': True}
             )
-        
+
         return BenchmarkMetrics(
             accuracy=np.mean([r.accuracy for r in successful_results]),
             precision=np.mean([r.precision for r in successful_results]),
@@ -1035,35 +1029,35 @@ class PerformanceBenchmarker:
                 }
             }
         )
-    
+
     def _calculate_statistical_comparisons(self, results: Dict[str, ComparisonResult]) -> Dict[str, ComparisonResult]:
         """Calculate statistical comparisons between methods."""
         method_names = list(results.keys())
-        
+
         # Use first method as baseline
         baseline_name = method_names[0]
         baseline_results = results[baseline_name]
-        
+
         for method_name in method_names[1:]:
             method_results = results[method_name]
-            
+
             # Extract accuracy values for comparison
-            baseline_accuracies = [r.accuracy for r in baseline_results.raw_results 
+            baseline_accuracies = [r.accuracy for r in baseline_results.raw_results
                                  if r.metadata.get('method_success', True)]
-            method_accuracies = [r.accuracy for r in method_results.raw_results 
+            method_accuracies = [r.accuracy for r in method_results.raw_results
                                if r.metadata.get('method_success', True)]
-            
+
             if baseline_accuracies and method_accuracies:
                 # Statistical validation
                 validation_result = self.validator.validate_improvement(
                     baseline_accuracies, method_accuracies
                 )
-                
+
                 # Update comparison result
                 results[method_name].statistical_significance = validation_result['p_value']
                 results[method_name].improvement_over_baseline = validation_result['relative_improvement']
                 results[method_name].confidence_interval = validation_result['confidence_interval']
-        
+
         return results
 
 
@@ -1074,78 +1068,78 @@ class ResearchBenchmarkSuite:
     Provides comprehensive benchmarking capabilities for quantum semantic analysis,
     ML schema inference, and traditional methods with statistical validation.
     """
-    
+
     def __init__(self):
         self.ground_truth_generator = GroundTruthGenerator()
         self.benchmarker = PerformanceBenchmarker()
         self.quantum_analyzer = QuantumSemanticAnalyzer()
         self.ml_inferencer = MLEnhancedSchemaInferencer()
         self.traditional_inferencer = SchemaInferer()
-        
+
         logger.info("Initialized ResearchBenchmarkSuite")
-    
+
     def run_comprehensive_benchmark(self, config: Dict[str, Any] = None) -> Dict[str, Any]:
         """Run comprehensive benchmark comparing all methods."""
         config = config or {}
-        
+
         logger.info("Starting comprehensive research benchmark")
-        
+
         # Generate test datasets
         datasets = self._generate_test_datasets(config)
-        
+
         # Define methods to compare
         methods = {
             'quantum_semantic': self._quantum_semantic_method,
             'ml_enhanced_schema': self._ml_schema_method,
             'traditional_schema': self._traditional_schema_method,
         }
-        
+
         # Run benchmarks on each dataset
         all_results = {}
-        
+
         for dataset_id, dataset in datasets.items():
             logger.info(f"Benchmarking on dataset: {dataset_id}")
-            
+
             dataset_results = self.benchmarker.benchmark_methods(
                 methods, dataset, iterations=config.get('iterations', 5)
             )
-            
+
             all_results[dataset_id] = dataset_results
-        
+
         # Generate research report
         research_report = self._generate_research_report(all_results, datasets)
-        
+
         logger.info("Comprehensive benchmark completed")
-        
+
         return research_report
-    
+
     def _generate_test_datasets(self, config: Dict[str, Any]) -> Dict[str, ExperimentalDataset]:
         """Generate test datasets for benchmarking."""
         datasets = {}
-        
+
         # Synthetic datasets
         for complexity in ['easy', 'medium', 'hard']:
             size = config.get(f'{complexity}_size', 20)
             dataset = self.ground_truth_generator.create_synthetic_dataset(size, complexity)
             datasets[f'synthetic_{complexity}'] = dataset
-        
+
         return datasets
-    
+
     def _quantum_semantic_method(self, dataset: ExperimentalDataset) -> List[SemanticAnalysisResult]:
         """Quantum semantic analysis method for benchmarking."""
         results = []
-        
+
         for file_path in dataset.file_paths[:5]:  # Limit for benchmarking
             result = self.quantum_analyzer.analyze_file(file_path)
             if result:
                 results.append(result)
-        
+
         return results
-    
+
     def _ml_schema_method(self, dataset: ExperimentalDataset) -> List[Dict[str, ProbabilisticType]]:
         """ML-enhanced schema inference method for benchmarking."""
         results = []
-        
+
         for file_path in dataset.file_paths[:5]:  # Limit for benchmarking
             try:
                 ast_tree = get_cached_ast(file_path)
@@ -1154,13 +1148,13 @@ class ResearchBenchmarkSuite:
                     results.append(schema)
             except Exception as e:
                 logger.warning(f"ML schema inference failed for {file_path}: {e}")
-        
+
         return results
-    
+
     def _traditional_schema_method(self, dataset: ExperimentalDataset) -> List[Dict[str, Any]]:
         """Traditional schema inference method for benchmarking."""
         results = []
-        
+
         for file_path in dataset.file_paths[:5]:  # Limit for benchmarking
             try:
                 ast_tree = get_cached_ast(file_path)
@@ -1170,9 +1164,9 @@ class ResearchBenchmarkSuite:
                     results.append(schema)
             except Exception as e:
                 logger.warning(f"Traditional schema inference failed for {file_path}: {e}")
-        
+
         return results
-    
+
     def _generate_research_report(self, all_results: Dict[str, Dict[str, ComparisonResult]],
                                  datasets: Dict[str, ExperimentalDataset]) -> Dict[str, Any]:
         """Generate comprehensive research report."""
@@ -1191,83 +1185,83 @@ class ResearchBenchmarkSuite:
             'statistical_analysis': {},
             'research_conclusions': {}
         }
-        
+
         # Calculate summary statistics
         for method_name in report['experiment_metadata']['methods_compared']:
             method_accuracies = []
             method_times = []
-            
+
             for dataset_id, dataset_results in all_results.items():
                 if method_name in dataset_results:
                     result = dataset_results[method_name]
                     method_accuracies.append(result.metrics.accuracy)
                     method_times.append(result.metrics.execution_time)
-            
+
             report['summary_statistics'][method_name] = {
                 'mean_accuracy': np.mean(method_accuracies) if method_accuracies else 0,
                 'std_accuracy': np.std(method_accuracies) if method_accuracies else 0,
                 'mean_execution_time': np.mean(method_times) if method_times else 0,
                 'std_execution_time': np.std(method_times) if method_times else 0
             }
-        
+
         # Research conclusions
         report['research_conclusions'] = self._draw_research_conclusions(all_results)
-        
+
         return report
-    
+
     def _draw_research_conclusions(self, all_results: Dict[str, Dict[str, ComparisonResult]]) -> Dict[str, str]:
         """Draw research conclusions from benchmark results."""
         conclusions = {}
-        
+
         # Find best performing method
         method_scores = defaultdict(list)
-        
+
         for dataset_results in all_results.values():
             for method_name, result in dataset_results.items():
                 method_scores[method_name].append(result.metrics.f1_score)
-        
+
         # Calculate average performance
         avg_scores = {method: np.mean(scores) for method, scores in method_scores.items()}
         best_method = max(avg_scores.keys(), key=lambda x: avg_scores[x])
-        
+
         conclusions['best_overall_method'] = f"{best_method} achieved highest average F1-score of {avg_scores[best_method]:.3f}"
-        
+
         # Performance insights
         conclusions['performance_insights'] = "Quantum-enhanced methods show promise for complex semantic analysis"
-        
+
         # Statistical significance
         significant_improvements = 0
         for dataset_results in all_results.values():
             for method_name, result in dataset_results.items():
                 if result.statistical_significance < 0.05:
                     significant_improvements += 1
-        
+
         conclusions['statistical_significance'] = f"{significant_improvements} comparisons showed statistically significant improvements"
-        
+
         return conclusions
-    
+
     def export_results(self, results: Dict[str, Any], output_path: str):
         """Export benchmark results for publication."""
         # Export to JSON
         with open(f"{output_path}/benchmark_results.json", 'w') as f:
             json.dump(results, f, indent=2, default=str)
-        
+
         # Export summary CSV
         self._export_summary_csv(results, f"{output_path}/benchmark_summary.csv")
-        
+
         logger.info(f"Results exported to {output_path}")
-    
+
     def _export_summary_csv(self, results: Dict[str, Any], csv_path: str):
         """Export summary results to CSV format."""
         import csv
-        
+
         with open(csv_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            
+
             # Header
-            writer.writerow(['Method', 'Dataset', 'Accuracy', 'Precision', 'Recall', 
+            writer.writerow(['Method', 'Dataset', 'Accuracy', 'Precision', 'Recall',
                            'F1_Score', 'Execution_Time', 'Memory_Usage'])
-            
+
             # Data rows
             for dataset_id, dataset_results in results['detailed_results'].items():
                 for method_name, result in dataset_results.items():
@@ -1285,7 +1279,7 @@ class ResearchBenchmarkSuite:
 if __name__ == "__main__":
     # Example usage
     benchmark_suite = ResearchBenchmarkSuite()
-    
+
     # Run comprehensive benchmark
     config = {
         'easy_size': 10,
@@ -1293,11 +1287,11 @@ if __name__ == "__main__":
         'hard_size': 5,
         'iterations': 3
     }
-    
+
     results = benchmark_suite.run_comprehensive_benchmark(config)
-    
+
     # Export results
     benchmark_suite.export_results(results, "/tmp/benchmark_output")
-    
+
     echo("Research benchmark suite completed successfully!")
     print(json.dumps(results['summary_statistics'], indent=2))

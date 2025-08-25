@@ -7,8 +7,7 @@ import os
 import sys
 import time
 import uuid
-from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional
 
 
 class JSONFormatter(logging.Formatter):

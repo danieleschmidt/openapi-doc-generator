@@ -14,19 +14,19 @@ from pathlib import Path
 from typing import Any
 
 from . import __version__
+from .circuit_breaker import CircuitBreakerConfig, get_circuit_breaker
 from .config import config
 from .documentator import APIDocumentator, DocumentationResult
-from .enhanced_error_handling import ErrorContext, get_error_handler
+from .enhanced_error_handling import get_error_handler
 from .enhanced_monitoring import get_monitor, monitor_operation
 from .enhanced_validation import get_validator
 from .graphql import GraphQLSchema
+from .health_check import quick_health_check
 from .i18n import ComplianceRegion, SupportedLanguage, get_i18n_manager, localize_text
 from .migration import MigrationGuideGenerator
 from .playground import PlaygroundGenerator
 from .quantum_planner import QuantumTaskPlanner, integrate_with_existing_sdlc
 from .testsuite import TestSuiteGenerator
-from .circuit_breaker import get_circuit_breaker, CircuitBreakerConfig
-from .health_check import get_health_checker, quick_health_check
 
 
 class ErrorCode:
@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Generate documentation in various formats"
     )
     parser.add_argument(
-        "--health-check", 
+        "--health-check",
         action="store_true",
         help="Run comprehensive health check and display system status"
     )
@@ -628,7 +628,7 @@ def _handle_health_check(args: argparse.Namespace) -> None:
     """Handle health check command."""
     try:
         health_summary = quick_health_check()
-        
+
         if not getattr(args, 'no_color', False):
             # Colorized output
             status_colors = {
@@ -639,26 +639,26 @@ def _handle_health_check(args: argparse.Namespace) -> None:
             }
             reset_color = "\033[0m"
         else:
-            status_colors = {status: "" for status in ["healthy", "degraded", "unhealthy", "critical"]}
+            status_colors = dict.fromkeys(["healthy", "degraded", "unhealthy", "critical"], "")
             reset_color = ""
-        
+
         overall_status = health_summary["overall_status"]
         status_color = status_colors.get(overall_status, "")
-        
-        print(f"🏥 System Health Check")
+
+        print("🏥 System Health Check")
         print(f"Overall Status: {status_color}{overall_status.upper()}{reset_color}")
         print(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(health_summary['timestamp']))}")
         print()
-        
+
         for check_name, check_result in health_summary["checks"].items():
             check_status = check_result["status"]
             check_color = status_colors.get(check_status, "")
-            
+
             print(f"📊 {check_name.replace('_', ' ').title()}")
             print(f"   Status: {check_color}{check_status.upper()}{reset_color}")
             print(f"   Message: {check_result['message']}")
             print(f"   Response Time: {check_result['response_time_ms']:.2f}ms")
-            
+
             # Show key metrics
             if check_result.get("metrics"):
                 print("   Key Metrics:")
@@ -670,7 +670,7 @@ def _handle_health_check(args: argparse.Namespace) -> None:
                 if "disk_percent" in metrics:
                     print(f"     Disk: {metrics['disk_percent']:.1f}%")
             print()
-        
+
         # Exit with appropriate code
         if overall_status in ["critical", "unhealthy"]:
             sys.exit(1)
@@ -678,7 +678,7 @@ def _handle_health_check(args: argparse.Namespace) -> None:
             sys.exit(2)
         else:
             sys.exit(0)
-            
+
     except Exception as e:
         print(f"❌ Health check failed: {e}")
         sys.exit(1)
@@ -689,12 +689,12 @@ def main(argv: list[str] | None = None) -> int:
     """Main CLI function with comprehensive error handling and security measures."""
     start_time = time.time()
     parser = build_parser()
-    
+
     # Initialize enhanced monitoring and error handling
     monitor = get_monitor()
     error_handler = get_error_handler()
     validator = get_validator()
-    
+
     # Start monitoring if performance metrics are requested
     if "--performance-metrics" in (argv or sys.argv):
         monitor.start_monitoring()

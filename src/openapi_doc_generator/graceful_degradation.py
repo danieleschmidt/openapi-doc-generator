@@ -3,16 +3,17 @@
 import functools
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
+from typing import Any, Callable, Dict, Optional
+
 from .enhanced_monitoring import get_monitor
 
 
 class OperationCriticality(Enum):
     """Criticality levels for operations."""
     CRITICAL = "critical"        # Must succeed, failure stops execution
-    IMPORTANT = "important"      # Should succeed, fallback on failure  
+    IMPORTANT = "important"      # Should succeed, fallback on failure
     OPTIONAL = "optional"        # Nice to have, continue without on failure
     ENHANCEMENT = "enhancement"  # Pure optimization, graceful fallback always
 
@@ -45,14 +46,14 @@ class DegradationState:
 
 class GracefulDegradationManager:
     """Manager for graceful degradation across the application."""
-    
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.monitor = get_monitor()
         self.degradation_states: Dict[str, DegradationState] = {}
         self.global_policies: Dict[str, DegradationPolicy] = {}
         self._initialize_default_policies()
-    
+
     def _initialize_default_policies(self):
         """Initialize default degradation policies."""
         self.global_policies.update({
@@ -92,18 +93,18 @@ class GracefulDegradationManager:
                 warning_message="External validation unavailable. Skipping validation checks."
             ),
         })
-    
+
     def register_policy(self, operation_name: str, policy: DegradationPolicy):
         """Register a degradation policy for an operation."""
         self.global_policies[operation_name] = policy
-        
+
         # Initialize state if not exists
         if operation_name not in self.degradation_states:
             self.degradation_states[operation_name] = DegradationState(
                 operation_name=operation_name,
                 policy=policy
             )
-    
+
     def _get_state(self, operation_name: str) -> DegradationState:
         """Get or create degradation state for operation."""
         if operation_name not in self.degradation_states:
@@ -113,25 +114,25 @@ class GracefulDegradationManager:
                 policy=policy
             )
         return self.degradation_states[operation_name]
-    
+
     def _should_skip_operation(self, operation_name: str) -> bool:
         """Check if operation should be skipped due to previous failures."""
         state = self._get_state(operation_name)
         current_time = time.time()
-        
+
         # Check if operation is temporarily disabled
         if state.is_disabled and current_time < state.disabled_until:
             return True
-        
+
         # Re-enable if disable period has passed
         if state.is_disabled and current_time >= state.disabled_until:
             state.is_disabled = False
             self.logger.info(f"Re-enabling degraded operation: {operation_name}")
             if state.policy and state.policy.enable_monitoring:
                 self.monitor.record_metric(f"{operation_name}_re_enabled", 1)
-        
+
         return False
-    
+
     def _handle_operation_failure(self, operation_name: str, exception: Exception,
                                 policy: DegradationPolicy) -> Any:
         """Handle operation failure according to degradation policy."""
@@ -139,41 +140,41 @@ class GracefulDegradationManager:
         state.failure_count += 1
         state.last_failure_time = time.time()
         state.total_degradations += 1
-        
+
         # Log the failure
         self.logger.warning(
             f"Operation '{operation_name}' failed (attempt {state.failure_count}): {exception}"
         )
-        
+
         # Check if we should disable the operation
         if state.failure_count >= policy.max_failures_before_disable:
             state.is_disabled = True
             state.disabled_until = time.time() + policy.disable_duration_seconds
-            
+
             self.logger.warning(
                 f"Disabling operation '{operation_name}' for {policy.disable_duration_seconds}s "
                 f"due to {state.failure_count} consecutive failures"
             )
-            
+
             if policy.enable_monitoring:
                 self.monitor.record_metric(f"{operation_name}_disabled", 1)
-        
+
         # Handle based on criticality
         if policy.criticality == OperationCriticality.CRITICAL:
             # Critical operations must succeed
             raise exception
-        
+
         # Show warning message if provided
         if policy.warning_message:
             self.logger.warning(policy.warning_message)
-        
+
         # Try custom exception handler first
         if policy.custom_exception_handler:
             try:
                 return policy.custom_exception_handler(exception)
             except Exception as handler_error:
                 self.logger.error(f"Custom exception handler failed: {handler_error}")
-        
+
         # Use fallback function if available
         if policy.fallback_function:
             try:
@@ -181,25 +182,25 @@ class GracefulDegradationManager:
                 return policy.fallback_function()
             except Exception as fallback_error:
                 self.logger.error(f"Fallback function failed: {fallback_error}")
-        
+
         # Return fallback value
         self.logger.info(f"Using fallback value for '{operation_name}': {policy.fallback_value}")
         return policy.fallback_value
-    
+
     def _handle_operation_success(self, operation_name: str):
         """Handle successful operation execution."""
         state = self._get_state(operation_name)
-        
+
         # Reset failure count on success
         if state.failure_count > 0:
             self.logger.info(f"Operation '{operation_name}' recovered after {state.failure_count} failures")
             state.successful_recoveries += 1
             state.failure_count = 0
-            
+
             if state.policy and state.policy.enable_monitoring:
                 self.monitor.record_metric(f"{operation_name}_recovered", 1)
-    
-    def execute_with_degradation(self, operation_name: str, func: Callable, 
+
+    def execute_with_degradation(self, operation_name: str, func: Callable,
                                 policy: Optional[DegradationPolicy] = None,
                                 *args, **kwargs) -> Any:
         """Execute function with graceful degradation."""
@@ -208,14 +209,14 @@ class GracefulDegradationManager:
         if not effective_policy:
             # No policy defined, execute normally
             return func(*args, **kwargs)
-        
+
         # Check if operation should be skipped
         if self._should_skip_operation(operation_name):
             self.logger.debug(f"Skipping disabled operation: {operation_name}")
-            return self._handle_operation_failure(operation_name, 
-                                                Exception("Operation disabled"), 
+            return self._handle_operation_failure(operation_name,
+                                                Exception("Operation disabled"),
                                                 effective_policy)
-        
+
         # Execute the operation
         try:
             if effective_policy.enable_monitoring:
@@ -223,20 +224,20 @@ class GracefulDegradationManager:
                     result = func(*args, **kwargs)
             else:
                 result = func(*args, **kwargs)
-            
+
             # Handle success
             self._handle_operation_success(operation_name)
             return result
-            
+
         except Exception as e:
             # Handle failure according to policy
             return self._handle_operation_failure(operation_name, e, effective_policy)
-    
+
     def get_degradation_status(self) -> Dict[str, Dict[str, Any]]:
         """Get current degradation status for all operations."""
         current_time = time.time()
         status = {}
-        
+
         for operation_name, state in self.degradation_states.items():
             status[operation_name] = {
                 'is_disabled': state.is_disabled,
@@ -250,9 +251,9 @@ class GracefulDegradationManager:
                     'max_failures': state.policy.max_failures_before_disable if state.policy else None,
                 } if state.policy else None
             }
-        
+
         return status
-    
+
     def reset_operation_state(self, operation_name: str):
         """Reset degradation state for an operation."""
         if operation_name in self.degradation_states:
@@ -263,7 +264,7 @@ class GracefulDegradationManager:
                 policy=policy
             )
             self.logger.info(f"Reset degradation state for: {operation_name}")
-    
+
     def force_enable_operation(self, operation_name: str):
         """Force enable a disabled operation."""
         state = self._get_state(operation_name)
@@ -295,7 +296,7 @@ def get_degradation_manager() -> GracefulDegradationManager:
 
 
 # Convenience decorators for common patterns
-def optional_operation(operation_name: str, fallback_value: Any = None, 
+def optional_operation(operation_name: str, fallback_value: Any = None,
                       warning_message: str = ""):
     """Decorator for optional operations that can fail gracefully."""
     policy = DegradationPolicy(
@@ -316,7 +317,7 @@ def enhancement_operation(operation_name: str, warning_message: str = ""):
     return with_graceful_degradation(operation_name, policy)
 
 
-def important_operation_with_fallback(operation_name: str, fallback_function: Callable, 
+def important_operation_with_fallback(operation_name: str, fallback_function: Callable,
                                     warning_message: str = ""):
     """Decorator for important operations with custom fallback functions."""
     policy = DegradationPolicy(

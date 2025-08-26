@@ -1,0 +1,358 @@
+# Multi-stage Autonomous SDLC Production Dockerfile
+# Optimized for quantum-enhanced performance and global deployment
+
+# Stage 1: Build Stage
+FROM python:3.11-slim as builder
+
+# Set build arguments
+ARG BUILD_DATE
+ARG VERSION=autonomous-v1.0.0
+ARG VCS_REF
+
+# Set environment variables for build
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies for building
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create application directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY pyproject.toml ./
+COPY README.md ./
+
+# Install Python dependencies
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install . && \
+    pip install gunicorn[gevent] uvloop
+
+# Stage 2: Runtime Stage
+FROM python:3.11-slim as runtime
+
+# Set runtime arguments
+ARG BUILD_DATE
+ARG VERSION=autonomous-v1.0.0
+ARG VCS_REF
+
+# Add metadata labels
+LABEL org.opencontainers.image.title="OpenAPI Doc Generator - Autonomous SDLC" \
+      org.opencontainers.image.description="Quantum-enhanced autonomous SDLC system for API documentation" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.vendor="Terragon Labs" \
+      org.opencontainers.image.authors="Claude Code Autonomous System" \
+      org.opencontainers.image.url="https://github.com/danieleschmidt/openapi-doc-generator" \
+      org.opencontainers.image.documentation="https://docs.autonomous-sdlc.terragon.ai" \
+      org.opencontainers.image.source="https://github.com/danieleschmidt/openapi-doc-generator" \
+      autonomous.terragon.ai/generation="3" \
+      autonomous.terragon.ai/features="ai-docs,code-analysis,reliability,security,performance" \
+      quantum.enhancement/enabled="true"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/app/src" \
+    PATH="/app/.local/bin:$PATH" \
+    ENVIRONMENT="production" \
+    LOG_LEVEL="INFO" \
+    LOG_FORMAT="json" \
+    AUTONOMOUS_FEATURES_ENABLED="true" \
+    QUANTUM_OPTIMIZATION_ENABLED="true" \
+    PERFORMANCE_TARGET_LATENCY="50ms" \
+    CACHE_SIZE_MB="500" \
+    MAX_WORKERS="8" \
+    QUANTUM_TEMPERATURE="2.0"
+
+# Install runtime system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    tini \
+    dumb-init \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r autonomous --gid=1000 && \
+    useradd -r -g autonomous --uid=1000 --home-dir=/app --shell=/bin/bash autonomous
+
+# Create application directories
+RUN mkdir -p /app/src /app/logs /app/cache /app/tmp /app/config && \
+    chown -R autonomous:autonomous /app
+
+# Copy Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code
+COPY --chown=autonomous:autonomous src/ /app/src/
+COPY --chown=autonomous:autonomous examples/ /app/examples/
+COPY --chown=autonomous:autonomous deployment/config/ /app/config/
+
+# Copy startup scripts
+COPY --chown=autonomous:autonomous deployment/scripts/entrypoint.sh /app/entrypoint.sh
+COPY --chown=autonomous:autonomous deployment/scripts/healthcheck.sh /app/healthcheck.sh
+COPY --chown=autonomous:autonomous deployment/scripts/prestart.sh /app/prestart.sh
+
+# Make scripts executable
+RUN chmod +x /app/entrypoint.sh /app/healthcheck.sh /app/prestart.sh
+
+# Create startup script for autonomous services
+RUN cat > /app/start-autonomous.py << 'EOF'
+#!/usr/bin/env python3
+"""
+Autonomous SDLC Startup Script
+Initializes all quantum-enhanced components for production deployment.
+"""
+
+import asyncio
+import logging
+import os
+import signal
+import sys
+from pathlib import Path
+
+# Add src to Python path
+sys.path.insert(0, '/app/src')
+
+from openapi_doc_generator.ai_documentation_agent import create_ai_documentation_agent
+from openapi_doc_generator.autonomous_reliability_engine import create_reliability_engine
+from openapi_doc_generator.advanced_security_guardian import create_security_guardian
+from openapi_doc_generator.quantum_performance_engine import create_quantum_performance_engine
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, os.environ.get('LOG_LEVEL', 'INFO')),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s' if os.environ.get('LOG_FORMAT') != 'json' 
+           else '{"timestamp": "%(asctime)s", "logger": "%(name)s", "level": "%(levelname)s", "message": "%(message)s"}',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+logger = logging.getLogger(__name__)
+
+class AutonomousSDLCSystem:
+    """Main autonomous SDLC system coordinator."""
+    
+    def __init__(self):
+        self.components = {}
+        self.running = False
+        
+    async def initialize_components(self):
+        """Initialize all autonomous components."""
+        logger.info("Initializing Autonomous SDLC Components...")
+        
+        try:
+            # Initialize AI Documentation Agent
+            if os.environ.get('AI_DOCUMENTATION_ENABLED', 'true').lower() == 'true':
+                self.components['ai_agent'] = create_ai_documentation_agent()
+                logger.info("✓ AI Documentation Agent initialized")
+            
+            # Initialize Security Guardian
+            if os.environ.get('SECURITY_GUARDIAN_ENABLED', 'true').lower() == 'true':
+                self.components['security'] = create_security_guardian()
+                logger.info("✓ Advanced Security Guardian initialized")
+            
+            # Initialize Performance Engine
+            if os.environ.get('PERFORMANCE_ENGINE_ENABLED', 'true').lower() == 'true':
+                self.components['performance'] = create_quantum_performance_engine()
+                await self.components['performance'].start_performance_monitoring()
+                logger.info("✓ Quantum Performance Engine initialized")
+            
+            # Initialize Reliability Engine
+            if os.environ.get('RELIABILITY_ENGINE_ENABLED', 'true').lower() == 'true':
+                self.components['reliability'] = create_reliability_engine()
+                logger.info("✓ Autonomous Reliability Engine initialized")
+            
+            logger.info("🚀 All Autonomous SDLC Components initialized successfully!")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize components: {e}")
+            raise
+    
+    async def start_system(self):
+        """Start the autonomous SDLC system."""
+        self.running = True
+        logger.info("🌟 Starting Autonomous SDLC System...")
+        
+        await self.initialize_components()
+        
+        # Start monitoring loop
+        try:
+            while self.running:
+                await self.health_check()
+                await asyncio.sleep(30)  # Health check every 30 seconds
+        except KeyboardInterrupt:
+            logger.info("Received shutdown signal")
+        finally:
+            await self.shutdown()
+    
+    async def health_check(self):
+        """Perform system health check."""
+        try:
+            # Check each component
+            component_status = {}
+            
+            for name, component in self.components.items():
+                try:
+                    if hasattr(component, 'get_security_status'):
+                        status = component.get_security_status()
+                        component_status[name] = status.get('status', 'unknown')
+                    elif hasattr(component, 'get_performance_report'):
+                        report = component.get_performance_report()
+                        component_status[name] = 'active' if report else 'inactive'
+                    elif hasattr(component, 'get_reliability_report'):
+                        report = component.get_reliability_report()
+                        component_status[name] = 'active'
+                    else:
+                        component_status[name] = 'active'
+                except Exception as e:
+                    component_status[name] = 'error'
+                    logger.warning(f"Health check failed for {name}: {e}")
+            
+            active_components = sum(1 for status in component_status.values() if status == 'active')
+            total_components = len(component_status)
+            
+            if active_components == total_components:
+                logger.debug(f"✓ System healthy - All {total_components} components active")
+            else:
+                logger.warning(f"⚠ System degraded - {active_components}/{total_components} components active")
+                
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+    
+    async def shutdown(self):
+        """Gracefully shutdown the system."""
+        logger.info("🛑 Shutting down Autonomous SDLC System...")
+        self.running = False
+        
+        # Stop performance monitoring
+        if 'performance' in self.components:
+            self.components['performance'].stop_performance_monitoring()
+        
+        # Stop reliability engine
+        if 'reliability' in self.components:
+            self.components['reliability'].stop_engine()
+        
+        logger.info("✓ Autonomous SDLC System shutdown complete")
+
+async def main():
+    """Main entry point."""
+    system = AutonomousSDLCSystem()
+    
+    # Handle shutdown signals
+    def signal_handler(signum, frame):
+        logger.info(f"Received signal {signum}")
+        asyncio.create_task(system.shutdown())
+    
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    try:
+        await system.start_system()
+    except Exception as e:
+        logger.error(f"System failed: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+EOF
+
+RUN chmod +x /app/start-autonomous.py
+
+# Create Gunicorn configuration
+RUN cat > /app/gunicorn.conf.py << 'EOF'
+"""Gunicorn configuration for Autonomous SDLC production deployment."""
+
+import multiprocessing
+import os
+
+# Server socket
+bind = "0.0.0.0:8000"
+backlog = 2048
+
+# Worker processes
+workers = int(os.environ.get("MAX_WORKERS", multiprocessing.cpu_count()))
+worker_class = "gevent"
+worker_connections = 1000
+max_requests = 10000
+max_requests_jitter = 1000
+preload_app = True
+timeout = 30
+keepalive = 2
+
+# Logging
+accesslog = "/app/logs/access.log"
+errorlog = "/app/logs/error.log"
+loglevel = os.environ.get("LOG_LEVEL", "info").lower()
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s'
+
+# Process naming
+proc_name = "autonomous-sdlc-gunicorn"
+
+# Server mechanics
+daemon = False
+pidfile = "/app/tmp/gunicorn.pid"
+user = 1000
+group = 1000
+tmp_upload_dir = "/app/tmp"
+
+# SSL (if certificates are provided)
+keyfile = os.environ.get("SSL_KEYFILE")
+certfile = os.environ.get("SSL_CERTFILE")
+
+def on_starting(server):
+    """Called just before the master process is initialized."""
+    server.log.info("🚀 Starting Autonomous SDLC Gunicorn server")
+
+def on_reload(server):
+    """Called to recycle workers during a reload via SIGHUP."""
+    server.log.info("♻️  Reloading Autonomous SDLC workers")
+
+def worker_int(worker):
+    """Called just after a worker exited on SIGINT or SIGQUIT."""
+    worker.log.info("Worker received INT or QUIT signal")
+
+def pre_fork(server, worker):
+    """Called just before a worker is forked."""
+    server.log.info(f"Worker {worker.pid} about to be forked")
+
+def post_fork(server, worker):
+    """Called just after a worker has been forked."""
+    server.log.info(f"Worker spawned (pid: {worker.pid})")
+
+def post_worker_init(worker):
+    """Called just after a worker has initialized the application."""
+    worker.log.info(f"Worker {worker.pid} initialized")
+
+def worker_abort(worker):
+    """Called when a worker received the SIGABRT signal."""
+    worker.log.info(f"Worker {worker.pid} received SIGABRT signal")
+EOF
+
+# Expose ports
+EXPOSE 8000 8080 9000
+
+# Set working directory
+WORKDIR /app
+
+# Switch to non-root user
+USER autonomous
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD ["/app/healthcheck.sh"]
+
+# Use tini as PID 1 to handle signals properly
+ENTRYPOINT ["tini", "--"]
+
+# Default command
+CMD ["/app/entrypoint.sh"]

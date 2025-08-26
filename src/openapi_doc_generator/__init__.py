@@ -72,20 +72,48 @@ from .quantum_validator import (
     validate_quantum_plan,
 )
 
-# Advanced Quantum SDLC Research Innovations (Generation 1-3)
-# Temporarily disabled quantum imports to fix loading issues
-# Will be re-enabled after core functionality is stable
-
-# try:
-#     from .quantum_hybrid_orchestrator import (
-#         HybridQuantumClassicalOrchestrator,
-#         HybridTask,
-#         HybridTaskState,
-#         CICDQuantumInterface,
-#         CrossDomainEntanglementManager
-#     )
-# except ImportError:
-#     pass  # Quantum modules optional for core functionality
+# Advanced Autonomous SDLC Components (Generation 1-3)
+try:
+    from .ai_documentation_agent import (
+        AIDocumentationAgent,
+        DocumentationContext,
+        AIDocumentationResult,
+        AdvancedReasoningEngine,
+        create_ai_documentation_agent
+    )
+    from .autonomous_code_analyzer import (
+        AutonomousCodeAnalyzer,
+        CodeAnalysisResult,
+        create_autonomous_analyzer
+    )
+    from .autonomous_reliability_engine import (
+        AutonomousReliabilityEngine,
+        FailureType,
+        RecoveryStrategy,
+        SystemMetrics,
+        create_reliability_engine
+    )
+    from .advanced_security_guardian import (
+        AdvancedSecurityGuardian,
+        ThreatType,
+        ThreatLevel,
+        SecurityEvent,
+        SecurityAction,
+        create_security_guardian
+    )
+    from .quantum_performance_engine import (
+        QuantumPerformanceEngine,
+        OptimizationStrategy,
+        PerformanceSnapshot,
+        create_quantum_performance_engine
+    )
+    
+    # Mark as successfully loaded
+    AUTONOMOUS_SDLC_LOADED = True
+    
+except ImportError as e:
+    # Autonomous modules optional for core functionality
+    AUTONOMOUS_SDLC_LOADED = False
 
 __all__ = [
     "echo",
@@ -141,7 +169,29 @@ __all__ = [
     "IntelligentAutoScaler",
     "ResourceLimits",
     "ScalingRule",
-    # Advanced Quantum SDLC Research Innovation exports (temporarily disabled)
-    # "HybridQuantumClassicalOrchestrator",
-    # ... quantum exports will be re-enabled after core stability
+    # Advanced Autonomous SDLC Research Innovation exports
+    "AIDocumentationAgent",
+    "DocumentationContext", 
+    "AIDocumentationResult",
+    "AdvancedReasoningEngine",
+    "create_ai_documentation_agent",
+    "AutonomousCodeAnalyzer",
+    "CodeAnalysisResult",
+    "create_autonomous_analyzer",
+    "AutonomousReliabilityEngine",
+    "FailureType",
+    "RecoveryStrategy", 
+    "SystemMetrics",
+    "create_reliability_engine",
+    "AdvancedSecurityGuardian",
+    "ThreatType",
+    "ThreatLevel",
+    "SecurityEvent",
+    "SecurityAction", 
+    "create_security_guardian",
+    "QuantumPerformanceEngine",
+    "OptimizationStrategy",
+    "PerformanceSnapshot",
+    "create_quantum_performance_engine",
+    "AUTONOMOUS_SDLC_LOADED"
 ]

@@ -2,7 +2,7 @@
 # Optimized for quantum-enhanced performance and global deployment
 
 # Stage 1: Build Stage
-FROM python:3.11-slim as builder
+FROM python:3.14-slim as builder
 
 # Set build arguments
 ARG BUILD_DATE
@@ -35,7 +35,7 @@ RUN pip install --upgrade pip setuptools wheel && \
     pip install gunicorn[gevent] uvloop
 
 # Stage 2: Runtime Stage
-FROM python:3.11-slim as runtime
+FROM python:3.14-slim as runtime
 
 # Set runtime arguments
 ARG BUILD_DATE
